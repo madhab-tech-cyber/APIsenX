@@ -1,0 +1,25 @@
+{
+  "orders": [
+    {
+      "id": "order-1001",
+      "owner_id": "user-a",
+      "status": "processing",
+      "total": 1200,
+      "currency": "INR"
+    },
+    {
+      "id": "order-1002",
+      "owner_id": "user-b",
+      "status": "shipped",
+      "total": 850,
+      "currency": "INR"
+    },
+    {
+      "id": "order-1003",
+      "owner_id": "user-a",
+      "status": "delivered",
+      "total": 450,
+      "currency": "INR"
+    }
+  ]
+}

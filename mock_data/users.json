@@ -1,0 +1,26 @@
+{
+  "users": [
+    {
+      "id": "user-a",
+      "name": "Alice Example",
+      "role": "customer",
+      "active": true
+    },
+    {
+      "id": "user-b",
+      "name": "Bob Example",
+      "role": "customer",
+      "active": true
+    },
+    {
+      "id": "admin-1",
+      "name": "Alex Admin",
+      "role": "admin",
+      "active": true
+    }
+  ],
+  "roles": {
+    "customer": ["orders:read:own"],
+    "admin": ["orders:read:any", "orders:manage:any"]
+  }
+}
