@@ -1,0 +1,13 @@
+# Member 1 reviews architecture, policy, workflow, and security documentation.
+/docs/ @member1
+/SECURITY.md @member1
+/.github/ @member1
+
+# Replace placeholder handles with the team's real GitHub usernames.
+/ebpf/ @member2 @member1
+/collector/ @member3 @member1
+/analytics/ @member4 @member1
+/mock-api/ @member5 @member1
+/dashboard/ @member6 @member1
+/tests/ @member6 @member1
+
