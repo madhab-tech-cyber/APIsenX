@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "id": "AUTH-001",
+      "actor": "user-a",
+      "action": "orders:read",
+      "order_id": "order-1001",
+      "expected": "allow",
+      "category": "normal"
+    },
+    {
+      "id": "AUTH-002",
+      "actor": "user-a",
+      "action": "orders:read",
+      "order_id": "order-1002",
+      "expected": "deny",
+      "category": "BOLA"
+    },
+    {
+      "id": "AUTH-003",
+      "actor": "admin-1",
+      "action": "orders:read",
+      "order_id": "order-1002",
+      "expected": "allow",
+      "category": "normal"
+    },
+    {
+      "id": "AUTH-004",
+      "actor": "user-a",
+      "action": "orders:manage",
+      "order_id": "order-1001",
+      "expected": "deny",
+      "category": "BFLA"
+    },
+    {
+      "id": "AUTH-005",
+      "actor": "unknown-user",
+      "action": "orders:read",
+      "order_id": "order-1001",
+      "expected": "deny",
+      "category": "invalid_identity"
+    },
+    {
+      "id": "AUTH-006",
+      "actor": "user-a",
+      "action": "orders:read",
+      "order_id": "order-9999",
+      "expected": "deny",
+      "category": "edge_case"
+    },
+    {
+      "id": "AUTH-007",
+      "actor": "user-disabled",
+      "action": "orders:read",
+      "order_id": "order-1001",
+      "expected": "deny",
+      "category": "invalid_identity"
+    }
+  ]
+}
