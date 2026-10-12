@@ -8,7 +8,7 @@
 
 **Date:** 2026-10-12
 
-**Status:** Draft — Day 1 issue-board records and the dedicated secret-scanning baseline remain pending. Secret-scanning configuration is assigned to Members 1 and 6 for completion before the Day 7 checkpoint.
+**Status:** Day 1 is tracked in [Issue #3](https://github.com/madhab-tech-cyber/APIsenX/issues/3). The dedicated secret-scanning baseline remains pending and is assigned to Members 1 and 6 for completion before the Day 7 checkpoint.
 
 ---
 
@@ -18,7 +18,7 @@ In accordance with the official 30-day schedule:
 1. **Scope and Governance**: Formalized project purpose, system boundaries, and strict out-of-scope constraints in [`docs/scope-and-governance.md`](scope-and-governance.md).
 2. **Acceptance Criteria**: Defined project milestone criteria covering team-owned components across Weeks 1 through 4.
 3. **Meeting Cadence**: Documented the mandatory daily meaningful-work requirement, 24-hour response rule, 48-hour escalation protocol, and rehearsal checkpoints.
-4. **Issue-Board Planning**: Proposed issue titles, acceptance criteria and label taxonomy for approval. Items for Members 2-6 represent proposed coordination items requiring confirmation against their individual PDFs.
+4. **Issue-Board Planning**: Created [Issue #3](https://github.com/madhab-tech-cyber/APIsenX/issues/3) to track the completed Day 1 work, pending security controls, commits and evidence files. Items for Members 2-6 represent proposed coordination items requiring confirmation against their individual PDFs.
 5. **Technical Verification of Member 5 Baseline**: Reran and reviewed the Day 1 baseline merged from PR #1 (`member5/mock-api`).
 
 ---
@@ -45,8 +45,7 @@ This verifies the local mock authorization model only. It does not verify produc
 
 ## 3. Review Status & Governance Pending Items
 
-- **Branch State**: The local Member 1 branch includes the reviewed origin/main changes. The remote Member 1 branch remains unchanged until the approved push.
-- **Staged Changes**: Contains the two reviewed Day 1 documents pending commit approval.
-- **Pending**: Approve the Day 1 documents, create the issue-board records, run applicable checks, commit, push and open the Member 1 pull request.
+- **PR #2**: Merged into main on 2026-10-12.
+- **Peer review**: PR #2 was merged before the planned peer-review step; no peer review occurred. Future changes require review before merge.
 - **Governance Controls**: Branch protection and CODEOWNERS enforcement are currently unconfigured on GitHub and recorded as governance controls that still need configuration.
 - **Handoff**: Day 1 scope and acceptance criteria establish the foundation for Member 1's Day 2 task. Existing threat-model and risk-register baselines must be reviewed, corrected and completed against the official Day 2 requirements. Do not overwrite them or assume they are already approved.
