@@ -4,6 +4,18 @@
 
 API-Sentinel observes API activity in an authorised lab, creates an endpoint inventory, detects endpoints missing from the approved OpenAPI contract, evaluates BOLA/BFLA policy, applies controlled enforcement, masks sensitive data, and presents findings on a protected dashboard.
 
+The detailed interface register, owner handoffs, failure behavior and integration
+sequence are maintained in
+[`integration-data-flow.md`](integration-data-flow.md).
+
+## Implementation status
+
+As of 2026-10-13, the local mock API authentication, authorization, synthetic
+fixture and basic audit-log path is implemented and tested. The eBPF sensor,
+collector, analytics service, storage, management API, dashboard and CI/security
+pipeline remain planned or placeholder components. Architecture and interface
+text for those components is not implementation evidence.
+
 ## Components
 
 1. **Mock API (Authorised Lab Target)**
@@ -79,4 +91,8 @@ HTTPS payloads are encrypted. eBPF does not automatically expose normal encrypte
 - Audit-event schema.
 - Health and performance metric schema.
 - OpenAPI contract versioning rule.
+
+Both producer and consumer must approve each interface and link compatible
+schema, negative, failure-recovery and integration tests before it is described
+as operational.
 
