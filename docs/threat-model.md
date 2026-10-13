@@ -7,6 +7,13 @@
 **Scope:** The authorised API-Sentinel laboratory described in
 [`scope-and-governance.md`](scope-and-governance.md).
 
+Data handling follows
+[`data-classification-policy.md`](data-classification-policy.md), and identity
+requirements follow
+[`authentication-decisions.md`](authentication-decisions.md).
+The intended component interfaces and failure behavior are recorded in
+[`integration-data-flow.md`](integration-data-flow.md).
+
 ## 1. Method and security objectives
 
 This model uses asset, data-flow and trust-boundary analysis with STRIDE-style
@@ -95,6 +102,7 @@ linked in the risk register. Architecture text alone is not control evidence.
 | T-10 | TB-01/TB-03/TB-04; A-09 | Traffic, event or request floods make the pipeline unavailable | Rate limits, bounded queues, timeouts, circuit breakers, health metrics and capacity evidence | R-010 |
 | T-11 | TB-01; A-01/A-09 | The deliberately weak lab token model is exposed or mistaken for production authentication | Bind to the authorised lab, label demo credentials, block production deployment and replace with validated tokens before release | R-007 |
 | T-12 | TB-02; A-01/A-04 | The team attempts to observe HTTPS by disabling or bypassing transport security | Use only an approved observation point, document metadata-only limits and reject TLS-weakening designs | R-006 |
+| T-13 | TB-03/TB-04/TB-05/TB-06; A-03/A-04/A-05/A-06 | An unversioned, incompatible or spoofed event/decision is silently accepted, causing telemetry loss, incorrect findings or unsafe enforcement | Versioned schemas, authenticated sources, bounds, freshness/deduplication, reject-unknown behavior and producer/consumer contract tests | R-013 |
 
 ## 6. Current evidence and known gaps
 
@@ -105,11 +113,18 @@ linked in the risk register. Architecture text alone is not control evidence.
   It does not validate the eBPF, collector, analytics, storage, dashboard or
   integrated trust boundaries.
 - The lab currently uses static opaque demo tokens. Expiry, audience, signature
-  and replay controls are not implemented.
+  and replay controls are not implemented. The fixture mechanism is conditionally
+  approved only for the isolated local lab.
+- A foundation data-classification policy now defines Public, Internal,
+  Restricted, Secret and Prohibited handling. Runtime masking, retention,
+  access-control and leak-test evidence is still absent.
 - Dependency manifests, lock files, CI, SBOM generation and dedicated secret,
   static, dependency and container scans are not yet present.
 - The checked-in OpenAPI contract and FastAPI behavior have known differences
   tracked in the Day 3 scaffold review and R-011.
+- The Day 5 interface register assigns producer/consumer handoffs, but IF-02
+  through IF-09 lack recorded owner acceptance and integrated contract/failure
+  evidence. Schema-confusion risk is tracked in R-013.
 
 ## 7. Review and acceptance process
 
