@@ -3,14 +3,19 @@
 ## Branch workflow
 
 1. Work only on the assigned member branch.
-2. Synchronise reviewed `main` before starting work.
-3. Keep changes small and limited to the assigned issue.
-4. Run relevant tests and security checks.
-5. Inspect staged files before committing.
-6. Push the branch and open or update a pull request.
-7. Obtain the required review before merge.
+2. Link the work to a scoped issue with acceptance evidence.
+3. Synchronise reviewed `main` before starting work.
+4. Keep changes small and limited to the assigned issue.
+5. Run relevant tests and security checks.
+6. Inspect unstaged and staged changes before committing.
+7. Push the branch and open or update a pull request.
+8. Obtain the required owner review before merge.
 
 Do not force push shared branches or commit directly to `main`.
+
+The detailed requirements, reviewer matrix, approval states and merge blockers
+are defined in
+[`docs/coding-and-review-standards.md`](docs/coding-and-review-standards.md).
 
 ## Commit format
 
@@ -26,7 +31,12 @@ Examples:
 
 ## Pull-request evidence
 
-Describe what changed, why it changed, tests executed, security impact, screenshots or measurements when relevant, and remaining limitations.
+Describe the linked issue, what changed, why it changed, exact checks and test
+counts, security impact, screenshots or measurements when relevant, required
+reviewers, rollback and remaining limitations.
+
+A zero-test run is not passing evidence. Do not merge security-sensitive work
+without the required component owner and Member 1 approval.
 
 ## Sensitive data
 
