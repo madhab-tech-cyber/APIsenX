@@ -125,6 +125,9 @@ linked in the risk register. Architecture text alone is not control evidence.
 - The Day 5 interface register assigns producer/consumer handoffs, but IF-02
   through IF-09 lack recorded owner acceptance and integrated contract/failure
   evidence. Schema-confusion risk is tracked in R-013.
+- The Day 6 [`week1-threat-review.md`](week1-threat-review.md) re-evaluates all
+  13 scenarios against current evidence. Every scenario remains applicable and
+  none is closed; accountable follow-up is recorded in the risk register.
 
 ## 7. Review and acceptance process
 
