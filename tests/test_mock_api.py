@@ -1,4 +1,3 @@
-
 from unittest.mock import patch
 import sys
 import unittest
@@ -23,6 +22,7 @@ class MockAPITests(unittest.TestCase):
     def test_customer_sees_only_own_orders(self):
         response = client.get("/orders", headers=USER_A)
         self.assertEqual(response.status_code, 200)
+
         ids = {order["id"] for order in response.json()["orders"]}
         self.assertEqual(ids, {"order-1001", "order-1003"})
 
@@ -34,12 +34,17 @@ class MockAPITests(unittest.TestCase):
         response = client.get("/orders/order-1002", headers=USER_A)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"]["error"]["code"], "FORBIDDEN"
+            response.json()["error"]["code"],
+            "FORBIDDEN",
         )
 
     def test_missing_token_is_denied(self):
         response = client.get("/orders")
         self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "UNAUTHENTICATED",
+        )
 
     def test_invalid_token_is_denied(self):
         response = client.get(
@@ -47,10 +52,18 @@ class MockAPITests(unittest.TestCase):
             headers={"Authorization": "Bearer invalid-token"},
         )
         self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "UNAUTHENTICATED",
+        )
 
     def test_customer_cannot_list_admin_orders(self):
         response = client.get("/admin/orders", headers=USER_A)
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "FORBIDDEN",
+        )
 
     def test_admin_can_list_all_orders(self):
         response = client.get("/admin/orders", headers=ADMIN)
@@ -64,6 +77,10 @@ class MockAPITests(unittest.TestCase):
             json={"status": "shipped"},
         )
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "FORBIDDEN",
+        )
 
     def test_admin_can_update_order_status(self):
         response = client.patch(
@@ -80,7 +97,11 @@ class MockAPITests(unittest.TestCase):
             headers=ADMIN,
             json={"status": "shipped", "owner_id": "user-b"},
         )
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "INVALID_REQUEST",
+        )
 
     # Day 4: Authentication and authorization hardening
 
@@ -104,7 +125,11 @@ class MockAPITests(unittest.TestCase):
             headers=ADMIN,
             json={"status": "hacked"},
         )
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "INVALID_REQUEST",
+        )
 
     def test_empty_update_payload_is_rejected(self):
         response = client.patch(
@@ -112,7 +137,11 @@ class MockAPITests(unittest.TestCase):
             headers=ADMIN,
             json={},
         )
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "INVALID_REQUEST",
+        )
 
     def test_inactive_user_cannot_access_api(self):
         inactive_users = {
@@ -128,7 +157,7 @@ class MockAPITests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
-            response.json()["detail"]["error"]["code"],
+            response.json()["error"]["code"],
             "UNAUTHENTICATED",
         )
 
@@ -146,7 +175,7 @@ class MockAPITests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"]["error"]["code"],
+            response.json()["error"]["code"],
             "FORBIDDEN",
         )
 
