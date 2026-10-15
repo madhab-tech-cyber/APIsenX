@@ -1,3 +1,4 @@
+from copy import deepcopy
 from unittest.mock import patch
 import sys
 import unittest
@@ -8,8 +9,9 @@ from fastapi.testclient import TestClient
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
 
-from main import app
+import main
 
+app = main.app
 client = TestClient(app)
 
 USER_A = {"Authorization": "Bearer lab-user-a-token"}
@@ -19,10 +21,21 @@ ADMIN = {"Authorization": "Bearer lab-admin-token"}
 
 class MockAPITests(unittest.TestCase):
 
+    def setUp(self):
+        # Save a fresh snapshot before every test.
+        self.original_orders = deepcopy(main.ORDERS)
+
+    def tearDown(self):
+        # Restore shared in-memory data after every test.
+        main.ORDERS.clear()
+        main.ORDERS.update(deepcopy(self.original_orders))
+
+    # Customer access and ownership
+
     def test_customer_sees_only_own_orders(self):
         response = client.get("/orders", headers=USER_A)
-        self.assertEqual(response.status_code, 200)
 
+        self.assertEqual(response.status_code, 200)
         ids = {order["id"] for order in response.json()["orders"]}
         self.assertEqual(ids, {"order-1001", "order-1003"})
 
@@ -32,43 +45,19 @@ class MockAPITests(unittest.TestCase):
 
     def test_cross_user_order_is_denied(self):
         response = client.get("/orders/order-1002", headers=USER_A)
+
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["error"]["code"],
-            "FORBIDDEN",
-        )
-
-    def test_missing_token_is_denied(self):
-        response = client.get("/orders")
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(
-            response.json()["error"]["code"],
-            "UNAUTHENTICATED",
-        )
-
-    def test_invalid_token_is_denied(self):
-        response = client.get(
-            "/orders",
-            headers={"Authorization": "Bearer invalid-token"},
-        )
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(
-            response.json()["error"]["code"],
-            "UNAUTHENTICATED",
+            response.json()["error"]["code"], "FORBIDDEN"
         )
 
     def test_customer_cannot_list_admin_orders(self):
         response = client.get("/admin/orders", headers=USER_A)
+
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["error"]["code"],
-            "FORBIDDEN",
+            response.json()["error"]["code"], "FORBIDDEN"
         )
-
-    def test_admin_can_list_all_orders(self):
-        response = client.get("/admin/orders", headers=ADMIN)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["orders"]), 3)
 
     def test_customer_cannot_update_order(self):
         response = client.patch(
@@ -76,34 +65,32 @@ class MockAPITests(unittest.TestCase):
             headers=USER_A,
             json={"status": "shipped"},
         )
+
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["error"]["code"],
-            "FORBIDDEN",
+            response.json()["error"]["code"], "FORBIDDEN"
         )
 
-    def test_admin_can_update_order_status(self):
-        response = client.patch(
-            "/orders/order-1001",
-            headers=ADMIN,
-            json={"status": "shipped"},
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["status"], "shipped")
+    # Authentication
 
-    def test_update_rejects_extra_fields(self):
-        response = client.patch(
-            "/orders/order-1001",
-            headers=ADMIN,
-            json={"status": "shipped", "owner_id": "user-b"},
-        )
-        self.assertEqual(response.status_code, 400)
+    def test_missing_token_is_denied(self):
+        response = client.get("/orders")
+
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(
-            response.json()["error"]["code"],
-            "INVALID_REQUEST",
+            response.json()["error"]["code"], "UNAUTHENTICATED"
         )
 
-    # Day 4: Authentication and authorization hardening
+    def test_invalid_token_is_denied(self):
+        response = client.get(
+            "/orders",
+            headers={"Authorization": "Bearer invalid-token"},
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json()["error"]["code"], "UNAUTHENTICATED"
+        )
 
     def test_malformed_authorization_scheme_is_denied(self):
         response = client.get(
@@ -119,30 +106,6 @@ class MockAPITests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_invalid_order_status_is_rejected(self):
-        response = client.patch(
-            "/orders/order-1001",
-            headers=ADMIN,
-            json={"status": "hacked"},
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"]["code"],
-            "INVALID_REQUEST",
-        )
-
-    def test_empty_update_payload_is_rejected(self):
-        response = client.patch(
-            "/orders/order-1001",
-            headers=ADMIN,
-            json={},
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"]["code"],
-            "INVALID_REQUEST",
-        )
-
     def test_inactive_user_cannot_access_api(self):
         inactive_users = {
             "user-a": {
@@ -157,8 +120,7 @@ class MockAPITests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
-            response.json()["error"]["code"],
-            "UNAUTHENTICATED",
+            response.json()["error"]["code"], "UNAUTHENTICATED"
         )
 
     def test_unknown_role_cannot_access_admin_endpoint(self):
@@ -175,8 +137,164 @@ class MockAPITests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["error"]["code"],
-            "FORBIDDEN",
+            response.json()["error"]["code"], "FORBIDDEN"
+        )
+
+    # Admin permissions and valid updates
+
+    def test_admin_can_list_all_orders(self):
+        response = client.get("/admin/orders", headers=ADMIN)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["orders"]), 3)
+
+    def test_admin_can_update_order_status(self):
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": "shipped"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "shipped")
+
+    # Invalid update payloads
+
+    def test_update_rejects_extra_fields(self):
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": "shipped", "owner_id": "user-b"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"], "INVALID_REQUEST"
+        )
+
+    def test_invalid_order_status_is_rejected(self):
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": "hacked"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"], "INVALID_REQUEST"
+        )
+
+    def test_empty_update_payload_is_rejected(self):
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"], "INVALID_REQUEST"
+        )
+
+    # Day 6: Edge-case hardening
+
+    def test_unknown_order_read_returns_404(self):
+        response = client.get(
+            "/orders/order-9999",
+            headers=ADMIN,
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json()["error"]["code"], "NOT_FOUND"
+        )
+
+    def test_unknown_order_update_returns_404(self):
+        response = client.patch(
+            "/orders/order-9999",
+            headers=ADMIN,
+            json={"status": "shipped"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json()["error"]["code"], "NOT_FOUND"
+        )
+
+    def test_malformed_json_is_rejected(self):
+        response = client.patch(
+            "/orders/order-1001",
+            headers={
+                **ADMIN,
+                "Content-Type": "application/json",
+            },
+            content='{"status":',
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"], "INVALID_REQUEST"
+        )
+
+    def test_missing_status_field_is_rejected(self):
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"owner_id": "user-b"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"], "INVALID_REQUEST"
+        )
+
+    def test_null_status_is_rejected(self):
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": None},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"], "INVALID_REQUEST"
+        )
+
+    def test_protected_total_field_cannot_be_modified(self):
+        original_total = main.ORDERS["order-1001"]["total"]
+
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": "shipped", "total": 0},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"]["code"], "INVALID_REQUEST"
+        )
+        self.assertEqual(
+            main.ORDERS["order-1001"]["total"], original_total
+        )
+
+    # Day 6: Test isolation
+
+    def test_admin_update_does_not_leak_between_tests(self):
+        original_status = self.original_orders["order-1001"]["status"]
+
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": "shipped"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "shipped")
+
+        # tearDown restores the original order after this test.
+        self.assertNotEqual(
+            main.ORDERS["order-1001"]["status"],
+            original_status,
         )
 
 
