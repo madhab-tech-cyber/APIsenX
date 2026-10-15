@@ -2,7 +2,7 @@
 
 **Owner:** Member 1 - Team Lead and Security Architect
 
-**Last reviewed:** 2026-10-13
+**Last reviewed:** 2026-10-15
 
 **Related model:** [`threat-model.md`](threat-model.md)
 
@@ -38,7 +38,7 @@ release rule.
 | R-008 | Audit findings or administrative actions are altered, deleted or unattributed (TB-05/TB-06; A-06/A-07) | Medium | High | High | M1/M4/M6 | Structured correlation IDs, restricted append path, tamper evidence, retention/access policy and protected export | Mock API emits basic audit log lines; persistence, correlation and tamper evidence are absent | High | Open / Days 20-22 |
 | R-009 | Dashboard privilege escalation or unsafe rendering exposes evidence (TB-06; A-01/A-06/A-07) | Medium | High | High | M1/M6 | Server-side RBAC, short sessions, output encoding, CSRF controls, role tests and masking | Dashboard is a README placeholder | High | Open / Days 23-27 |
 | R-010 | Request/event floods exhaust queues or make the lab unavailable (TB-01/TB-03/TB-04; A-09) | Medium | High | High | M2/M3/M5 | Input/rate limits, bounded maps/queues/batches, timeouts, backpressure, circuit breaker and measured capacity | Input schemas exist for the mock API; no rate, queue or integrated load evidence exists | High | Open / Days 13 and 19 |
-| R-011 | OpenAPI/implementation drift hides routes or produces incorrect discovery and client behavior (TB-01/TB-04; A-03) | High | Medium | High | M1/M4/M5 | Compare the checked-in contract with generated runtime OpenAPI; align authentication and error schemas; add drift tests | Day 4 review reconfirmed that the contract declares JWT while code uses opaque fixtures, error envelopes differ, and invalid updates are documented as 400 but return 422 | High | Open / immediate: Week 1 exit missed; before discovery integration |
+| R-011 | OpenAPI/implementation drift hides routes or produces incorrect discovery and client behavior (TB-01/TB-04; A-03) | High | Medium | High | M1/M4/M5 | Compare the checked-in contract with generated runtime OpenAPI; align authentication and error schemas; add drift tests | Day 14 confirms current validation tests return 400; the checked-in contract still declares JWT while the API uses opaque lab fixtures; complete generated-contract drift regression remains absent | High | Open / immediate: Week 1 exit missed; before discovery integration |
 | R-012 | Validation gaps allow broken or insecure changes to merge (TB-07; A-08) | High | High | High | M1/M6 | Deterministic test entry point, CI, named security checks, protected review and evidence retention | Explicit command runs 26 tests; default `unittest discover` runs zero; no CI or required security scanners exist | High | Open / immediate: Week 1 foundation gate missed |
 | R-013 | An incompatible, unversioned or spoofed interface message causes telemetry loss, incorrect findings or an unsafe decision (TB-03/TB-04/TB-05/TB-06; A-03/A-04/A-05/A-06) | High | High | High | M1/M2/M3/M4/M6 | Machine-readable versioned schemas, authenticated sources, size/freshness/deduplication rules, reject-unknown behavior and producer/consumer compatibility/failure tests | `integration-data-flow.md` defines the interface and acceptance baseline; planned component schemas, owner acceptance and integration tests are absent | High | Open / immediate: before each interface merge |
 
@@ -63,6 +63,51 @@ coordinating the named collaborators and linking the required evidence.
 | R-011 | M5 / M1, M4 | Runtime-contract comparison and authentication/error/status drift tests | Immediate; before discovery integration |
 | R-012 | M6 / M1 | Non-zero deterministic CI entry point, required review gate and retained check results | Immediate; before the next integration merge |
 | R-013 | M1 / M2, M3, M4, M6 | Machine-readable schemas, owner acceptance and producer/consumer compatibility/failure tests | Before each interface PR is approved |
+
+## Day 13 validation handoff
+
+[MRVP-1.0](mid-review-validation-plan.md) now defines sample sizes, environment,
+measurement and pass/fail rules for the Week 2 review. The plan is a specification
+for peer review; no new runtime risk is accepted, downgraded or closed.
+
+| Risk | Accountable lead / support | Day 13 evidence required | Gate |
+|---|---|---|---|
+| R-002 | M5 / M4, M6, M1 review | D11-F01 inventory regressions, full AP-1.0 application cases and separate detector confusion counts | Before authorization/detection approval; existing 2026-10-21 maximum finding deadline and before release remain |
+| R-004, R-006, R-013 | M2/M3 / M5, M4, M1 review | Exact supported Linux/kernel profile, approved HTTPS-safe observation point, bounded compatible schemas and receipt/loss evidence | Before integrated correctness or latency runs |
+| R-005, R-012 | M6 / all component owners | Locked dependency environment, nonzero repeatable checks, dependency/static/secret and applicable container scan evidence | Before next integration approval; currently absent |
+| R-010 | M3 / M2, M5, M6 | Three paired latency runs at each of two concurrency levels, bounded resource and loss/backpressure evidence | Before capacity/performance claims; Day 19 limits decision still separate |
+| R-001, R-011 | M4/M5 / M6, M1 review | Versioned contract/corpus, no forbidden output and all privacy/route/discovery assertions | Before discovery acceptance or evidence persistence |
+
+Owners are handoff assignments, not claims that they accepted or executed work.
+The 26 application tests pass in the Day 13 local regression environment;
+detector accuracy and integrated performance remain UNMEASURED. Missing detector,
+pipeline, locked environment and dedicated scans keep those acceptance gates
+BLOCKED. See [Day 13 evidence](day13-member1-evidence.md) and
+[Issue #11](https://github.com/madhab-tech-cyber/APIsenX/issues/11).
+
+## Day 14 mid-review collection
+
+[Day 14 review](day14-mid-review.md) collects all thirteen unresolved risks:
+12 High and one Medium. Local owner-read and cross-owner-denial demos pass,
+but D11-F01 again returns 200 instead of 403 with empty/all-owned admin
+inventories. The existing 26 application tests pass without covering those
+failures. M5/M6 retain remediation/regression ownership and the existing deadline.
+
+M2's unmerged `07f1410` design and header proposals add useful foundation work,
+but raw/truncated route markers, missing event schema version, IPv6 scope and
+unmeasured performance/resource claims need producer/consumer review under
+R-001/R-004/R-006/R-013. No live sensor or collector result was demonstrated.
+
+PR #13 remains draft; no submitted reviews or CI checks were present at the
+audit snapshot. Rulesets, branch protection, real CODEOWNERS identities and
+dedicated scan/build evidence remain unresolved under M1/M6 coordination.
+Closing Issue #3 did not provide evidence that those controls were completed.
+
+Integrated Week 2 acceptance is NOT APPROVED. No residual rating, existing owner
+or remediation deadline is reduced, and no risk is accepted or closed. The
+repository rehearsal is recorded in [Day 14 evidence](day14-member1-evidence.md);
+the human meeting, actual feedback and owner sign-off remain pending in
+[Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14).
 
 ## Review requirements
 
