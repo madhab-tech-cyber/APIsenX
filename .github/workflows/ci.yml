@@ -1,0 +1,55 @@
+name: API-Sentinel CI
+
+on:
+  push:
+    branches:
+      - member6/dashboard-devsecops
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  repository-check:
+    name: Repository security checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for accidentally committed sensitive files
+        shell: bash
+        run: |
+          set -e
+
+          forbidden_files=(
+            ".env"
+            ".env.local"
+            ".env.production"
+            "*.pem"
+            "*.key"
+            "*.p12"
+            "*.pfx"
+          )
+
+          for pattern in "${forbidden_files[@]}"; do
+            if find . -type f -not -path './.git/*' -name "$pattern" | grep -q .; then
+              echo "Forbidden sensitive file detected: $pattern"
+              exit 1
+            fi
+          done
+
+      - name: Repository structure check
+        shell: bash
+        run: |
+          set -e
+
+          test -d dashboard
+          test -d tests
+          test -f SECURITY.md
+          test -f CONTRIBUTING.md
+
+          echo "Repository foundation checks passed."
