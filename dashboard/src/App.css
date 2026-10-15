@@ -125,3 +125,7 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+.topbar h1, .section-title {
+  color: #e5e7eb;
+}
