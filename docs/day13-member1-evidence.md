@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-15 (Asia/Calcutta)
 
-**Branch:** `member1/architecture`, explicitly requested by the project owner.
+**Branch:** `member1/security-architecture`, confirmed by the project owner.
 
 **Task:** Define sample size, environment and pass/fail criteria (Member 1
 responsibility plan, page 3).
@@ -38,8 +38,7 @@ ratings and open findings are retained.
 The supplied responsibility PDF was read directly. Its SHA-256 is
 `4379b0938dcf67499b633079d686b937a14648f7b3bc91768d8efa432c29568c`.
 Source pages 3-4 establish the assignment and daily evidence/review workflow.
-The branch differs from the PDF's `member1/security-architecture` only because
-the project owner explicitly requested `member1/architecture` for this task.
+The delivery branch matches the PDF-assigned `member1/security-architecture`.
 
 All 51 source files were retrieved at the reviewed GitHub SHA and verified
 against their Git blob hashes in a separate local snapshot. This avoids

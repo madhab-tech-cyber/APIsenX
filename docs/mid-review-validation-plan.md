@@ -6,7 +6,7 @@
 
 **Plan version:** `MRVP-1.0`
 
-**Branch:** `member1/architecture` (explicitly requested for this task)
+**Branch:** `member1/security-architecture`
 
 **Reviewed source:** `f566d7a6bac2466f158b88cc55d13f309c6f8f0c`
 
@@ -20,8 +20,8 @@ Member 1's responsibility plan, page 3, assigns Day 13: "Define sample size,
 environment and pass/fail criteria." Page 4 requires reviewable work on a member
 branch and review before merge. This plan completes the specification part of
 that assignment; implementation, measurement and reviewer approval are separate.
-The PDF assigns `member1/security-architecture`; the user explicitly requested
-`member1/architecture` for this delivery. No other member branch is renamed.
+The delivery uses the PDF-assigned branch `member1/security-architecture`,
+confirmed by the project owner.
 
 This plan extends [Day 12's coverage review](detection-accuracy-coverage-review.md),
 [AP-1.0](authorization-policy.md), [route acceptance](route-normalization-acceptance.md),
