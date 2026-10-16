@@ -3,6 +3,7 @@ import { securityMetrics } from './securityData'
 import { apiEndpoints } from './endpointData'
 import { securityAlerts } from './alertData'
 import { securityEvidence } from './evidenceData'
+import { healthMetrics } from './healthData'
 
 function App() {
   return (
@@ -133,18 +134,37 @@ function App() {
           </table>
         </section>
 
-        <h2 className="section-title">Security Views</h2>
+        <h2 className="section-title">Performance &amp; Health</h2>
 
-        <section className="views">
-          <article className="view-card">
-            <h3>Security Evidence</h3>
-            <p>Inspect masked evidence supporting security findings.</p>
-          </article>
-
-          <article className="view-card">
-            <h3>Performance &amp; Health</h3>
-            <p>Monitor service health and security-related metrics.</p>
-          </article>
+        <section className="health-table-card">
+          <table className="health-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th>Uptime</th>
+                <th>Last Checked</th>
+              </tr>
+            </thead>
+            <tbody>
+              {healthMetrics.map((metric) => (
+                <tr key={metric.service}>
+                  <td>
+                    <strong>{metric.service}</strong>
+                  </td>
+                  <td>
+                    <span className={`health-status health-${metric.status.toLowerCase()}`}>
+                      {metric.status}
+                    </span>
+                  </td>
+                  <td>{metric.latencyMs} ms</td>
+                  <td>{metric.uptime}</td>
+                  <td>{metric.lastChecked}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       </main>
     </div>
