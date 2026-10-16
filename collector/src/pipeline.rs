@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use crate::delivery::{DeliveryError, DeliveryOutcome, DeliveryWorker};
 use crate::event::NormalizedEvent;
+use crate::metrics::Metrics;
 use crate::transport::{AnalyticsTransport, EventBatch, TransportError, MAX_BATCH_EVENTS};
 use crate::wire::{decode, DecodeError};
 
@@ -91,6 +92,7 @@ pub struct Collector<T: AnalyticsTransport> {
     pending: VecDeque<NormalizedEvent>,
     first_pending_at: Option<Instant>,
     delivery: DeliveryWorker<T>,
+    metrics: Metrics,
 }
 
 impl<T: AnalyticsTransport> Collector<T> {
@@ -112,6 +114,7 @@ impl<T: AnalyticsTransport> Collector<T> {
             pending: VecDeque::new(),
             first_pending_at: None,
             delivery,
+            metrics: Metrics::default(),
         })
     }
 
@@ -121,10 +124,18 @@ impl<T: AnalyticsTransport> Collector<T> {
         now: Instant,
         observed_at: DateTime<Utc>,
     ) -> Result<Uuid, CollectorError> {
-        let decoded =
-            decode(record, &self.config.approved_routes).map_err(CollectorError::Decode)?;
+        let started = Instant::now();
+        self.metrics.records_seen = self.metrics.records_seen.saturating_add(1);
+        let decoded = decode(record, &self.config.approved_routes).map_err(|error| {
+            self.metrics.decode_rejected = self.metrics.decode_rejected.saturating_add(1);
+            CollectorError::Decode(error)
+        })?;
         if self.pending.len() >= self.config.max_pending_events {
+            self.metrics.queue_rejected = self.metrics.queue_rejected.saturating_add(1);
             return Err(CollectorError::QueueFull);
+        }
+        if decoded.route_template.is_none() {
+            self.metrics.route_unavailable = self.metrics.route_unavailable.saturating_add(1);
         }
         let mut event = NormalizedEvent::new(
             self.config.source_id.clone(),
@@ -142,6 +153,8 @@ impl<T: AnalyticsTransport> Collector<T> {
             self.first_pending_at = Some(now);
         }
         self.pending.push_back(event);
+        self.metrics.records_accepted = self.metrics.records_accepted.saturating_add(1);
+        self.metrics.observe_processing(started.elapsed());
         Ok(event_id)
     }
 
@@ -168,14 +181,29 @@ impl<T: AnalyticsTransport> Collector<T> {
                         Some(now)
                     };
                     batch_queued = true;
+                    self.metrics.batches_enqueued = self.metrics.batches_enqueued.saturating_add(1);
                 }
                 Err(DeliveryError::QueueFull) => {} // keep original events for the next tick
                 Err(DeliveryError::Configuration) => return Err(CollectorError::Configuration),
             }
         }
+        let delivery = self.delivery.tick(now);
+        match delivery {
+            DeliveryOutcome::Delivered => {
+                self.metrics.batches_delivered = self.metrics.batches_delivered.saturating_add(1)
+            }
+            DeliveryOutcome::RetryScheduled => {
+                self.metrics.batches_retry_scheduled =
+                    self.metrics.batches_retry_scheduled.saturating_add(1)
+            }
+            DeliveryOutcome::Exhausted => {
+                self.metrics.batches_exhausted = self.metrics.batches_exhausted.saturating_add(1)
+            }
+            _ => {}
+        }
         Ok(TickOutcome {
             batch_queued,
-            delivery: self.delivery.tick(now),
+            delivery,
         })
     }
 
@@ -184,6 +212,13 @@ impl<T: AnalyticsTransport> Collector<T> {
     }
     pub fn queued_batches(&self) -> usize {
         self.delivery.queued_batches()
+    }
+
+    pub fn metrics(&self) -> Metrics {
+        let mut snapshot = self.metrics.clone();
+        snapshot.pending_events = self.pending.len();
+        snapshot.queued_batches = self.delivery.queued_batches();
+        snapshot
     }
 }
 
@@ -244,6 +279,11 @@ mod tests {
         assert!(result.batch_queued);
         assert_eq!(result.delivery, DeliveryOutcome::Delivered);
         assert_eq!(collector.pending_events(), 0);
+        let metrics = collector.metrics();
+        assert_eq!(metrics.records_seen, 2);
+        assert_eq!(metrics.records_accepted, 2);
+        assert_eq!(metrics.batches_enqueued, 1);
+        assert_eq!(metrics.batches_delivered, 1);
     }
 
     #[test]
@@ -269,5 +309,19 @@ mod tests {
             .tick(now + Duration::from_secs(1), Utc::now())
             .unwrap();
         assert!(result.batch_queued);
+    }
+
+    #[test]
+    fn malformed_record_is_counted_without_leaking_details() {
+        let mut collector = collector(2);
+        assert!(matches!(
+            collector.ingest(&[0; 4], Instant::now(), Utc::now()),
+            Err(CollectorError::Decode(_))
+        ));
+        let metrics = collector.metrics();
+        assert_eq!(metrics.records_seen, 1);
+        assert_eq!(metrics.decode_rejected, 1);
+        assert_eq!(metrics.records_accepted, 0);
+        assert_eq!(metrics.pending_events, 0);
     }
 }
