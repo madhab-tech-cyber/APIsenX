@@ -2,6 +2,7 @@ import './App.css'
 import { securityMetrics } from './securityData'
 import { apiEndpoints } from './endpointData'
 import { securityAlerts } from './alertData'
+import { securityEvidence } from './evidenceData'
 
 function App() {
   return (
@@ -90,6 +91,42 @@ function App() {
                   <td className="endpoint-name">{alert.endpoint}</td>
                   <td>{alert.status}</td>
                   <td>{alert.detectedAt}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <h2 className="section-title">Security Evidence</h2>
+
+        <section className="evidence-table-card">
+          <table className="evidence-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Finding</th>
+                <th>Endpoint</th>
+                <th>Evidence Type</th>
+                <th>Masked Evidence</th>
+                <th>Captured</th>
+              </tr>
+            </thead>
+            <tbody>
+              {securityEvidence.map((evidence) => (
+                <tr key={evidence.id}>
+                  <td>
+                    <span className={`severity severity-${evidence.severity.toLowerCase()}`}>
+                      {evidence.severity}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{evidence.finding}</strong>
+                    <span className="alert-id">{evidence.id}</span>
+                  </td>
+                  <td className="endpoint-name">{evidence.endpoint}</td>
+                  <td>{evidence.evidenceType}</td>
+                  <td className="evidence-value">{evidence.maskedEvidence}</td>
+                  <td>{evidence.capturedAt}</td>
                 </tr>
               ))}
             </tbody>

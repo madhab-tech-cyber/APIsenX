@@ -279,3 +279,51 @@ select {
   color: #fecaca;
   background: #991b1b;
 }
+.evidence-table-card {
+  overflow-x: auto;
+  margin-bottom: 32px;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  background: #111827;
+}
+
+.evidence-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1050px;
+}
+
+.evidence-table th,
+.evidence-table td {
+  padding: 16px 18px;
+  text-align: left;
+  border-bottom: 1px solid #1f2937;
+}
+
+.evidence-table th {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.evidence-table td {
+  color: #d1d5db;
+  font-size: 14px;
+}
+
+.evidence-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.evidence-table strong {
+  display: block;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.evidence-value {
+  color: #93c5fd;
+  font-family: Consolas, "Courier New", monospace;
+  white-space: nowrap;
+}
