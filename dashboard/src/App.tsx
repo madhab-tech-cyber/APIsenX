@@ -1,5 +1,6 @@
 import './App.css'
 import { securityMetrics } from './securityData'
+import { apiEndpoints } from './endpointData'
 
 function App() {
   return (
@@ -25,14 +26,44 @@ function App() {
           ))}
         </section>
 
+        <h2 className="section-title">Endpoint Inventory</h2>
+
+        <section className="endpoint-table-card">
+          <table className="endpoint-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Authentication</th>
+                <th>Status</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apiEndpoints.map((endpoint) => (
+                <tr key={`${endpoint.method}-${endpoint.endpoint}`}>
+                  <td>
+                    <span className={`method method-${endpoint.method.toLowerCase()}`}>
+                      {endpoint.method}
+                    </span>
+                  </td>
+                  <td className="endpoint-name">{endpoint.endpoint}</td>
+                  <td>{endpoint.authRequired ? 'Required' : 'Public'}</td>
+                  <td>{endpoint.status}</td>
+                  <td>
+                    <span className={`risk risk-${endpoint.risk.toLowerCase()}`}>
+                      {endpoint.risk}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
         <h2 className="section-title">Security Views</h2>
 
         <section className="views">
-          <article className="view-card">
-            <h3>Endpoint Inventory</h3>
-            <p>Review protected and observed API endpoints.</p>
-          </article>
-
           <article className="view-card">
             <h3>Alerts &amp; Triage</h3>
             <p>Review security alerts and investigation status.</p>
