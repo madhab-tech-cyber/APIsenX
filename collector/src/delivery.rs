@@ -16,10 +16,11 @@ pub struct RetryConfig {
 
 impl RetryConfig {
     pub fn validate(&self) -> Result<(), DeliveryError> {
-        if self.max_queued_batches == 0
-            || self.max_attempts == 0
+        if !(1..=1024).contains(&self.max_queued_batches)
+            || !(1..=10).contains(&self.max_attempts)
             || self.initial_delay.is_zero()
             || self.max_delay < self.initial_delay
+            || self.max_delay > Duration::from_secs(60)
         {
             return Err(DeliveryError::Configuration);
         }
@@ -133,7 +134,7 @@ mod tests {
     use uuid::Uuid;
 
     use super::*;
-    use crate::event::{Direction, Method, NormalizedEvent};
+    use crate::event::{Direction, EventInput, Method, NormalizedEvent};
 
     struct ScriptedTransport {
         results: Mutex<VecDeque<Result<(), TransportError>>>,
@@ -149,16 +150,16 @@ mod tests {
 
     fn batch() -> EventBatch {
         EventBatch::new(
-            vec![NormalizedEvent::new(
-                "lab_1".into(),
-                1,
-                1,
-                Direction::Ingress,
-                Method::Get,
-                None,
-                None,
-                Utc::now(),
-            )],
+            vec![NormalizedEvent::new(EventInput {
+                source_id: "lab_1".into(),
+                sequence: 1,
+                monotonic_ns: 1,
+                direction: Direction::Ingress,
+                method: Method::Get,
+                status_code: None,
+                route_template: None,
+                observed_at: Utc::now(),
+            })],
             Utc::now(),
         )
         .unwrap()

@@ -1,6 +1,7 @@
 //! Bounded, authenticated IF-04 forwarding. The receiver contract is proposed;
 //! Member 4 has not implemented or accepted it yet.
 
+use std::io::Read;
 use std::time::Duration;
 
 use chrono::{DateTime, Utc};
@@ -13,6 +14,7 @@ use crate::event::NormalizedEvent;
 
 pub const MAX_BATCH_EVENTS: usize = 256;
 pub const MAX_BATCH_BYTES: usize = 1_048_576;
+pub const MAX_ACK_BYTES: usize = 65_536;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct EventBatch {
@@ -146,9 +148,16 @@ impl AnalyticsTransport for HttpsAnalytics {
         if !response.status().is_success() {
             return Err(TransportError::Remote);
         }
-        let ack: BatchAck = response
-            .json()
+        let mut body = Vec::new();
+        response
+            .take((MAX_ACK_BYTES + 1) as u64)
+            .read_to_end(&mut body)
             .map_err(|_| TransportError::Acknowledgement)?;
+        if body.len() > MAX_ACK_BYTES {
+            return Err(TransportError::Acknowledgement);
+        }
+        let ack: BatchAck =
+            serde_json::from_slice(&body).map_err(|_| TransportError::Acknowledgement)?;
         check_ack(batch, ack)
     }
 }
@@ -156,19 +165,19 @@ impl AnalyticsTransport for HttpsAnalytics {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::event::{Direction, Method};
+    use crate::event::{Direction, EventInput, Method};
 
     fn batch() -> EventBatch {
-        let event = NormalizedEvent::new(
-            "lab_collector_1".into(),
-            1,
-            42,
-            Direction::Ingress,
-            Method::Get,
-            None,
-            None,
-            Utc::now(),
-        );
+        let event = NormalizedEvent::new(EventInput {
+            source_id: "lab_collector_1".into(),
+            sequence: 1,
+            monotonic_ns: 42,
+            direction: Direction::Ingress,
+            method: Method::Get,
+            status_code: None,
+            route_template: None,
+            observed_at: Utc::now(),
+        });
         EventBatch::new(vec![event], Utc::now()).unwrap()
     }
 

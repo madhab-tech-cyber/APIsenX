@@ -109,12 +109,11 @@ impl ProposedDecision {
             return Err(DecisionError::Metadata);
         }
         match self.action {
-            DecisionAction::Deny | DecisionAction::RateLimit => {
+            DecisionAction::Deny | DecisionAction::RateLimit
                 if self.approval_id.as_deref().unwrap_or("").is_empty()
-                    || self.rollback_id.as_deref().unwrap_or("").is_empty()
-                {
-                    return Err(DecisionError::Approval);
-                }
+                    || self.rollback_id.as_deref().unwrap_or("").is_empty() =>
+            {
+                return Err(DecisionError::Approval)
             }
             _ => {}
         }

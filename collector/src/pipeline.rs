@@ -7,7 +7,7 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::delivery::{DeliveryError, DeliveryOutcome, DeliveryWorker};
-use crate::event::NormalizedEvent;
+use crate::event::{EventInput, NormalizedEvent};
 use crate::metrics::Metrics;
 use crate::transport::{AnalyticsTransport, EventBatch, TransportError, MAX_BATCH_EVENTS};
 use crate::wire::{decode, DecodeError};
@@ -31,10 +31,10 @@ impl CollectorConfig {
                 .source_id
                 .bytes()
                 .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
-            && self.max_pending_events > 0
+            && (1..=65_536).contains(&self.max_pending_events)
             && (1..=MAX_BATCH_EVENTS).contains(&self.batch_size)
             && !self.max_batch_wait.is_zero()
-            && self.max_flows > 0
+            && (1..=65_536).contains(&self.max_flows)
             && !self.flow_ttl.is_zero()
     }
 }
@@ -137,16 +137,16 @@ impl<T: AnalyticsTransport> Collector<T> {
         if decoded.route_template.is_none() {
             self.metrics.route_unavailable = self.metrics.route_unavailable.saturating_add(1);
         }
-        let mut event = NormalizedEvent::new(
-            self.config.source_id.clone(),
-            decoded.sequence,
-            decoded.monotonic_ns,
-            decoded.direction,
-            decoded.method,
-            decoded.status_code,
-            decoded.route_template,
+        let mut event = NormalizedEvent::new(EventInput {
+            source_id: self.config.source_id.clone(),
+            sequence: decoded.sequence,
+            monotonic_ns: decoded.monotonic_ns,
+            direction: decoded.direction,
+            method: decoded.method,
+            status_code: decoded.status_code,
+            route_template: decoded.route_template,
             observed_at,
-        );
+        });
         event.correlation_id = self.correlations.id_for(decoded.flow_hash, now);
         let event_id = event.event_id;
         if self.pending.is_empty() {

@@ -48,18 +48,20 @@ pub struct NormalizedEvent {
     pub data_classification: &'static str,
 }
 
+pub struct EventInput {
+    pub source_id: String,
+    pub sequence: u32,
+    pub monotonic_ns: u64,
+    pub direction: Direction,
+    pub method: Method,
+    pub status_code: Option<u16>,
+    pub route_template: Option<String>,
+    pub observed_at: DateTime<Utc>,
+}
+
 impl NormalizedEvent {
-    pub fn new(
-        source_id: String,
-        sequence: u32,
-        monotonic_ns: u64,
-        direction: Direction,
-        method: Method,
-        status_code: Option<u16>,
-        route_template: Option<String>,
-        observed_at: DateTime<Utc>,
-    ) -> Self {
-        let route_quality = if route_template.is_some() {
+    pub fn new(input: EventInput) -> Self {
+        let route_quality = if input.route_template.is_some() {
             RouteQuality::ApprovedTemplate
         } else {
             RouteQuality::RouteUnavailable
@@ -69,14 +71,14 @@ impl NormalizedEvent {
             schema_version: "1.0",
             event_id: Uuid::new_v4(),
             correlation_id: Uuid::new_v4(),
-            source_id,
-            sensor_sequence: sequence,
-            sensor_monotonic_ns: monotonic_ns,
-            observed_at,
-            direction,
-            method,
-            status_code,
-            route_template,
+            source_id: input.source_id,
+            sensor_sequence: input.sequence,
+            sensor_monotonic_ns: input.monotonic_ns,
+            observed_at: input.observed_at,
+            direction: input.direction,
+            method: input.method,
+            status_code: input.status_code,
+            route_template: input.route_template,
             route_quality,
             data_classification: "restricted",
         }
@@ -89,16 +91,16 @@ mod tests {
 
     #[test]
     fn event_serializes_to_proposed_contract() {
-        let event = NormalizedEvent::new(
-            "lab_collector_1".into(),
-            7,
-            42,
-            Direction::Ingress,
-            Method::Get,
-            None,
-            Some("/orders/{orderId}".into()),
-            Utc::now(),
-        );
+        let event = NormalizedEvent::new(EventInput {
+            source_id: "lab_collector_1".into(),
+            sequence: 7,
+            monotonic_ns: 42,
+            direction: Direction::Ingress,
+            method: Method::Get,
+            status_code: None,
+            route_template: Some("/orders/{orderId}".into()),
+            observed_at: Utc::now(),
+        });
         let value = serde_json::to_value(event).unwrap();
         assert_eq!(value["schema_name"], "collector_event");
         assert_eq!(value["schema_version"], "1.0");

@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use std::hint::black_box;
 use std::time::Instant;
 
-use api_sentinel_collector::event::NormalizedEvent;
+use api_sentinel_collector::event::{EventInput, NormalizedEvent};
 use api_sentinel_collector::wire::{decode, EVENT_BYTES};
 use chrono::Utc;
 
@@ -37,16 +37,16 @@ fn main() {
         }
         let start = Instant::now();
         let decoded = decode(black_box(&bytes), black_box(&routes)).expect("valid fixture");
-        let event = NormalizedEvent::new(
-            "lab_collector_1".into(),
-            decoded.sequence,
-            decoded.monotonic_ns,
-            decoded.direction,
-            decoded.method,
-            decoded.status_code,
-            decoded.route_template,
-            Utc::now(),
-        );
+        let event = NormalizedEvent::new(EventInput {
+            source_id: "lab_collector_1".into(),
+            sequence: decoded.sequence,
+            monotonic_ns: decoded.monotonic_ns,
+            direction: decoded.direction,
+            method: decoded.method,
+            status_code: decoded.status_code,
+            route_template: decoded.route_template,
+            observed_at: Utc::now(),
+        });
         let json = serde_json::to_vec(&event).expect("serializable event");
         checksum = checksum.wrapping_add(black_box(json.len()));
         let elapsed = start.elapsed().as_nanos();
