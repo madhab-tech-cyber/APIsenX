@@ -12,6 +12,8 @@ The proposed C struct has no schema version, boot identity or stable event UUID.
 
 The route marker is untrusted. A raw path can contain an object ID or secret, and TLS packet capture alone cannot reliably yield HTTP routes. Only an approved application/proxy marker that is already a route template may be forwarded. Otherwise the collector records a privacy-safe `route_unavailable` outcome. No TLS interception or raw payload capture is implied.
 
+The current in-memory correlation table reuses a random ID for one sensor `flow_hash` within a short bounded window. This is flow-level correlation only: keep-alive requests can share a flow, and hash collisions are possible. A stable request-level ID needs an approved observation-point marker from Member 2/5 before BOLA/BFLA evidence can rely on it.
+
 ## IF-04: collector to analytics
 
 The proposed normalized event is defined in [`schemas/collector-event.v1.schema.json`](schemas/collector-event.v1.schema.json). The collector validates against this schema, assigns a random event and correlation ID, attaches its source instance and receive timestamp, and sends bounded batches. The transport requires authenticated encryption and a named service identity; endpoint, certificate provisioning, batch limits, retry horizon and replay window require agreement with Member 4. Retries must preserve event IDs so ingestion can deduplicate. Queues and retry buffers have fixed capacity; overflow increments drop counters and never grows memory without bound. Restricted telemetry is not written to ordinary local logs.

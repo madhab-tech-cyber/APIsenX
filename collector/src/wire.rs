@@ -24,6 +24,8 @@ pub enum DecodeError {
 pub struct KernelEvent {
     pub sequence: u32,
     pub monotonic_ns: u64,
+    /// Source-local hint only; never forwarded or persisted.
+    pub flow_hash: u64,
     pub direction: Direction,
     pub method: Method,
     pub status_code: Option<u16>,
@@ -42,6 +44,7 @@ pub fn decode(
     }
     let monotonic_ns = u64::from_ne_bytes(record[0..8].try_into().unwrap());
     let sequence = u32::from_ne_bytes(record[8..12].try_into().unwrap());
+    let flow_hash = u64::from_ne_bytes(record[40..48].try_into().unwrap());
     let method = match record[48] {
         0 => Method::Unknown,
         1 => Method::Get,
@@ -87,6 +90,7 @@ pub fn decode(
     Ok(KernelEvent {
         sequence,
         monotonic_ns,
+        flow_hash,
         direction,
         method,
         status_code,

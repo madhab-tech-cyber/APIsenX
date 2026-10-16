@@ -2,5 +2,6 @@
 
 pub mod delivery;
 pub mod event;
+pub mod pipeline;
 pub mod transport;
 pub mod wire;
