@@ -1,6 +1,7 @@
 import './App.css'
 import { securityMetrics } from './securityData'
 import { apiEndpoints } from './endpointData'
+import { securityAlerts } from './alertData'
 
 function App() {
   return (
@@ -61,14 +62,43 @@ function App() {
           </table>
         </section>
 
+        <h2 className="section-title">Alerts &amp; Triage</h2>
+
+        <section className="alerts-table-card">
+          <table className="alerts-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Alert</th>
+                <th>Endpoint</th>
+                <th>Status</th>
+                <th>Detected</th>
+              </tr>
+            </thead>
+            <tbody>
+              {securityAlerts.map((alert) => (
+                <tr key={alert.id}>
+                  <td>
+                    <span className={`severity severity-${alert.severity.toLowerCase()}`}>
+                      {alert.severity}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{alert.title}</strong>
+                    <span className="alert-id">{alert.id}</span>
+                  </td>
+                  <td className="endpoint-name">{alert.endpoint}</td>
+                  <td>{alert.status}</td>
+                  <td>{alert.detectedAt}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
         <h2 className="section-title">Security Views</h2>
 
         <section className="views">
-          <article className="view-card">
-            <h3>Alerts &amp; Triage</h3>
-            <p>Review security alerts and investigation status.</p>
-          </article>
-
           <article className="view-card">
             <h3>Security Evidence</h3>
             <p>Inspect masked evidence supporting security findings.</p>
