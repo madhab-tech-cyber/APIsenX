@@ -46,6 +46,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -72,6 +74,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -85,7 +89,7 @@ paths:
       summary: Update an order
       operationId: updateOrder
       description: >
-        Requires the orders:manage:any permission.
+        Requires the orders:manage permission.
         Ordinary customers must be denied. The server must authorize
         the authenticated principal before updating the order and
         must record an audit event. Clients cannot change the order
@@ -106,11 +110,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Order'
         '400':
-          description: Invalid update request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -142,6 +142,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -261,6 +263,13 @@ components:
               type: string
 
   responses:
+    InvalidRequest:
+      description: Invalid request or path parameter
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
     Unauthorized:
       description: Missing or invalid authentication credentials
       content:

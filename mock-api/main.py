@@ -1,9 +1,17 @@
+
 import logging
 import sys
 from pathlib import Path
 from typing import Literal
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Security
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    Path as APIPath,
+    Request,
+    Security,
+)
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
@@ -90,7 +98,7 @@ async def http_exception_handler(
     request: Request,
     exc: HTTPException,
 ) -> JSONResponse:
-    # Return errors without FastAPI's default "detail" wrapper.
+    # Preserve the documented error response structure.
     if isinstance(exc.detail, dict) and "error" in exc.detail:
         body = exc.detail
     else:
@@ -100,6 +108,7 @@ async def http_exception_handler(
             403: "FORBIDDEN",
             404: "NOT_FOUND",
         }.get(exc.status_code, "INVALID_REQUEST")
+
         body = error_response(code, str(exc.detail))
 
     return JSONResponse(
@@ -114,7 +123,7 @@ async def validation_exception_handler(
     request: Request,
     exc: RequestValidationError,
 ) -> JSONResponse:
-    # All request validation failures use HTTP 400.
+    # This API consistently reports request validation errors as 400.
     return JSONResponse(
         status_code=400,
         content=error_response(
@@ -181,6 +190,7 @@ def deny(
         order_id,
         f"DENY:{reason}",
     )
+
     raise HTTPException(
         status_code=403,
         detail=error_response(
@@ -213,6 +223,7 @@ def check_access(
                 order_id,
                 "NOT_FOUND",
             )
+
             raise HTTPException(
                 status_code=404,
                 detail=error_response(
@@ -233,6 +244,7 @@ def check_access(
 
 @app.get(
     "/orders",
+    operation_id="listOrders",
     response_model=OrdersResponse,
     responses={
         400: {"model": ErrorResponse},
@@ -254,15 +266,18 @@ def list_orders(
             users,
             ORDERS,
         )
+
         if allowed:
             visible.append(order)
 
     audit(actor["id"], "orders:list", "*", "ALLOW")
+
     return {"orders": visible}
 
 
 @app.get(
     "/orders/{orderId}",
+    operation_id="getOrder",
     response_model=Order,
     responses={
         400: {"model": ErrorResponse},
@@ -272,16 +287,23 @@ def list_orders(
     },
 )
 def get_order(
-    orderId: str,
+    orderId: str = APIPath(
+        min_length=1,
+        max_length=64,
+        pattern=r"^[A-Za-z0-9-]+$",
+    ),
     actor: dict = Depends(get_principal),
 ):
     order = check_access(actor, "orders:read", orderId)
+
     audit(actor["id"], "orders:read", orderId, "ALLOW")
+
     return order
 
 
 @app.patch(
     "/orders/{orderId}",
+    operation_id="updateOrder",
     response_model=Order,
     responses={
         400: {"model": ErrorResponse},
@@ -291,8 +313,12 @@ def get_order(
     },
 )
 def update_order(
-    orderId: str,
     update: OrderUpdate,
+    orderId: str = APIPath(
+        min_length=1,
+        max_length=64,
+        pattern=r"^[A-Za-z0-9-]+$",
+    ),
     actor: dict = Depends(get_principal),
 ):
     order = check_access(actor, "orders:manage", orderId)
@@ -302,11 +328,13 @@ def update_order(
 
     # Updates remain in memory until the API process restarts.
     audit(actor["id"], "orders:manage", orderId, "ALLOW")
+
     return order
 
 
 @app.get(
     "/admin/orders",
+    operation_id="listAdminOrders",
     response_model=OrdersResponse,
     responses={
         400: {"model": ErrorResponse},
@@ -337,6 +365,7 @@ def list_admin_orders(
             )
 
     audit(actor["id"], "orders:read:any", "*", "ALLOW")
+
     return {"orders": list(ORDERS.values())}
 
 
@@ -351,8 +380,8 @@ def custom_openapi():
         routes=app.routes,
     )
 
-    # FastAPI adds 422 automatically for request validation.
-    # This API's validation handler returns 400 instead.
+    # Validation errors are converted to HTTP 400 by the custom handler.
+    # Remove FastAPI's default 422 response from every operation.
     for path_item in openapi_schema.get("paths", {}).values():
         for operation in path_item.values():
             if isinstance(operation, dict):
@@ -360,6 +389,7 @@ def custom_openapi():
                 responses.pop("422", None)
 
     app.openapi_schema = openapi_schema
+
     return app.openapi_schema
 
 
