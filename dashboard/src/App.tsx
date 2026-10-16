@@ -1,4 +1,5 @@
 import './App.css'
+import { securityMetrics } from './securityData'
 
 function App() {
   return (
@@ -12,25 +13,16 @@ function App() {
         <h2 className="section-title">Security Overview</h2>
 
         <section className="metrics">
-          <article className="metric-card">
-            <p className="metric-label">Protected Endpoints</p>
-            <div className="metric-value">0</div>
-          </article>
-
-          <article className="metric-card">
-            <p className="metric-label">Open Alerts</p>
-            <div className="metric-value">0</div>
-          </article>
-
-          <article className="metric-card">
-            <p className="metric-label">Critical Findings</p>
-            <div className="metric-value">0</div>
-          </article>
-
-          <article className="metric-card">
-            <p className="metric-label">System Health</p>
-            <div className="metric-value metric-status">Healthy</div>
-          </article>
+          {securityMetrics.map((metric) => (
+            <article className="metric-card" key={metric.label}>
+              <p className="metric-label">{metric.label}</p>
+              <div
+                className={`metric-value${metric.label === 'System Health' ? ' metric-status' : ''}`}
+              >
+                {metric.value}
+              </div>
+            </article>
+          ))}
         </section>
 
         <h2 className="section-title">Security Views</h2>
