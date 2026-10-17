@@ -4,8 +4,9 @@
 
 **Foundation review date:** 2026-10-13
 
-**Status:** Approved baseline; detailed retention and masking implementation are
-finalised at the scheduled Day 20 and Day 23 reviews
+**Status:** Approved baseline; Day 20 retention/access requirements are defined
+in [AUDIT-LAB-1.0](audit-retention-and-investigation.md). Runtime retention tests
+and Day 23 masking implementation approval remain pending.
 
 ## 1. Purpose and principles
 
@@ -88,7 +89,10 @@ The exact masking field list and verification suite require Day 23 approval.
 
 ## 6. Retention and deletion baseline
 
-Until the Day 20 retention review sets component-specific periods:
+The Day 20 [audit policy](audit-retention-and-investigation.md) sets maximum
+periods for masked summaries, findings, audit records, exports and backups.
+Its deletion/hold/restore controls require implementation before persistence
+acceptance. The following collection restrictions remain in force:
 
 - do not retain raw telemetry or captures beyond the active approved test;
 - retain only minimised evidence needed to prove a result;
