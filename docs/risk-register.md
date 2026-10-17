@@ -2,7 +2,7 @@
 
 **Owner:** Member 1 - Team Lead and Security Architect
 
-**Last reviewed:** 2026-10-15
+**Last reviewed:** 2026-10-17
 
 **Related model:** [`threat-model.md`](threat-model.md)
 
@@ -110,6 +110,24 @@ the human meeting, actual feedback and owner sign-off remain pending in
 [Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14).
 
 ## Review requirements
+
+## October 17 corrective review
+
+[Current verification](member1-oct17-verification.md) passes 40 application/
+contract tests. D11-F01 still has four failing customer inventory checks.
+Direct requirements, selected OpenAPI checks and member5-filtered CI now exist;
+earlier absence statements above describe historical review snapshots. These
+improvements do not close R-005/R-011/R-012: transitive locks, dedicated scans,
+full security parity and main-targeting integration checks remain absent.
+
+[Day 15 actions](mid-review-corrective-actions.md) supersede the immediate
+follow-up queue: CA-01/02 map to R-002; CA-03/09 to R-011; CA-04 to
+R-001/004/006/013; CA-05 to R-003; CA-06 to R-010; CA-07/08 to R-005/012;
+CA-10 to R-001/008/009; CA-11 to R-012/013. M5 retains D11-F01 remediation,
+M6 owns CI trigger correction, M4 owns detector/corpus and M3 owns adapter/
+performance evidence. No residual rating or deadline is reduced.
+
+## Review requirements (continued)
 
 Update this register whenever an interface, dependency, test result, security
 finding, control implementation or ownership decision changes. Each update must:
