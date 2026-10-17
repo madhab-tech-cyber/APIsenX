@@ -105,3 +105,18 @@ security setting is changed. The current R-011 note now recognizes the API's
 400 validation responses while retaining its unresolved authentication/contract
 drift; no risk rating is reduced. Human meeting and component review are pending,
 so Issue #14 stays open and the PR remains draft.
+
+## October 17 continuation
+
+The original meeting agenda and October 15 record are preserved. The appended
+repository re-review in [day14-mid-review.md](day14-mid-review.md) uses merged
+`6b1a427` and [current checks](member1-oct17-verification.md): 40 tests PASS,
+compile PASS, four customer admin-inventory policy FAIL cases and five expected
+diagnostic outcomes. Raw runtime logs were not committed.
+
+This source now includes requirements, additional tests and limited CI; its
+integration trigger coverage and remaining contract drift are explicitly
+recorded. Live issue/PR/protection status was not re-audited in this refresh;
+historical issue/PR statements above must not be treated as current status.
+Review rehearsal is updated, but human feedback, sign-off and runtime approval
+remain pending. Risk ratings and the original finding deadline are unchanged.
