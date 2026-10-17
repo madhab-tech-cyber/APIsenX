@@ -67,6 +67,9 @@ printed these results without a failing exit; the command above adds the exit
 gate for reproducible acceptance use. Passing application tests do not override
 the four policy failures, all tracked as D11-F01 under R-002.
 
+The documented exit-gated command was then executed as part of final validation:
+it reproduced all nine statuses and exited 1 for the four policy violations.
+
 ## Source inspection
 
 - The API, seven OpenAPI tests, pinned direct requirements and a GitHub Actions
