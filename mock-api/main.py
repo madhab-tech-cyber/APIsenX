@@ -192,6 +192,17 @@ def require_permission(actor: dict, permission: str, action: str) -> None:
         deny(actor["id"], action, "*", f"missing_permission:{permission}")
 
 
+def require_read_permission(actor: dict, action: str) -> None:
+    permission_by_role = {
+        "customer": "orders:read:own",
+        "admin": "orders:read:any",
+    }
+    permission = permission_by_role.get(actor.get("role"))
+    if permission is None:
+        deny(actor["id"], action, "*", "unknown_role")
+    require_permission(actor, permission, action)
+
+
 def deny(
     actor_id: str,
     action: str,
@@ -269,6 +280,7 @@ def check_access(
 def list_orders(
     actor: dict = Depends(get_principal),
 ):
+    require_read_permission(actor, "orders:list")
     visible = []
     users = load_users()
 
@@ -308,6 +320,7 @@ def get_order(
     ),
     actor: dict = Depends(get_principal),
 ):
+    require_read_permission(actor, "orders:read")
     order = check_access(actor, "orders:read", orderId)
 
     audit(actor["id"], "orders:read", orderId, "ALLOW")
