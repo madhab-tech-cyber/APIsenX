@@ -89,11 +89,11 @@ paths:
       summary: Update an order
       operationId: updateOrder
       description: >
-        Requires the orders:manage permission.
-        Ordinary customers must be denied. The server must authorize
-        the authenticated principal before updating the order and
-        must record an audit event. Clients cannot change the order
-        owner, identifier, total, or currency through this operation.
+        Requires the server-side orders:manage:any function permission
+        and applicable object-level authorization. Permission is checked
+        independently of ownership before any mutation. Ordinary customers
+        must be denied. The server must record an audit event. Clients
+        cannot change the order owner, identifier, total, or currency.
       requestBody:
         required: true
         content:
@@ -125,9 +125,10 @@ paths:
       summary: List all orders for authorized administrators
       operationId: listAdminOrders
       description: >
-        Requires the orders:read:any permission. Ordinary customers
-        must be denied and the denial should produce an appropriate
-        security audit event.
+        Requires the server-side orders:read:any function permission.
+        This check occurs before inventory iteration, including when the
+        inventory is empty. Object ownership cannot grant this function.
+        Denials produce a security audit event.
       responses:
         '200':
           description: All orders visible to the administrator
