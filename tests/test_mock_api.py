@@ -22,11 +22,13 @@ ADMIN = {"Authorization": "Bearer lab-admin-token"}
 class MockAPITests(unittest.TestCase):
 
     def setUp(self):
-        # Save a fresh snapshot before every test.
-        self.original_orders = deepcopy(main.ORDERS)
+        # Start every test from the canonical fixture, not the prior test's state.
+        self.original_orders = main.load_orders()
+        main.ORDERS.clear()
+        main.ORDERS.update(deepcopy(self.original_orders))
 
     def tearDown(self):
-        # Restore shared in-memory data after every test.
+        # Restore the canonical fixture after every test.
         main.ORDERS.clear()
         main.ORDERS.update(deepcopy(self.original_orders))
 
