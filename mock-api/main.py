@@ -8,9 +8,11 @@ from fastapi import (
     Depends,
     FastAPI,
     HTTPException,
-    Path as APIPath,
     Request,
     Security,
+)
+from fastapi import (
+    Path as APIPath,
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
@@ -22,7 +24,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from authorization import authorize, load_orders, load_users
-
 
 app = FastAPI(
     title="APISenX Mock API",

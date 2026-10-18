@@ -1,8 +1,8 @@
-from copy import deepcopy
-from unittest.mock import patch
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
