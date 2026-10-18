@@ -2,7 +2,7 @@
 
 **Owner:** Member 1 - Team Lead and Security Architect
 
-**Last reviewed:** 2026-10-13
+**Last reviewed:** 2026-10-18 (current evidence refresh; scenario IDs retained)
 
 **Scope:** The authorised API-Sentinel laboratory described in
 [`scope-and-governance.md`](scope-and-governance.md).
@@ -45,8 +45,9 @@ The project must preserve:
   failure behaviour and rollback have been reviewed and approved.
 - Repository and CI credentials are infrastructure secrets and must never enter
   source files, logs, fixtures or evidence.
-- Components that currently contain only README placeholders are design scope,
-  not implemented or tested security controls.
+- README-only components remain design scope. Unmerged M3/M6 implementations
+  are credited separately from accepted live integration; see
+  [current branch evidence](member1-oct18-integration-review.md).
 
 ## 3. Asset inventory
 
@@ -110,16 +111,19 @@ linked in the risk register. Architecture text alone is not control evidence.
   cross-owner and function-level denial, missing/invalid credentials, malformed
   inputs, inactive identities and unknown roles.
 - The current evidence applies only to the local mock API and synthetic fixtures.
-  It does not validate the eBPF, collector, analytics, storage, dashboard or
-  integrated trust boundaries.
+  It does not validate live eBPF, collector, analytics, storage, dashboard or
+  integrated trust boundaries. M3 reports library tests on its branch; M6 has
+  a fixture UI and limited repository checks, not live protected integration.
 - The lab currently uses static opaque demo tokens. Expiry, audience, signature
   and replay controls are not implemented. The fixture mechanism is conditionally
   approved only for the isolated local lab.
 - A foundation data-classification policy now defines Public, Internal,
   Restricted, Secret and Prohibited handling. Runtime masking, retention,
   access-control and leak-test evidence is still absent.
-- Dependency manifests, lock files, CI, SBOM generation and dedicated secret,
-  static, dependency and container scans are not yet present.
+- Direct Python requirements and M5 API/Ruff/dependency CI now exist and passed
+  on its branch; M3 Cargo.lock and M6 package lock exist on peer branches.
+  Complete integrated provenance, main PR check coverage, SBOM and dedicated
+  secret/container evidence remain absent or unaccepted.
 - The checked-in OpenAPI contract and FastAPI behavior have known differences
   tracked in the Day 3 scaffold review and R-011.
 - The Day 5 interface register assigns producer/consumer handoffs, but IF-02
@@ -128,6 +132,11 @@ linked in the risk register. Architecture text alone is not control evidence.
 - The Day 6 [`week1-threat-review.md`](week1-threat-review.md) re-evaluates all
   13 scenarios against current evidence. Every scenario remains applicable and
   none is closed; accountable follow-up is recorded in the risk register.
+- The [October 18 re-audit](member1-oct18-integration-review.md) independently
+  runs 40 passing application/contract tests and reconfirms four D11-F01 policy
+  failures. Human checkpoint #14 is reopened and Day 15 feedback is tracked in
+  #21. Verified CODEOWNERS mappings are proposed; branch protection and actual
+  independent approvals remain unverified/unconfigured at the observed snapshot.
 
 ## 7. Review and acceptance process
 

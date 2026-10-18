@@ -27,3 +27,15 @@ administrative-function acceptance or release. High risks still block release.
 Next scheduled review is Day 21's route-specific fail-open/fail-closed matrix.
 Pending human feedback/sign-off and technical dependencies remain open; these
 documents do not claim that every operational gate through Day 20 has passed.
+
+## October 18 correction
+
+[Current integration re-audit](member1-oct18-integration-review.md) supersedes
+the earlier peer-branch snapshot: M3's collector library and M6's fixture React
+dashboard now exist on their unmerged branches. M5's Ruff/dependency CI also
+exists and passed on its branch. Those facts do not satisfy integration gates.
+Day 14 human review stays open in [#14](https://github.com/madhab-tech-cyber/APIsenX/issues/14),
+and Day 15 feedback/owner acceptance stays open in
+[#21](https://github.com/madhab-tech-cyber/APIsenX/issues/21). Four D11-F01
+diagnostic failures persist. No active enforcement or calendar-day compliance
+is claimed from the delivered documents.
