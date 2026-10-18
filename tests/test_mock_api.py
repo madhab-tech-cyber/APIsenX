@@ -68,8 +68,20 @@ class MockAPITests(unittest.TestCase):
 
     def test_admin_function_denied_for_customer_when_all_orders_are_owned(self):
         owned = {
-            "order-a": {"id": "order-a", "owner_id": "user-a", "status": "processing", "total": 1, "currency": "INR"},
-            "order-b": {"id": "order-b", "owner_id": "user-a", "status": "shipped", "total": 2, "currency": "INR"},
+            "order-a": {
+                "id": "order-a",
+                "owner_id": "user-a",
+                "status": "processing",
+                "total": 1,
+                "currency": "INR",
+            },
+            "order-b": {
+                "id": "order-b",
+                "owner_id": "user-a",
+                "status": "shipped",
+                "total": 2,
+                "currency": "INR",
+            },
         }
         with patch.dict(main.ORDERS, owned, clear=True):
             response = client.get("/admin/orders", headers=USER_A)
@@ -84,15 +96,29 @@ class MockAPITests(unittest.TestCase):
             "user-a": {"id": "user-a", "active": True, "role": "superuser"}
         }
         owned = {
-            "order-a": {"id": "order-a", "owner_id": "user-a", "status": "processing", "total": 1, "currency": "INR"}
+            "order-a": {
+                "id": "order-a",
+                "owner_id": "user-a",
+                "status": "processing",
+                "total": 1,
+                "currency": "INR",
+            }
         }
-        with patch("main.load_users", return_value=unknown_role_users), patch.dict(main.ORDERS, owned, clear=True):
+        with (
+            patch("main.load_users", return_value=unknown_role_users),
+            patch.dict(main.ORDERS, owned, clear=True),
+        ):
             response = client.get("/admin/orders", headers=USER_A)
         self.assertEqual(response.status_code, 403)
 
     def test_admin_function_requires_explicit_permission(self):
         no_permission_users = {
-            "admin-1": {"id": "admin-1", "active": True, "role": "admin", "permissions": []}
+            "admin-1": {
+                "id": "admin-1",
+                "active": True,
+                "role": "admin",
+                "permissions": [],
+            }
         }
         with patch("main.load_users", return_value=no_permission_users), patch(
             "main.load_json", return_value={"roles": {"admin": []}}
