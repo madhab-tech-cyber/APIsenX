@@ -23,7 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from authorization import authorize, load_orders, load_users
+from authorization import authorize, load_json, load_orders, load_users
 
 app = FastAPI(
     title="APISenX Mock API",
@@ -45,7 +45,7 @@ TOKENS = {
     "lab-admin-token": "admin-1",
 }
 
-bearer_scheme = HTTPBearer(auto_error=False)
+bearer_scheme = HTTPBearer(auto_error=False, scheme_name="bearerAuth")
 
 # Load fixtures once.
 # Changes persist across requests until this process restarts.
@@ -179,6 +179,30 @@ def get_principal(
     return actor
 
 
+def has_permission(actor: dict, permission: str) -> bool:
+    """Resolve permissions from the server-side role policy, never request data."""
+    role = actor.get("role")
+    role_permissions = load_json("users.json").get("roles", {})
+    permissions = role_permissions.get(role, [])
+    return isinstance(permissions, list) and permission in permissions
+
+
+def require_permission(actor: dict, permission: str, action: str) -> None:
+    if not has_permission(actor, permission):
+        deny(actor["id"], action, "*", f"missing_permission:{permission}")
+
+
+def require_read_permission(actor: dict, action: str) -> None:
+    permission_by_role = {
+        "customer": "orders:read:own",
+        "admin": "orders:read:any",
+    }
+    permission = permission_by_role.get(actor.get("role"))
+    if permission is None:
+        deny(actor["id"], action, "*", "unknown_role")
+    require_permission(actor, permission, action)
+
+
 def deny(
     actor_id: str,
     action: str,
@@ -256,6 +280,7 @@ def check_access(
 def list_orders(
     actor: dict = Depends(get_principal),
 ):
+    require_read_permission(actor, "orders:list")
     visible = []
     users = load_users()
 
@@ -295,6 +320,7 @@ def get_order(
     ),
     actor: dict = Depends(get_principal),
 ):
+    require_read_permission(actor, "orders:read")
     order = check_access(actor, "orders:read", orderId)
 
     audit(actor["id"], "orders:read", orderId, "ALLOW")
@@ -322,6 +348,8 @@ def update_order(
     ),
     actor: dict = Depends(get_principal),
 ):
+    # Function-level permission is checked independently of object ownership.
+    require_permission(actor, "orders:manage:any", "orders:manage")
     order = check_access(actor, "orders:manage", orderId)
 
     # Only status can be changed by this endpoint.
@@ -346,6 +374,8 @@ def update_order(
 def list_admin_orders(
     actor: dict = Depends(get_principal),
 ):
+    # Must run before inventory iteration, including when inventory is empty.
+    require_permission(actor, "orders:read:any", "orders:read:any")
     users = load_users()
 
     for order_id in ORDERS:
