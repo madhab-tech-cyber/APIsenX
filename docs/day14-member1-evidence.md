@@ -120,3 +120,14 @@ recorded. Live issue/PR/protection status was not re-audited in this refresh;
 historical issue/PR statements above must not be treated as current status.
 Review rehearsal is updated, but human feedback, sign-off and runtime approval
 remain pending. Risk ratings and the original finding deadline are unchanged.
+
+## October 18 checkpoint correction
+
+[Current re-audit](member1-oct18-integration-review.md) credits unmerged M3/M6
+implementation and the successful M5 quality/dependency run. It independently
+reconfirms four D11-F01 failures despite 40 passing local tests.
+[Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) is reopened:
+actual attendees, reviewer comments, owner responses and independent sign-off
+are still missing. Historical PR/draft/CI statements above are dated snapshots,
+not current state. This change completes tracking correction, not the human
+meeting or integration checkpoint.

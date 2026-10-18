@@ -4,6 +4,9 @@
 
 **Date:** 2026-10-13
 
+**Current-status refresh:** 2026-10-18; detailed pinned branch evidence is in
+[Member 1 re-audit](member1-oct18-integration-review.md).
+
 **Status:** Foundation baseline; interfaces require owner review and implementation
 
 **Related controls:** [`architecture.md`](architecture.md),
@@ -16,14 +19,18 @@ This document coordinates the intended API-Sentinel integration and defines the
 minimum information that may cross each component boundary. It is a design and
 handoff baseline, not evidence that the full pipeline is running.
 
-As of 2026-10-13, only the local mock API request path is implemented and tested:
+In merged main on 2026-10-18, the local mock API request path is implemented
+and tested, with a still-open administrative permission failure:
 
 `lab client -> FastAPI authentication -> authorization policy -> synthetic JSON fixtures -> response and basic audit log`
 
-The eBPF sensor, collector, analytics service, storage layer, management API,
-dashboard and CI/security pipeline contain only README placeholders or are
-absent. Their interfaces below are **planned** until implementation and test
-evidence is linked.
+M2 capture design/headers, M3's tested collector library and M6's React fixture
+dashboard exist on separate unmerged branches; no live integrated sensor/
+collector/detector/dashboard acceptance is established. M4 analytics remains a
+scaffold. Main now has API/contract tests plus Ruff/dependency-audit CI, with
+limited branch triggers. Protected storage/management services and complete
+integration/security evidence remain absent. Interfaces below remain
+**unaccepted** until producer/consumer evidence and review are linked.
 
 ## 2. Target flows
 
@@ -59,7 +66,7 @@ still apply at every crossing.
 | IF-06 | Management API -> dashboard | Masked inventory, findings, health and triage state; bounded administrative commands | Restricted | Server-side RBAC on every request, short sessions, CSRF protection, safe rendering, pagination and audit of every change | M4 producer, M6 consumer / planned |
 | IF-07 | Analytics -> collector enforcement adapter | Versioned policy/decision ID, target, action, reason, expiry and rollback reference | Internal security-critical; audit evidence is Restricted | Authenticated integrity, freshness, deterministic scope, monitor-only default, circuit breaker and tested rollback; reject unknown action/version | M4 producer, M3 consumer, M1 approval / planned |
 | IF-08 | Components -> health/operations view | Availability, latency, queue depth, drop count, schema failures and build/version labels | Internal; Restricted if linked to a finding or host identity | No credentials or raw payloads; bounded labels; health failure cannot authorise traffic or hide audit failure | M2-M6 producers, M6 consumer / planned |
-| IF-09 | Repository/dependency sources -> CI/release | Reviewed source, manifests, lock files, test/scan results, SBOM, provenance and artifact digest | Public/Internal; credentials and detailed findings are Secret/Restricted | Reviewed PRs, pinned dependencies, isolated credentials, deterministic tests, scans and provenance verification | M6 with M1 review / CI, manifests and scanners absent |
+| IF-09 | Repository/dependency sources -> CI/release | Reviewed source, manifests, lock files, test/scan results, SBOM, provenance and artifact digest | Public/Internal; credentials and detailed findings are Secret/Restricted | Reviewed PRs, pinned dependencies, isolated credentials, deterministic tests, scans and provenance verification | M6 with M1 review / M5 quality CI exists; full lock/provenance/SBOM, main PR coverage and protection evidence pending |
 
 ## 4. Common event requirements
 
@@ -152,12 +159,14 @@ data classification is confirmed and the relevant risk evidence is linked.
 ## 9. Open blockers
 
 - The HTTPS-safe observation point and route-level coverage are not selected.
-- IF-03 through IF-08 have no machine-readable schemas or implementations.
+- M3 has unmerged event/decision schemas and a library; IF-03 through IF-08
+  still lack accepted live producer/consumer compatibility evidence.
 - Storage technology, management API and service-identity mechanism are not
   selected.
 - `openapi.yaml` differs from the mock API authentication and error behavior.
-- Dependency manifests, lock files, deterministic discovery, CI, scanners and
-  SBOM generation are absent.
+- Direct requirements, M3/M6 language lock files and M5 quality CI exist at the
+  inspected refs; complete reproducible integrated builds, main PR checks,
+  dedicated secret/container checks and SBOM evidence remain missing.
 - No integrated load, failure-recovery, masking, retention, RBAC or rollback
   evidence exists.
 - Producer and consumer owners have not yet recorded acceptance of these

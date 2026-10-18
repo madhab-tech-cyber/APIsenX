@@ -6,6 +6,12 @@ API-Sentinel is an authorised lab project for runtime API inventory, shadow API 
 
 The project is in the architecture and foundation phase. Development and testing must use the team-owned mock API or another environment with written authorisation.
 
+See the [October 18 integration review](docs/member1-oct18-integration-review.md)
+for current branch evidence: the mock API and quality checks are merged; the
+collector library and fixture dashboard are on peer branches; live detection
+and integrated acceptance remain incomplete. Prepared day-numbered documents
+do not establish completed human checkpoints or separate calendar workdays.
+
 ## Components
 
 - `ebpf/` - Linux eBPF observation layer.

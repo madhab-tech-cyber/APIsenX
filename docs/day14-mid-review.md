@@ -17,6 +17,11 @@ No human team meeting, attendance, mentor feedback or owner sign-off is claimed.
 The timed agenda below is ready for that meeting; its timeboxes are planned,
 not actual meeting durations.
 
+**Current follow-up:** The dated snapshot below is preserved. See the
+[October 18 re-audit](member1-oct18-integration-review.md) for current M3/M6
+progress, CI results and reopened human checkpoint #14; no historical draft/
+absence statement below should be interpreted as current branch state.
+
 ## 1. Review baselines
 
 | Scope | Pinned revision / observed evidence |
