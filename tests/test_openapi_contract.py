@@ -29,7 +29,7 @@ class OpenAPIContractTests(unittest.TestCase):
 
     def test_documented_operations_exist(self):
         for path, methods in self.contract["paths"].items():
-            for method, operation in methods.items():
+            for method in methods:
                 if method not in {
                     "get", "post", "patch", "put", "delete"
                 }:
