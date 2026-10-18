@@ -59,6 +59,51 @@ class MockAPITests(unittest.TestCase):
             response.json()["error"]["code"], "FORBIDDEN"
         )
 
+    def test_admin_function_denied_for_customer_with_empty_inventory(self):
+        with patch.dict(main.ORDERS, {}, clear=True):
+            response = client.get("/admin/orders", headers=USER_A)
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_function_denied_for_customer_when_all_orders_are_owned(self):
+        owned = {
+            "order-a": {"id": "order-a", "owner_id": "user-a", "status": "processing", "total": 1, "currency": "INR"},
+            "order-b": {"id": "order-b", "owner_id": "user-a", "status": "shipped", "total": 2, "currency": "INR"},
+        }
+        with patch.dict(main.ORDERS, owned, clear=True):
+            response = client.get("/admin/orders", headers=USER_A)
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_function_denied_for_customer_with_mixed_owner_inventory(self):
+        response = client.get("/admin/orders", headers=USER_A)
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_function_denied_for_unknown_role_even_if_inventory_owned(self):
+        unknown_role_users = {
+            "user-a": {"id": "user-a", "active": True, "role": "superuser"}
+        }
+        owned = {
+            "order-a": {"id": "order-a", "owner_id": "user-a", "status": "processing", "total": 1, "currency": "INR"}
+        }
+        with patch("main.load_users", return_value=unknown_role_users), patch.dict(main.ORDERS, owned, clear=True):
+            response = client.get("/admin/orders", headers=USER_A)
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_function_requires_explicit_permission(self):
+        no_permission_users = {
+            "admin-1": {"id": "admin-1", "active": True, "role": "admin", "permissions": []}
+        }
+        with patch("main.load_users", return_value=no_permission_users):
+            response = client.get("/admin/orders", headers=ADMIN)
+        self.assertEqual(response.status_code, 403)
+
+    def test_inactive_identity_cannot_use_admin_function(self):
+        inactive_users = {
+            "admin-1": {"id": "admin-1", "active": False, "role": "admin"}
+        }
+        with patch("main.load_users", return_value=inactive_users):
+            response = client.get("/admin/orders", headers=ADMIN)
+        self.assertEqual(response.status_code, 401)
+
     def test_customer_cannot_update_order(self):
         response = client.patch(
             "/orders/order-1001",
