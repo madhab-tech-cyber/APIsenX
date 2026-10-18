@@ -128,11 +128,11 @@ class OpenAPIContractTests(unittest.TestCase):
         self.assertEqual(documented["bearerAuth"]["scheme"], "bearer")
         self.assertEqual(
             documented["bearerAuth"]["type"],
-            generated["HTTPBearer"]["type"],
+            generated["bearerAuth"]["type"],
         )
         self.assertEqual(
             documented["bearerAuth"]["scheme"],
-            generated["HTTPBearer"]["scheme"],
+            generated["bearerAuth"]["scheme"],
         )
 
     def test_every_operation_requires_authentication(self):
@@ -141,9 +141,13 @@ class OpenAPIContractTests(unittest.TestCase):
                 if method not in {"get", "post", "patch", "put", "delete"}:
                     continue
                 with self.subTest(path=path, method=method):
-                    self.assertTrue(operation.get("security", self.generated.get("security")))
-                    security = operation.get("security", self.generated.get("security", []))
-                    self.assertTrue(any("HTTPBearer" in item or "bearerAuth" in item for item in security))
+                    security = operation.get(
+                        "security", self.generated.get("security", [])
+                    )
+                    self.assertTrue(security)
+                    self.assertTrue(
+                        any("bearerAuth" in item for item in security)
+                    )
 
     def test_documented_and_runtime_operation_sets_match_exactly(self):
         def operation_set(schema):
@@ -161,8 +165,12 @@ class OpenAPIContractTests(unittest.TestCase):
         )
 
     def test_admin_and_patch_describe_required_permissions(self):
-        admin_description = self.contract["paths"]["/admin/orders"]["get"]["description"]
-        patch_description = self.contract["paths"]["/orders/{orderId}"]["patch"]["description"]
+        admin_description = self.contract["paths"]["/admin/orders"]["get"][
+            "description"
+        ]
+        patch_description = self.contract["paths"]["/orders/{orderId}"]["patch"][
+            "description"
+        ]
         self.assertIn("orders:read:any", admin_description)
         self.assertIn("orders:manage", patch_description)
 
