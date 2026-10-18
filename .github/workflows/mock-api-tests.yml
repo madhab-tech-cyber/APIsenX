@@ -7,6 +7,7 @@ on:
       - member5/mock-api
   pull_request:
     branches:
+      - main
       - member5/mock-api
   workflow_dispatch:
 
