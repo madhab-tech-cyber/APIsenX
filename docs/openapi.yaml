@@ -28,10 +28,10 @@ paths:
       summary: List orders accessible to the authenticated principal
       operationId: listOrders
       description: >
-        Customers receive only their own authorized orders.
-        Administrators may read all orders when their policy permits.
-        The server must derive identity from the validated token,
-        not from a client-supplied owner ID.
+        Customers require the server-side orders:read:own permission and
+        receive only their authorized owned orders. Lab administrators require
+        orders:read:any. The server derives identity and permissions from
+        server-side policy, never client-supplied owner or role fields.
       responses:
         '200':
           description: Authorized order list
@@ -63,10 +63,11 @@ paths:
       summary: Read an order
       operationId: getOrder
       description: >
-        Allow the owner to read their order. An administrator may read
-        any order when authorized. Deny cross-owner access unless an
-        applicable explicit sharing grant permits it. Do not treat a
-        different object ID alone as proof of an attack.
+        Customers require orders:read:own and may read an owned order.
+        Lab administrators require orders:read:any. Cross-owner sharing
+        remains unsupported and denied until its AP-1.0 grant and tenant
+        context are implemented. A different object ID alone is not proof
+        of an attack.
       responses:
         '200':
           description: Authorized order details
