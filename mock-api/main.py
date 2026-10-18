@@ -45,7 +45,7 @@ TOKENS = {
     "lab-admin-token": "admin-1",
 }
 
-bearer_scheme = HTTPBearer(auto_error=False)
+bearer_scheme = HTTPBearer(auto_error=False, scheme_name="bearerAuth")
 
 # Load fixtures once.
 # Changes persist across requests until this process restarts.
