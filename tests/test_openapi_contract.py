@@ -120,6 +120,52 @@ class OpenAPIContractTests(unittest.TestCase):
             generated["properties"]["status"]["enum"],
         )
 
+    def test_security_scheme_matches_runtime_bearer_auth(self):
+        documented = self.contract["components"]["securitySchemes"]
+        generated = self.generated["components"]["securitySchemes"]
+        self.assertEqual(set(documented), set(generated))
+        self.assertEqual(documented["bearerAuth"]["type"], "http")
+        self.assertEqual(documented["bearerAuth"]["scheme"], "bearer")
+        self.assertEqual(
+            documented["bearerAuth"]["type"],
+            generated["HTTPBearer"]["type"],
+        )
+        self.assertEqual(
+            documented["bearerAuth"]["scheme"],
+            generated["HTTPBearer"]["scheme"],
+        )
+
+    def test_every_operation_requires_authentication(self):
+        for path, methods in self.generated["paths"].items():
+            for method, operation in methods.items():
+                if method not in {"get", "post", "patch", "put", "delete"}:
+                    continue
+                with self.subTest(path=path, method=method):
+                    self.assertTrue(operation.get("security", self.generated.get("security")))
+                    security = operation.get("security", self.generated.get("security", []))
+                    self.assertTrue(any("HTTPBearer" in item or "bearerAuth" in item for item in security))
+
+    def test_documented_and_runtime_operation_sets_match_exactly(self):
+        def operation_set(schema):
+            return {
+                (path, method)
+                for path, methods in schema["paths"].items()
+                for method in methods
+                if method in {"get", "post", "patch", "put", "delete"}
+            }
+
+        self.assertEqual(
+            operation_set(self.contract),
+            operation_set(self.generated),
+            "OpenAPI contract has missing or undocumented runtime operations",
+        )
+
+    def test_admin_and_patch_describe_required_permissions(self):
+        admin_description = self.contract["paths"]["/admin/orders"]["get"]["description"]
+        patch_description = self.contract["paths"]["/orders/{orderId}"]["patch"]["description"]
+        self.assertIn("orders:read:any", admin_description)
+        self.assertIn("orders:manage", patch_description)
+
     def test_error_response_references_are_valid(self):
         responses = self.contract["components"]["responses"]
         schemas = self.contract["components"]["schemas"]
