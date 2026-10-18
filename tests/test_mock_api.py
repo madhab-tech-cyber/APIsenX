@@ -92,7 +92,9 @@ class MockAPITests(unittest.TestCase):
         no_permission_users = {
             "admin-1": {"id": "admin-1", "active": True, "role": "admin", "permissions": []}
         }
-        with patch("main.load_users", return_value=no_permission_users):
+        with patch("main.load_users", return_value=no_permission_users), patch(
+            "main.load_json", return_value={"roles": {"admin": []}}
+        ):
             response = client.get("/admin/orders", headers=ADMIN)
         self.assertEqual(response.status_code, 403)
 
@@ -115,6 +117,30 @@ class MockAPITests(unittest.TestCase):
         self.assertEqual(
             response.json()["error"]["code"], "FORBIDDEN"
         )
+
+    def test_denied_patch_leaves_order_state_unchanged(self):
+        before = deepcopy(main.ORDERS["order-1001"])
+        response = client.patch(
+            "/orders/order-1001",
+            headers=USER_A,
+            json={"status": "shipped"},
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(main.ORDERS["order-1001"], before)
+
+    def test_patch_requires_manage_permission_independent_of_admin_role(self):
+        before = deepcopy(main.ORDERS["order-1001"])
+        with patch(
+            "main.load_json",
+            return_value={"roles": {"admin": ["orders:read:any"]}},
+        ):
+            response = client.patch(
+                "/orders/order-1001",
+                headers=ADMIN,
+                json={"status": "shipped"},
+            )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(main.ORDERS["order-1001"], before)
 
     # Authentication
 
