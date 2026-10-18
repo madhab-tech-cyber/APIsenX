@@ -333,6 +333,27 @@ class MockAPITests(unittest.TestCase):
             response.json()["error"]["code"], "INVALID_REQUEST"
         )
 
+    def test_all_protected_fields_are_rejected_without_mutation(self):
+        protected_payloads = [
+            {"status": "shipped", "id": "order-attacker"},
+            {"status": "shipped", "owner_id": "user-b"},
+            {"status": "shipped", "total": 0},
+            {"status": "shipped", "currency": "USD"},
+        ]
+        for payload in protected_payloads:
+            with self.subTest(payload=payload):
+                before = deepcopy(main.ORDERS["order-1001"])
+                response = client.patch(
+                    "/orders/order-1001",
+                    headers=ADMIN,
+                    json=payload,
+                )
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(
+                    response.json()["error"]["code"], "INVALID_REQUEST"
+                )
+                self.assertEqual(main.ORDERS["order-1001"], before)
+
     def test_protected_total_field_cannot_be_modified(self):
         original_total = main.ORDERS["order-1001"]["total"]
 
