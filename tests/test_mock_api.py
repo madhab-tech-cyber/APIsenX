@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
@@ -420,9 +421,6 @@ class MockAPITests(unittest.TestCase):
 
 
     def test_observation_exception_does_not_log_exception_text_or_traceback(self):
-        import asyncio
-        from starlette.requests import Request
-
         sentinel = "exception-secret-sentinel"
         scope = {
             "type": "http",
