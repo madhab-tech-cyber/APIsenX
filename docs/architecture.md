@@ -10,11 +10,18 @@ sequence are maintained in
 
 ## Implementation status
 
-As of 2026-10-13, the local mock API authentication, authorization, synthetic
-fixture and basic audit-log path is implemented and tested. The eBPF sensor,
-collector, analytics service, storage, management API, dashboard and CI/security
-pipeline remain planned or placeholder components. Architecture and interface
-text for those components is not implementation evidence.
+As of 2026-10-19, main contains the lab mock API, D11-F01 fix, contract checks
+and API/quality CI. A Rust collector library and React fixture dashboard exist
+on separate member branches; neither is an accepted live integration. M2 has
+design/header work, M4 remains a scaffold, and the live sensor/detector/storage/
+protected management pipeline is incomplete. See the pinned
+[final architecture and limitations](final-architecture-and-presentation.md)
+and [verification baseline](member1-oct19-verification.md).
+
+The responsibilities below describe the intended system, not implemented
+capabilities. In particular, multi-tenancy, shadow-route detection, active
+enforcement, durable audit, protected dashboard access and measured overhead
+must not be presented as operational. Full release remains gated.
 
 ## Components
 
@@ -44,7 +51,7 @@ text for those components is not implementation evidence.
      - Manages secure, authenticated transport of normalised telemetry to the analytics service.
      - Hosts the local enforcement adapter for executing approved policy decisions (allow, alert, rate-limit, drop) with sub-millisecond overhead.
      - Emits health, dropped-event, and performance metrics.
-   - Safety Controls: Defaults to monitor-only and fail-open mode during foundation phases; includes circuit breaker and rollback capabilities.
+   - Safety Controls: Design defaults to monitor-only, with optional monitoring failure never bypassing application authorization. Per-route failures follow [FAIL-LAB-1.0](route-failure-policy.md); circuit breaker and rollback still require runtime evidence.
 
 4. **Python Analytics and Detection Engine**
    - Role: Central analysis, policy evaluation, route discovery, and audit service.
