@@ -1,3 +1,4 @@
+import logging
 import sys
 import unittest
 from copy import deepcopy
@@ -416,6 +417,38 @@ class MockAPITests(unittest.TestCase):
             main.ORDERS["order-1001"]["status"],
             original_status,
         )
+
+
+    def test_observation_hook_emits_route_template_without_sensitive_values(self):
+        # Keep httpx's test-client logger from printing the intentionally
+        # synthetic query values while the application hook is under test.
+        httpx_logger = logging.getLogger("httpx")
+        previous_level = httpx_logger.level
+        httpx_logger.setLevel(logging.WARNING)
+        try:
+            with self.assertLogs("apisenx.audit", level="INFO") as captured:
+                response = client.get(
+                    "/orders/order-1001?tenant_id=tenant-secret&debug=query-secret",
+                    headers=USER_A,
+                )
+        finally:
+            httpx_logger.setLevel(previous_level)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.headers.get("X-Correlation-ID"))
+        log_text = "\n".join(captured.output)
+        self.assertIn("route=/orders/{orderId}", log_text)
+        self.assertIn("method=GET", log_text)
+        self.assertIn("status=200", log_text)
+        for forbidden_value in (
+            "user-a",
+            "order-1001",
+            "lab-user-a-token",
+            "tenant-secret",
+            "query-secret",
+        ):
+            with self.subTest(forbidden_value=forbidden_value):
+                self.assertNotIn(forbidden_value, log_text)
 
 
 if __name__ == "__main__":
