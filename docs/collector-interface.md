@@ -12,11 +12,11 @@ The proposed C struct has no schema version, boot identity or stable event UUID.
 
 The route marker is untrusted. A raw path can contain an object ID or secret, and TLS packet capture alone cannot reliably yield HTTP routes. Only an approved application/proxy marker that is already a route template may be forwarded. Otherwise the collector records a privacy-safe `route_unavailable` outcome. No TLS interception or raw payload capture is implied.
 
-The current in-memory correlation table reuses a random ID for one sensor `flow_hash` within a short bounded window. This is flow-level correlation only: keep-alive requests can share a flow, and hash collisions are possible. A stable request-level ID needs an approved observation-point marker from Member 2/5 before BOLA/BFLA evidence can rely on it.
+The collector no longer reuses a `flow_hash` as a request ID. The proposed v1.1 event sets `correlation_id` to null and marks correlation `ambiguous` when only a flow hash exists, or `unsupported` when even that hint is absent. A stable request-level ID needs an approved observation-point marker from Members 2/5 before BOLA/BFLA evidence can rely on it. The earlier v1 schema remains for review history; it is not the current producer output.
 
 ## IF-04: collector to analytics
 
-The proposed normalized event is defined in [`schemas/collector-event.v1.schema.json`](schemas/collector-event.v1.schema.json). The collector validates against this schema, assigns a random event and correlation ID, attaches its source instance and receive timestamp, and sends bounded batches. The transport requires authenticated encryption and a named service identity; endpoint, certificate provisioning, batch limits, retry horizon and replay window require agreement with Member 4. Retries must preserve event IDs so ingestion can deduplicate. Queues and retry buffers have fixed capacity; overflow increments drop counters and never grows memory without bound. Restricted telemetry is not written to ordinary local logs.
+The current proposed normalized event is defined in [`schemas/collector-event.v1.1.schema.json`](schemas/collector-event.v1.1.schema.json). The collector assigns a random event ID, leaves request correlation null until an authoritative marker exists, attaches its source instance and receive timestamp, and sends bounded batches. The transport requires authenticated encryption and a named service identity; endpoint, certificate provisioning, batch limits, retry horizon and replay window require agreement with Member 4. Retries preserve event IDs so ingestion can deduplicate. Queues and retry buffers have fixed capacity; overflow increments drop counters and never grows memory without bound. Restricted telemetry is not written to ordinary local logs.
 
 ## IF-07: analytics to enforcement adapter
 
@@ -24,7 +24,7 @@ The proposed decision contract is defined in [`schemas/enforcement-decision.v1.s
 
 ## IF-08: health and performance
 
-Expose aggregate event counts, validation failures, queue depth, ring-buffer drops, analytics availability, retry outcomes, current operating mode, decision rejection reasons, rollback state and latency histograms. Use bounded, non-identifying labels only. Member 6's current dashboard branch uses static health fixtures; live metric names and the management boundary remain to be agreed. A green health view cannot imply that audit persistence succeeded unless Member 4 confirms it.
+Expose aggregate event counts, validation failures, queue depth, loss availability, retry outcomes and latency histograms. A sensor drop total remains unavailable until a trusted adapter samples it; a counter reset is reported separately. Current code does not expose analytics availability, operating mode, decision rejection reasons or rollback state as live metrics. Use bounded, non-identifying labels only. Member 6's current dashboard branch uses static health fixtures; live metric names and the management boundary remain to be agreed. A green health view cannot imply that audit persistence succeeded unless Member 4 confirms it.
 
 ## Failure behavior and handoffs
 

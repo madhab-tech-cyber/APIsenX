@@ -67,6 +67,7 @@ pub trait AnalyticsTransport {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 struct BatchAck {
     batch_id: Uuid,
     accepted_event_ids: Vec<Uuid>,
@@ -197,6 +198,35 @@ mod tests {
             check_ack(&batch, duplicate),
             Err(TransportError::Acknowledgement)
         );
+    }
+
+    #[test]
+    fn ack_rejects_wrong_batch_missing_duplicate_and_extra_ids() {
+        let batch = batch();
+        let expected = batch.events[0].event_id;
+        for ack in [
+            BatchAck {
+                batch_id: Uuid::new_v4(),
+                accepted_event_ids: vec![expected],
+            },
+            BatchAck {
+                batch_id: batch.batch_id,
+                accepted_event_ids: vec![],
+            },
+            BatchAck {
+                batch_id: batch.batch_id,
+                accepted_event_ids: vec![expected, expected],
+            },
+            BatchAck {
+                batch_id: batch.batch_id,
+                accepted_event_ids: vec![expected, Uuid::new_v4()],
+            },
+        ] {
+            assert_eq!(check_ack(&batch, ack), Err(TransportError::Acknowledgement));
+        }
+        assert!(serde_json::from_str::<BatchAck>(
+            r#"{"batch_id":"00000000-0000-0000-0000-000000000000","accepted_event_ids":[],"unexpected":1}"#
+        ).is_err());
     }
 
     #[test]

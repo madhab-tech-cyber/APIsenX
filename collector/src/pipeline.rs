@@ -1,13 +1,13 @@
-//! Bounded normalization, flow-level correlation and event batching.
+//! Bounded normalization and event batching. Flow identity is not request identity.
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashSet, VecDeque};
 use std::time::{Duration, Instant};
 
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::delivery::{DeliveryError, DeliveryOutcome, DeliveryWorker};
-use crate::event::{EventInput, NormalizedEvent};
+use crate::event::{CorrelationQuality, EventInput, NormalizedEvent};
 use crate::metrics::Metrics;
 use crate::transport::{AnalyticsTransport, EventBatch, TransportError, MAX_BATCH_EVENTS};
 use crate::wire::{decode, DecodeError};
@@ -53,46 +53,13 @@ pub struct TickOutcome {
     pub delivery: DeliveryOutcome,
 }
 
-struct CorrelationTable {
-    entries: HashMap<u64, (Uuid, Instant)>,
-    capacity: usize,
-    ttl: Duration,
-}
-
-impl CorrelationTable {
-    fn id_for(&mut self, flow_hash: u64, now: Instant) -> Uuid {
-        if flow_hash == 0 {
-            return Uuid::new_v4();
-        }
-        if let Some((id, last_seen)) = self.entries.get_mut(&flow_hash) {
-            if now.saturating_duration_since(*last_seen) < self.ttl {
-                *last_seen = now;
-                return *id;
-            }
-        }
-        if self.entries.len() >= self.capacity && !self.entries.contains_key(&flow_hash) {
-            if let Some(oldest) = self
-                .entries
-                .iter()
-                .min_by_key(|(_, (_, seen))| *seen)
-                .map(|(key, _)| *key)
-            {
-                self.entries.remove(&oldest);
-            }
-        }
-        let id = Uuid::new_v4();
-        self.entries.insert(flow_hash, (id, now));
-        id
-    }
-}
-
 pub struct Collector<T: AnalyticsTransport> {
     config: CollectorConfig,
-    correlations: CorrelationTable,
     pending: VecDeque<NormalizedEvent>,
     first_pending_at: Option<Instant>,
     delivery: DeliveryWorker<T>,
     metrics: Metrics,
+    last_sensor_drop_total: Option<u64>,
 }
 
 impl<T: AnalyticsTransport> Collector<T> {
@@ -103,18 +70,13 @@ impl<T: AnalyticsTransport> Collector<T> {
         if !config.validate() {
             return Err(CollectorError::Configuration);
         }
-        let correlations = CorrelationTable {
-            entries: HashMap::new(),
-            capacity: config.max_flows,
-            ttl: config.flow_ttl,
-        };
         Ok(Self {
             config,
-            correlations,
             pending: VecDeque::new(),
             first_pending_at: None,
             delivery,
             metrics: Metrics::default(),
+            last_sensor_drop_total: None,
         })
     }
 
@@ -147,7 +109,15 @@ impl<T: AnalyticsTransport> Collector<T> {
             route_template: decoded.route_template,
             observed_at,
         });
-        event.correlation_id = self.correlations.id_for(decoded.flow_hash, now);
+        event.correlation_quality = if decoded.flow_hash == 0 {
+            self.metrics.correlation_unsupported =
+                self.metrics.correlation_unsupported.saturating_add(1);
+            CorrelationQuality::Unsupported
+        } else {
+            self.metrics.correlation_ambiguous =
+                self.metrics.correlation_ambiguous.saturating_add(1);
+            CorrelationQuality::Ambiguous
+        };
         let event_id = event.event_id;
         if self.pending.is_empty() {
             self.first_pending_at = Some(now);
@@ -220,6 +190,21 @@ impl<T: AnalyticsTransport> Collector<T> {
         snapshot.queued_batches = self.delivery.queued_batches();
         snapshot
     }
+
+    /// Called only when an attached, authenticated sensor adapter provides its
+    /// aggregate drop counter. Until then loss remains explicitly unknown.
+    pub fn observe_sensor_drop_total(&mut self, current: u64) {
+        self.metrics
+            .observe_sensor_drop_total(self.last_sensor_drop_total, current);
+        self.last_sensor_drop_total = Some(current);
+    }
+
+    /// A disconnected sensor makes current loss unknown. Reattachment starts a
+    /// new counter epoch, so a restarted counter is not subtracted from old data.
+    pub fn mark_sensor_unavailable(&mut self) {
+        self.metrics.sensor_drop_counter_available = false;
+        self.last_sensor_drop_total = None;
+    }
 }
 
 #[cfg(test)]
@@ -287,17 +272,49 @@ mod tests {
     }
 
     #[test]
-    fn flow_correlation_is_stable_within_ttl_only() {
+    fn shared_flow_is_not_treated_as_shared_request() {
         let now = Instant::now();
-        let mut table = CorrelationTable {
-            entries: HashMap::new(),
-            capacity: 2,
-            ttl: Duration::from_secs(1),
-        };
-        let first = table.id_for(42, now);
-        assert_eq!(first, table.id_for(42, now + Duration::from_millis(500)));
-        assert_ne!(first, table.id_for(42, now + Duration::from_secs(2)));
-        assert_ne!(first, table.id_for(0, now));
+        let mut collector = collector(3);
+        collector
+            .ingest(&record(42, 0, 0), now, Utc::now())
+            .unwrap();
+        collector
+            .ingest(&record(42, 1, 200), now, Utc::now())
+            .unwrap();
+        assert!(collector
+            .pending
+            .iter()
+            .all(|event| event.correlation_id.is_none()));
+        assert!(collector
+            .pending
+            .iter()
+            .all(|event| event.correlation_quality == CorrelationQuality::Ambiguous));
+        assert_eq!(collector.metrics().correlation_ambiguous, 2);
+    }
+
+    #[test]
+    fn missing_flow_is_explicitly_unsupported() {
+        let mut collector = collector(2);
+        collector
+            .ingest(&record(0, 0, 0), Instant::now(), Utc::now())
+            .unwrap();
+        assert_eq!(
+            collector.pending[0].correlation_quality,
+            CorrelationQuality::Unsupported
+        );
+        assert_eq!(collector.metrics().correlation_unsupported, 1);
+    }
+
+    #[test]
+    fn disconnected_sensor_does_not_report_zero_loss() {
+        let mut collector = collector(2);
+        assert!(!collector.metrics().sensor_drop_counter_available);
+        collector.observe_sensor_drop_total(2);
+        assert_eq!(collector.metrics().sensor_drops_reported, 2);
+        collector.mark_sensor_unavailable();
+        assert!(!collector.metrics().sensor_drop_counter_available);
+        collector.observe_sensor_drop_total(1);
+        assert_eq!(collector.metrics().sensor_drops_reported, 3);
     }
 
     #[test]
