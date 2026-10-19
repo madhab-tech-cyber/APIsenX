@@ -83,8 +83,10 @@ one passing job does not cover unexecuted gates.
 Treat [#14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) and
 [#21](https://github.com/madhab-tech-cyber/APIsenX/issues/21) as incomplete until real
 attendees/comments, owner responses, dispositions and independent sign-offs
-are linked. The corrective task reopens #14 on October 19 with its unmet
-requirements retained; #21/#23 stay open. The
+are linked. The corrective task reopened #14 at 06:44 UTC on October 19 with
+its unmet requirements retained; the owner closed it again at 06:58 UTC, still
+with zero comments. That later external change is preserved; #21/#23 stay open.
+The
 [checkpoint register](member1-checkpoints.json) keeps Days 14/15/30 pending.
 Issue state alone is not checkpoint completion. Real comments/responses and
 independent sign-offs must be supplied by their actual authors.

@@ -13,7 +13,7 @@ dated historical findings are preserved. No PR is merged or force-pushed here.
 | ID | Finding | Action / current disposition |
 |---|---|---|
 | M1-C01 | Authoritative integration baseline repeats repaired D11-F01, contract drift and main-PR-trigger blockers | Corrected IF-01/IF-09, ordered plan and current blockers; link pinned evidence and distinguish API, local UI build and integrated acceptance |
-| M1-C02 | Day 14 tracker closed without human evidence; Day 15/30 incomplete | Reopened #14 preserving unchecked requirements; #21/#23 retain the human gates; machine-readable checkpoint statuses remain pending |
+| M1-C02 | Day 14 tracker closed without human evidence; Day 15/30 incomplete | Reopened #14 at 06:44 UTC; owner closed it again at 06:58 UTC without comments. Preserve that external change; #21/#23 and the register retain all pending human gates |
 | M1-C03 | Security/policy PRs merged without independent recorded reviews | PRs #20/#22/#24/#25 have zero review submissions; request actual M5/M6 assessment on the corrective PR and preserve history; approval is still pending |
 | M1-C04 | Main unprotected, no rulesets | Owner approved exact protections, but connector protection access returns 403 and CLI authentication is rejected; no settings changed; exact settings/readback handoff documented |
 | M1-C05 | Ownership and response coordination incomplete | Keep five verified handles; M1 interim M4 contact; request actual owner responses and M4 identity through #23 without inventing acceptance or names |
@@ -60,6 +60,7 @@ Linux/Python 3.12.14 with preinstalled application dependencies:
 | `python -m compileall -q src mock-api tests scripts/check_member1_governance.py` | PASS |
 | Ruff 0.17.1: `ruff check mock-api tests scripts/check_member1_governance.py` | PASS; tool installed only in an isolated temporary directory |
 | Documentation and risk consistency | PASS: 14 changed files, ten Markdown files, 93 local links, code fences/JSON/Python syntax; all 13 risks unresolved (12 High, R-006 Medium); `git diff --check` PASS |
+| PR #26 CI on f46757d | Run 39213111759 PASS: dependency/tool installation, unittest suite, Ruff and dependency audit; final follow-up head must receive its own check |
 
 The dependency deprecation warning remains. These are not detector/dashboard
 tests, a locked full-system environment, human evidence verification or enabled
@@ -71,7 +72,11 @@ reintroduction of the specific stale integration claims.
 
 [member1-checkpoints.json](member1-checkpoints.json) is the current structured
 register for Day 14/#14, Day 15/#21 and Day 30/#23. All remain pending with empty
-actual human evidence. Run:
+actual human evidence. The 07:00 UTC live readback shows #14 closed by
+`madhab-tech-cyber` at 06:58:51 UTC, after this task reopened it at 06:44:04 UTC;
+there are still zero comments. #21/#23 remain open. Do not repeatedly reopen
+over the owner's later action or infer completion from closure. Keep the
+missing human evidence in the register and #23 until actually supplied. Run:
 
 ```bash
 python scripts/check_member1_governance.py

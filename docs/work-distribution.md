@@ -50,7 +50,8 @@ does not claim that any planned interface has been implemented or accepted.
 [October 19 verification](member1-oct19-verification.md) credits the repaired API,
 main-PR CI and unmerged M3 library/M6 fixture dashboard, without accepting live
 integration. [Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14)
-is reopened by the corrective task with unmet human requirements retained;
+was reopened by the corrective task, then closed again by the owner at 06:58
+UTC on October 19 without comments. Its human requirements remain unmet;
 Day 15 actual feedback and owner responses remain pending in
 [Issue #21](https://github.com/madhab-tech-cyber/APIsenX/issues/21).
 Neither a merged document nor a green limited CI job completes those gates.

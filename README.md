@@ -21,7 +21,7 @@ Member 1's [Days 21–30 delivery index](docs/member1-days21-30-status.md),
 completed policy package from pending integration and human demonstration.
 
 [Member 1 corrective status](docs/member1-governance-correction.md) reconciles
-the integration baseline, reopens the incomplete human checkpoint and records
+the integration baseline, corrects incomplete human-checkpoint tracking and records
 the approved-but-access-blocked main protection setup. No release approval is
 inferred from document delivery or passing bookkeeping checks.
 

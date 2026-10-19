@@ -6,7 +6,8 @@
 > still need actual participation/sign-off; see [next delivery](member1-days21-30-status.md).
 > The latest [governance correction](member1-governance-correction.md) and
 > [checkpoint register](member1-checkpoints.json) supersede issue-state claims
-> below: #14 is reopened; Days 14/15 remain pending, not completed by documents.
+> below: #14 was reopened, then closed again by the owner without human evidence;
+> Days 14/15 remain pending, not completed by documents or issue closure.
 
 **Prepared:** 2026-10-17 (Asia/Calcutta). **Branch:** `member1/security-architecture`.
 

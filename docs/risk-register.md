@@ -170,6 +170,8 @@ integrated latency or rollback acceptance is inferred from those improvements.
 The October 18 paragraph above records a historical reopening. Issue #14 was
 subsequently closed without human evidence, then reopened by the October 19
 corrective task. #21/#23 stay open; neither human checkpoint is complete.
+The owner closed #14 again at 06:58 UTC on October 19 with no comments. Preserve
+that later issue-state change without treating its unmet human gate as complete.
 [Issue #23](https://github.com/madhab-tech-cyber/APIsenX/issues/23)
 tracks the release hold. Days 21–26 add route failure, masking, dashboard and
 triage specifications, not runtime proof. All 13 risks remain unresolved,

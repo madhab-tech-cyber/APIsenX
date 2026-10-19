@@ -36,8 +36,9 @@ do not supply a runtime sensor/detector. No integrated accuracy, privacy,
 performance, rollback or protected dashboard results are invented.
 
 All 13 risks remain unresolved (12 High, R-006 Medium). Monitor-only, zero active
-rules and the release hold remain. #14 is reopened with unmet human requirements;
-#21 remains open. [#23](https://github.com/madhab-tech-cyber/APIsenX/issues/23)
+rules and the release hold remain. #14 was reopened, then closed again by the
+owner on October 19 without human evidence; #21 remains open.
+[#23](https://github.com/madhab-tech-cyber/APIsenX/issues/23)
 tracks remaining evidence, actual owner acceptance, independent review and the
 human final demonstration. Prepared documents do not complete those checkpoints.
 
