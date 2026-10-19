@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import unittest
@@ -6,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
@@ -418,6 +420,38 @@ class MockAPITests(unittest.TestCase):
             original_status,
         )
 
+
+    def test_observation_exception_does_not_log_exception_text_or_traceback(self):
+        sentinel = "exception-secret-sentinel"
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0"},
+            "http_version": "1.1",
+            "method": "GET",
+            "scheme": "http",
+            "path": "/test-route",
+            "raw_path": b"/test-route",
+            "query_string": b"",
+            "headers": [],
+            "client": ("testclient", 123),
+            "server": ("testserver", 80),
+            "root_path": "",
+            "route": type("Route", (), {"path": "/test-route"})(),
+        }
+        request = Request(scope)
+
+        async def fail_call_next(_request):
+            raise RuntimeError(sentinel)
+
+        with self.assertLogs("apisenx.audit", level="ERROR") as captured:
+            with self.assertRaisesRegex(RuntimeError, sentinel):
+                asyncio.run(main.observe_request(request, fail_call_next))
+
+        logged = "\\n".join(captured.output)
+        self.assertIn("status=500", logged)
+        self.assertIn("outcome=unhandled_exception", logged)
+        self.assertNotIn(sentinel, logged)
+        self.assertNotIn("Traceback", logged)
 
     def test_observation_hook_emits_route_template_without_sensitive_values(self):
         # Keep httpx's test-client logger from printing the intentionally
