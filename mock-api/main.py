@@ -53,7 +53,8 @@ async def observe_request(request: Request, call_next):
         # Never emit exception text or traceback in routine telemetry: either
         # may contain request-derived or otherwise sensitive values.
         logger.error(
-            "observation correlation_id=%s method=%s route=%s status=500 outcome=unhandled_exception",
+            "observation correlation_id=%s method=%s route=%s status=500 "
+            "outcome=unhandled_exception",
             correlation_id,
             request.method,
             route_template,
