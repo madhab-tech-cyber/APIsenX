@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-19T06:44:04Z",
+  "baseline": "596b592f6c5a5bd60e3037746cf2c0ee1071777e",
+  "document_author": "madhab-tech-cyber",
+  "integration_status": "blocked",
+  "release_status": "held",
+  "active_rule_count": 0,
+  "checkpoints": [
+    {
+      "day": 14,
+      "issue": 14,
+      "status": "pending",
+      "meeting": null,
+      "reviewer_comments": [],
+      "owner_responses": [],
+      "independent_signoffs": []
+    },
+    {
+      "day": 15,
+      "issue": 21,
+      "status": "pending",
+      "meeting": null,
+      "reviewer_comments": [],
+      "owner_responses": [],
+      "independent_signoffs": []
+    },
+    {
+      "day": 30,
+      "issue": 23,
+      "status": "pending",
+      "meeting": null,
+      "reviewer_comments": [],
+      "owner_responses": [],
+      "independent_signoffs": [],
+      "run_manifest": null
+    }
+  ]
+}

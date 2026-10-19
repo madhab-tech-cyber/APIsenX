@@ -50,13 +50,22 @@ does not claim that any planned interface has been implemented or accepted.
 [October 19 verification](member1-oct19-verification.md) credits the repaired API,
 main-PR CI and unmerged M3 library/M6 fixture dashboard, without accepting live
 integration. [Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14)
-is closed again with unmet human requirements; Day 15 actual feedback and owner
-responses remain pending in [Issue #21](https://github.com/madhab-tech-cyber/APIsenX/issues/21).
+is reopened by the corrective task with unmet human requirements retained;
+Day 15 actual feedback and owner responses remain pending in
+[Issue #21](https://github.com/madhab-tech-cyber/APIsenX/issues/21).
 Neither a merged document nor a green limited CI job completes those gates.
 [Days 21–30](member1-days21-30-status.md) and the
 [handover](final-demonstration-and-handover.md) record policy delivery and the
 release hold in [#23](https://github.com/madhab-tech-cyber/APIsenX/issues/23), not
 completed meetings, full-system acceptance or 30 calendar days of work.
+
+[Member 1 correction](member1-governance-correction.md) and the
+[checkpoint register](member1-checkpoints.json) are the current follow-up.
+M1 owns review scheduling, actual response collection, M4 identity confirmation
+and the approved-but-access-blocked protection setup. Assignments/mentions are
+not owner acceptance. M5 supplies API clarification; M6 independently reviews
+regressions and CI; M2/M3/M4 supply their separate interface proofs. Unknown
+full names and M4's handle remain unconfirmed rather than invented.
 
 - Mid-review: demonstrate Weeks 1-2 work and maintain commits on the required 10 days in the 14-day window.
 - Final-review: demonstrate Weeks 3-4 work and maintain at least one meaningful team commit on every required day in the 20-day window.

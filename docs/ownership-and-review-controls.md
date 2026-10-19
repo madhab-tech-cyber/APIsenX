@@ -38,6 +38,14 @@ the audit. October 19 reconfirms unprotected branches and an empty ruleset list;
 merged PRs #20/#22 also have zero submitted reviews. No protection, ruleset or
 collaborator permission was changed here.
 
+The corrective snapshot on October 19 additionally confirms merged PRs #24/#25
+have zero submitted reviews. The project owner approved main protection, but
+the connector returns HTTP 403 for protection access and CLI authentication
+is rejected. Implementation/readback is BLOCKED; see the exact
+[approved owner action](main-protection-owner-action.md). Authorization received
+does not mean protection is enabled. Do not merge this correction without real
+independent reviews simply because it fixes a prior review-control failure.
+
 M1 (repository owner), with M6 CI support, must review and configure:
 
 - PR-only changes into main; block direct/force pushes and branch deletion;
@@ -60,9 +68,9 @@ and demonstrate execution before requiring it.
 
 | Context observed | Current evidence | Required next evidence |
 |---|---|---|
-| `API Security and Quality Gates` | Member 5 PR run 39103365610 succeeded: API/contract tests, Ruff and dependency audit; main-targeting PR trigger now exists | Preserve actual observed job contexts; verify coverage on this policy PR and other relevant member PRs before making checks required |
+| `API Security and Quality Gates` | PR #24 run 39209714300 and M5 checks on b199da1 succeed: API/contract, Ruff and dependency audit; app github-actions ID 15368; main-targeting PR trigger exists | Verify this exact context on the corrective PR head before requiring it; save protection readback and real independent reviews |
 | `Repository security checks` | Member 6 push run 38860076271 succeeded: sensitive-file names and repository structure | Do not call this dashboard test coverage or a dedicated secret scan |
-| Dashboard validation | No build/typecheck/UI-test job in the inspected successful Member 6 run | M6 supplies locked install, lint, typecheck, production build, state/privacy tests and dependency evidence |
+| Dashboard validation | Local locked installation, lint, TypeScript/production build and npm audit pass on 39902b3; no test script; successful M6 CI has no dashboard build/test job | M6 preserves the working fixture UI, adds state/privacy tests and locked install/lint/typecheck/build/test CI; M4/M6 prove backend authorization |
 | Collector/sensor integration | M3 reports local Rust checks; M2 reports prerequisite/layout checks | M2/M3/M4 Linux producer/consumer, failure, loss and privacy evidence; reproducible CI where supported |
 
 Use the current names only after testing trigger coverage. No invented future
@@ -75,9 +83,11 @@ one passing job does not cover unexecuted gates.
 Treat [#14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) and
 [#21](https://github.com/madhab-tech-cyber/APIsenX/issues/21) as incomplete until real
 attendees/comments, owner responses, dispositions and independent sign-offs
-are linked. On October 19, #14 is closed again with unmet requirements and no
-comments; #21 remains open. Issue state alone is not checkpoint completion;
-the lead must reconcile #14 through the tracked release hold in #23.
+are linked. The corrective task reopens #14 on October 19 with its unmet
+requirements retained; #21/#23 stay open. The
+[checkpoint register](member1-checkpoints.json) keeps Days 14/15/30 pending.
+Issue state alone is not checkpoint completion. Real comments/responses and
+independent sign-offs must be supplied by their actual authors.
 PR approval cannot replace the missing human checkpoint. A review
 added after merge cannot retroactively provide pre-merge approval. Preserve
 dated evidence and distinguish artifact delivery, review and runtime acceptance.
