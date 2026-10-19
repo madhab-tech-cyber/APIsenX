@@ -5,8 +5,9 @@
 **Foundation review date:** 2026-10-13
 
 **Status:** Approved baseline; Day 20 retention/access requirements are defined
-in [AUDIT-LAB-1.0](audit-retention-and-investigation.md). Runtime retention tests
-and Day 23 masking implementation approval remain pending.
+in [AUDIT-LAB-1.0](audit-retention-and-investigation.md), and Day 23 field rules
+in [MASK-LAB-1.0](masking-field-policy.md). Runtime retention/masking tests and
+independent implementation acceptance remain pending.
 
 ## 1. Purpose and principles
 
@@ -73,7 +74,8 @@ reveal system behavior or be correlated across records.
 - Errors shown to clients use generic messages and stable codes. Detailed
   diagnostics remain privacy-safe and access-controlled.
 
-The exact masking field list and verification suite require Day 23 approval.
+The Day 23 [field rules](masking-field-policy.md) define the exact baseline and
+required verification suite. Their design approval is not runtime test evidence.
 
 ## 5. Access, transmission and storage
 

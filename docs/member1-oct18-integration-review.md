@@ -1,5 +1,10 @@
 # Member 1 Integration and Checkpoint Re-audit
 
+> Historical snapshot. [October 19 verification](member1-oct19-verification.md)
+> and [patch log](patch-verification-log.md) supersede current-state D11-F01,
+> contract and main-PR-trigger claims below; those fixes now have passing
+> evidence. Human checkpoints and full integration remain unaccepted.
+
 **Recorded:** 2026-10-18 (Asia/Calcutta). **Branch:** `member1/security-architecture`.
 
 **Main reviewed:** `7c6c4f3a2af6e0b5ab3f0934653c507d6317a7d3`.

@@ -6,11 +6,19 @@ API-Sentinel is an authorised lab project for runtime API inventory, shadow API 
 
 The project is in the architecture and foundation phase. Development and testing must use the team-owned mock API or another environment with written authorisation.
 
-See the [October 18 integration review](docs/member1-oct18-integration-review.md)
-for current branch evidence: the mock API and quality checks are merged; the
-collector library and fixture dashboard are on peer branches; live detection
-and integrated acceptance remain incomplete. Prepared day-numbered documents
-do not establish completed human checkpoints or separate calendar workdays.
+See the [October 19 verification](docs/member1-oct19-verification.md) and
+[final architecture/limitations](docs/final-architecture-and-presentation.md):
+the mock API, authorization fix and quality checks are merged; the collector
+library and fixture dashboard are on peer branches; live detection and
+integrated acceptance remain incomplete. Days 21–30 are Member 1 policy/review
+tasks, not proof of 30 calendar workdays, completed human checkpoints or a
+production-ready engine. Monitor-only remains mandatory; no active rules are
+approved.
+
+Member 1's [Days 21–30 delivery index](docs/member1-days21-30-status.md),
+[release hold](docs/release-gate-decision.md) and
+[rehearsal/handover](docs/final-demonstration-and-handover.md) distinguish the
+completed policy package from pending integration and human demonstration.
 
 ## Components
 
@@ -31,7 +39,9 @@ do not establish completed human checkpoints or separate calendar workdays.
 - `member5/mock-api`
 - `member6/dashboard-devsecops`
 
-All changes enter `main` through a reviewed pull request with passing checks.
+Required workflow: changes enter `main` through independently reviewed pull
+requests with passing checks. This is policy, not a claim of enabled branch
+protection; see [observed controls](docs/ownership-and-review-controls.md).
 
 ## Security objective
 

@@ -47,12 +47,16 @@ does not claim that any planned interface has been implemented or accepted.
 
 ## Review evidence
 
-[October 18 re-audit](member1-oct18-integration-review.md) credits the unmerged
-M3 collector library and M6 fixture dashboard. They require accepted interfaces
-and independent integration evidence. [Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14)
-is reopened for the incomplete Day 14 human checkpoint; Day 15 actual feedback
-and owner responses are tracked in [Issue #21](https://github.com/madhab-tech-cyber/APIsenX/issues/21).
+[October 19 verification](member1-oct19-verification.md) credits the repaired API,
+main-PR CI and unmerged M3 library/M6 fixture dashboard, without accepting live
+integration. [Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14)
+is closed again with unmet human requirements; Day 15 actual feedback and owner
+responses remain pending in [Issue #21](https://github.com/madhab-tech-cyber/APIsenX/issues/21).
 Neither a merged document nor a green limited CI job completes those gates.
+[Days 21–30](member1-days21-30-status.md) and the
+[handover](final-demonstration-and-handover.md) record policy delivery and the
+release hold in [#23](https://github.com/madhab-tech-cyber/APIsenX/issues/23), not
+completed meetings, full-system acceptance or 30 calendar days of work.
 
 - Mid-review: demonstrate Weeks 1-2 work and maintain commits on the required 10 days in the 14-day window.
 - Final-review: demonstrate Weeks 3-4 work and maintain at least one meaningful team commit on every required day in the 20-day window.
