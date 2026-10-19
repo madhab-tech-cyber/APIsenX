@@ -17,6 +17,11 @@ No human team meeting, attendance, mentor feedback or owner sign-off is claimed.
 The timed agenda below is ready for that meeting; its timeboxes are planned,
 not actual meeting durations.
 
+**Current follow-up:** The dated snapshot below is preserved. See the
+[October 18 re-audit](member1-oct18-integration-review.md) for current M3/M6
+progress, CI results and reopened human checkpoint #14; no historical draft/
+absence statement below should be interpreted as current branch state.
+
 ## 1. Review baselines
 
 | Scope | Pinned revision / observed evidence |
@@ -152,3 +157,27 @@ where needed. This review does not invent that feedback or send team messages.
 mentor response or component-owner approval was supplied. Record them after the
 meeting and link reviewer evidence before closing the Day 14 issue. Publishing
 this rehearsal is not completion of the human review checkpoint.
+
+## 7. October 17 repository re-review
+
+Reviewed merged `6b1a427`; previous snapshot statements above remain historical.
+[Current execution evidence](member1-oct17-verification.md) now shows 40 passing
+local tests, compilation and nine admin-inventory diagnostics: four policy
+failures and five expected outcomes. D11-F01 remains confirmed and due
+2026-10-21. New test isolation, malformed-body and missing-object checks improve
+application coverage without closing the function-permission finding.
+
+Direct requirements and mock-API CI now exist. CI's push/base-PR filters cover
+`member5/mock-api`, not main-targeting integration PRs or Member 1 pushes.
+Seven OpenAPI tests provide selected contract checks but omit security parity
+and reverse operation-set equality. JWT-labelled contract drift persists.
+
+Review agenda items were rechecked asynchronously: scope/policy PASS at design
+level; administrative-function acceptance FAIL; executable pipeline, holdout,
+paired latency, scanners, protected audit and rollback BLOCKED. All thirteen
+risks remain unresolved. This refresh does not assert new live GitHub protection,
+review counts or peer-branch status beyond the inspected merged source.
+
+Integrated Week 2 acceptance remains NOT APPROVED. Human review comments and
+component sign-offs are pending. Day 15 records corrective assignments using
+these repository findings; it must distinguish those findings from peer feedback.

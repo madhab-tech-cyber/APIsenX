@@ -1,6 +1,8 @@
 
 import logging
 import sys
+import time
+import uuid
 from pathlib import Path
 from typing import Literal
 
@@ -8,9 +10,11 @@ from fastapi import (
     Depends,
     FastAPI,
     HTTPException,
-    Path as APIPath,
     Request,
     Security,
+)
+from fastapi import (
+    Path as APIPath,
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
@@ -21,8 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from authorization import authorize, load_orders, load_users
-
+from authorization import authorize, load_json, load_orders, load_users
 
 app = FastAPI(
     title="APISenX Mock API",
@@ -36,6 +39,42 @@ app = FastAPI(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("apisenx.audit")
 
+
+@app.middleware("http")
+async def observe_request(request: Request, call_next):
+    """Emit allowlisted request metadata; never inspect payloads or query values."""
+    correlation_id = str(uuid.uuid4())
+    started = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        route = request.scope.get("route")
+        route_template = getattr(route, "path", "unmatched")
+        # Never emit exception text or traceback in routine telemetry: either
+        # may contain request-derived or otherwise sensitive values.
+        logger.error(
+            "observation correlation_id=%s method=%s route=%s status=500 "
+            "outcome=unhandled_exception",
+            correlation_id,
+            request.method,
+            route_template,
+        )
+        raise
+
+    route = request.scope.get("route")
+    route_template = getattr(route, "path", "unmatched")
+    elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+    logger.info(
+        "observation correlation_id=%s method=%s route=%s status=%s elapsed_ms=%s",
+        correlation_id,
+        request.method,
+        route_template,
+        response.status_code,
+        elapsed_ms,
+    )
+    response.headers["X-Correlation-ID"] = correlation_id
+    return response
+
 # Demo credentials for the local security lab only.
 # Never use these tokens in production.
 TOKENS = {
@@ -44,7 +83,7 @@ TOKENS = {
     "lab-admin-token": "admin-1",
 }
 
-bearer_scheme = HTTPBearer(auto_error=False)
+bearer_scheme = HTTPBearer(auto_error=False, scheme_name="bearerAuth")
 
 # Load fixtures once.
 # Changes persist across requests until this process restarts.
@@ -139,12 +178,14 @@ def audit(
     order_id: str,
     outcome: str,
 ) -> None:
+    # Do not put raw subject/resource identifiers into routine logs. The
+    # identifiers remain server-side inputs to the decision, not telemetry.
     logger.info(
-        "audit actor=%s action=%s order_id=%s outcome=%s",
-        actor,
+        "audit action=%s outcome=%s actor_ref_present=%s resource_ref_present=%s",
         action,
-        order_id,
         outcome,
+        bool(actor),
+        bool(order_id and order_id != "*"),
     )
 
 
@@ -176,6 +217,30 @@ def get_principal(
         )
 
     return actor
+
+
+def has_permission(actor: dict, permission: str) -> bool:
+    """Resolve permissions from the server-side role policy, never request data."""
+    role = actor.get("role")
+    role_permissions = load_json("users.json").get("roles", {})
+    permissions = role_permissions.get(role, [])
+    return isinstance(permissions, list) and permission in permissions
+
+
+def require_permission(actor: dict, permission: str, action: str) -> None:
+    if not has_permission(actor, permission):
+        deny(actor["id"], action, "*", f"missing_permission:{permission}")
+
+
+def require_read_permission(actor: dict, action: str) -> None:
+    permission_by_role = {
+        "customer": "orders:read:own",
+        "admin": "orders:read:any",
+    }
+    permission = permission_by_role.get(actor.get("role"))
+    if permission is None:
+        deny(actor["id"], action, "*", "unknown_role")
+    require_permission(actor, permission, action)
 
 
 def deny(
@@ -255,6 +320,7 @@ def check_access(
 def list_orders(
     actor: dict = Depends(get_principal),
 ):
+    require_read_permission(actor, "orders:list")
     visible = []
     users = load_users()
 
@@ -294,6 +360,7 @@ def get_order(
     ),
     actor: dict = Depends(get_principal),
 ):
+    require_read_permission(actor, "orders:read")
     order = check_access(actor, "orders:read", orderId)
 
     audit(actor["id"], "orders:read", orderId, "ALLOW")
@@ -321,6 +388,8 @@ def update_order(
     ),
     actor: dict = Depends(get_principal),
 ):
+    # Function-level permission is checked independently of object ownership.
+    require_permission(actor, "orders:manage:any", "orders:manage")
     order = check_access(actor, "orders:manage", orderId)
 
     # Only status can be changed by this endpoint.
@@ -345,6 +414,8 @@ def update_order(
 def list_admin_orders(
     actor: dict = Depends(get_principal),
 ):
+    # Must run before inventory iteration, including when inventory is empty.
+    require_permission(actor, "orders:read:any", "orders:read:any")
     users = load_users()
 
     for order_id in ORDERS:

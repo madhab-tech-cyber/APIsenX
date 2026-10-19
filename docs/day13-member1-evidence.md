@@ -87,3 +87,14 @@ or closed, and no blocking action or release is authorized. M4/M5/M6 (and M2/M3
 for Linux/performance handoffs) must review the applicable criteria before
 merge. Day 14 should collect actual owner evidence and open risks; it must not
 mark this specification as measured acceptance.
+
+## October 17 continuation
+
+The original Day 13 specification and historical execution record are retained.
+Against merged `6b1a427`, [current verification](member1-oct17-verification.md)
+passes 40 local tests and compilation. Direct requirements, additional API and
+contract tests and a narrowly filtered CI workflow now exist. A transitive lock,
+approved telemetry source, executable detector/corpus and integrated latency
+runs remain missing. MRVP-1.0 numerical criteria are unchanged: 600 unique
+holdout cases, 24+ fault/privacy cases, three replays and 120,000 measured
+latency requests plus 6,000 warmups. No run meets those integrated gates yet.

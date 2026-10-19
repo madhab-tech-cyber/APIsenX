@@ -2,7 +2,7 @@
 
 **Owner:** Member 1 - Team Lead and Security Architect
 
-**Last reviewed:** 2026-10-15
+**Last reviewed:** 2026-10-19
 
 **Related model:** [`threat-model.md`](threat-model.md)
 
@@ -29,18 +29,18 @@ release rule.
 | ID | Risk and affected boundary/assets | Likelihood | Impact | Inherent | Owner | Required treatment | Current evidence | Residual | Status / target |
 |---|---|---|---|---|---|---|---|---|---|
 | R-001 | Sensitive data or credentials are captured, logged or persisted (TB-02/TB-05; A-01/A-04/A-06) | Medium | High | High | M1/M2/M4/M6 | Enforce the data-classification policy, capture allowlists, masking before persistence, leak tests, least-privilege access and retention/purge rules | `data-classification-policy.md` defines handling and prohibits real data; runtime masking, retention and leak-test evidence are absent | High | Mitigating / Days 20 and 23, before storage integration |
-| R-002 | Incorrect ownership or role evaluation permits BOLA/BFLA access (TB-01; A-02) | High | High | High | M1/M4/M5 | Versioned policy matrix, deny-by-default logic, labelled allow/deny fixtures and API negative tests | `AP-1.0` design exists; Day 11 D11-F01 confirms customer access to `/admin/orders` with empty/all-owned inventory despite 26 passing tests; sharing, tenant and explicit-permission evidence absent | High | Mitigating / D11-F01 due 2026-10-21 and before release; full matrix before Week 2 exit |
-| R-003 | False-positive enforcement or unsafe failure mode causes an outage (TB-04/TB-06; A-05/A-09) | Medium | High | High | M1/M3 | Monitor-only default, deterministic criteria, route failure matrix, circuit breaker and tested rollback | Monitor-only/fail-open foundation decision is documented; enforcement is not implemented | High | Open / Days 16-22 |
-| R-004 | eBPF privilege misuse, verifier failure or malformed events affect the host (TB-03; A-04/A-09) | Medium | High | High | M1/M2/M3 | Minimum capabilities, bounded verifier-safe programs/maps, versioned event schema, validation and stress evidence | Architecture constraints only; sensor and event schema are placeholders | High | Open / immediate: Week 1 exit missed; before sensor integration |
-| R-005 | Vulnerable or substituted dependency/build artifact compromises the lab or release (TB-07; A-08) | Medium | High | High | M1/M6 | Manifests and lock files, provenance review, update policy, SBOM and dependency/static/secret/container scans | No manifests, lock files, CI, SBOM or dedicated scanners are checked in | High | Open / immediate: Week 1 foundation gate missed |
+| R-002 | Incorrect ownership or role evaluation permits BOLA/BFLA access (TB-01; A-02) | High | High | High | M1/M4/M5 | Versioned policy matrix, deny-by-default logic, labelled allow/deny fixtures and API negative tests | October 19: merged PR #20 fixes D11-F01; 53 tests and all nine inventory diagnostics pass. Independent closure review, tenant/share/support/version cases and detector correctness remain missing | High | Mitigating / D11-F01 independent review due 2026-10-21 and before release; full matrix before integration acceptance |
+| R-003 | False-positive enforcement or unsafe failure mode causes an outage (TB-04/TB-06; A-05/A-09) | Medium | High | High | M1/M3 | Monitor-only default, deterministic criteria, route failure matrix, circuit breaker and tested rollback | M3 unmerged library has dry-run decision parsing and reported tests; active adapter, authenticated decision verification and rollback evidence remain absent | High | Open / Days 16-22 |
+| R-004 | eBPF privilege misuse, verifier failure or malformed events affect the host (TB-03; A-04/A-09) | Medium | High | High | M1/M2/M3 | Minimum capabilities, bounded verifier-safe programs/maps, versioned event schema, validation and stress evidence | M2 design/headers/prerequisite tests and M3 parser library exist on separate branches; live Linux verifier, wire compatibility and privilege evidence remain unaccepted | High | Open / immediate: Week 1 exit missed; before sensor integration |
+| R-005 | Vulnerable or substituted dependency/build artifact compromises the lab or release (TB-07; A-08) | Medium | High | High | M1/M6 | Manifests and lock files, provenance review, update policy, SBOM and dependency/static/secret/container scans | M5 API/Ruff/dependency CI passes on main PRs; M6 local locked install/build/npm audit passes (zero known vulnerabilities reported). M3/M6 locks exist on peer branches; full build provenance, Python transitive lock, SBOM and dedicated secret/applicable-container evidence remain missing | High | Mitigating / before release build acceptance |
 | R-006 | HTTPS observation assumptions lead to TLS weakening or missing route telemetry (TB-02; A-01/A-03/A-04) | Medium | High | High | M1/M2/M5 | Approve an application hook, controlled proxy or metadata-only source; document coverage; prohibit TLS weakening | Architecture, scope and threat model document the constraint; observation point is not selected | Medium | Mitigating / before sensor integration |
 | R-007 | Static lab tokens are replayed, exposed or mistaken for production authentication (TB-01; A-01/A-02) | High | High | High | M1/M5 | Enforce `authentication-decisions.md`: keep fixtures lab-only, then replace them with validated, signed, expiring, issuer/audience-bound tokens and replay controls | Demo tokens are labelled as public fixtures; missing/malformed/invalid/inactive tests pass; signature, issuer, audience, expiry and replay controls are absent | High | Mitigating / before any non-local deployment |
 | R-008 | Audit findings or administrative actions are altered, deleted or unattributed (TB-05/TB-06; A-06/A-07) | Medium | High | High | M1/M4/M6 | Structured correlation IDs, restricted append path, tamper evidence, retention/access policy and protected export | Mock API emits basic audit log lines; persistence, correlation and tamper evidence are absent | High | Open / Days 20-22 |
-| R-009 | Dashboard privilege escalation or unsafe rendering exposes evidence (TB-06; A-01/A-06/A-07) | Medium | High | High | M1/M6 | Server-side RBAC, short sessions, output encoding, CSRF controls, role tests and masking | Dashboard is a README placeholder | High | Open / Days 23-27 |
+| R-009 | Dashboard privilege escalation or unsafe rendering exposes evidence (TB-06; A-01/A-06/A-07) | Medium | High | High | M1/M6 | Server-side RBAC, short sessions, output encoding, CSRF controls, role tests and masking | M6 fixture UI passes local lint/TypeScript/production build; no test script. Successful CI only checks filenames/structure; live backend RBAC, UI state/privacy tests and protected API evidence remain absent | High | Open / before dashboard integration |
 | R-010 | Request/event floods exhaust queues or make the lab unavailable (TB-01/TB-03/TB-04; A-09) | Medium | High | High | M2/M3/M5 | Input/rate limits, bounded maps/queues/batches, timeouts, backpressure, circuit breaker and measured capacity | Input schemas exist for the mock API; no rate, queue or integrated load evidence exists | High | Open / Days 13 and 19 |
-| R-011 | OpenAPI/implementation drift hides routes or produces incorrect discovery and client behavior (TB-01/TB-04; A-03) | High | Medium | High | M1/M4/M5 | Compare the checked-in contract with generated runtime OpenAPI; align authentication and error schemas; add drift tests | Day 14 confirms current validation tests return 400; the checked-in contract still declares JWT while the API uses opaque lab fixtures; complete generated-contract drift regression remains absent | High | Open / immediate: Week 1 exit missed; before discovery integration |
-| R-012 | Validation gaps allow broken or insecure changes to merge (TB-07; A-08) | High | High | High | M1/M6 | Deterministic test entry point, CI, named security checks, protected review and evidence retention | Explicit command runs 26 tests; default `unittest discover` runs zero; no CI or required security scanners exist | High | Open / immediate: Week 1 foundation gate missed |
-| R-013 | An incompatible, unversioned or spoofed interface message causes telemetry loss, incorrect findings or an unsafe decision (TB-03/TB-04/TB-05/TB-06; A-03/A-04/A-05/A-06) | High | High | High | M1/M2/M3/M4/M6 | Machine-readable versioned schemas, authenticated sources, size/freshness/deduplication rules, reject-unknown behavior and producer/consumer compatibility/failure tests | `integration-data-flow.md` defines the interface and acceptance baseline; planned component schemas, owner acceptance and integration tests are absent | High | Open / immediate: before each interface merge |
+| R-011 | OpenAPI/implementation drift hides routes or produces incorrect discovery and client behavior (TB-01/TB-04; A-03) | High | Medium | High | M1/M4/M5 | Compare the checked-in contract with generated runtime OpenAPI; align authentication and error schemas; add drift tests | October 19: 11 contract test methods within the 53-test suite pass, including exact operation-set parity, opaque bearer security and error references. Earlier JWT drift is corrected; actual discovery/normalization and detector corpus remain unaccepted | High | Mitigating / before discovery integration |
+| R-012 | Validation gaps allow broken or insecure changes to merge (TB-07; A-08) | High | High | High | M1/M6 | Deterministic test entry point, CI, named security checks, protected review and evidence retention | Corrective branch: 53 API/contract plus 8 governance methods pass; main-PR API/Ruff/dependency CI exists. PRs #20/#22/#24/#25 have zero reviews; protection approved but administration access fails, no setting changed; full dashboard/integration/security gates absent | High | Mitigating / immediate: before next integration approval |
+| R-013 | An incompatible, unversioned or spoofed interface message causes telemetry loss, incorrect findings or an unsafe decision (TB-03/TB-04/TB-05/TB-06; A-03/A-04/A-05/A-06) | High | High | High | M1/M2/M3/M4/M6 | Machine-readable versioned schemas, authenticated sources, size/freshness/deduplication rules, reject-unknown behavior and producer/consumer compatibility/failure tests | M2/M3 interface proposals and M3 JSON schemas/library exist; compiled versioned sensor envelope, request correlation, M4 batch/ack acceptance and live compatibility/failure tests remain missing | High | Open / immediate: before each interface merge |
 
 ## Day 6 unresolved-risk assignments
 
@@ -51,7 +51,7 @@ coordinating the named collaborators and linking the required evidence.
 | Risk | Accountable lead / collaborators | Next required evidence | Target checkpoint |
 |---|---|---|---|
 | R-001 | M1 / M2, M4, M6 | Capture allowlist, pre-persistence masking, leak tests, access and purge evidence | Before storage integration; Days 20/23 final review |
-| R-002 | M5 / M1, M4, M6 | Fix D11-F01 independent admin permission gate; add inventory-shape regression cases; M4 coordinates full `AP-1.0` detection matrix | D11-F01: 2026-10-21 and before release; complete matrix: Week 2 exit |
+| R-002 | M5 / M1, M4, M6 | Independently review merged D11-F01 fix and passing inventory regressions; M4 coordinates full `AP-1.0` detection matrix | D11-F01 review: 2026-10-21 and before release; complete matrix: before integration acceptance |
 | R-003 | M3 / M1, M4 | Route failure matrix, circuit breaker, latency and rollback tests | Days 16-22; before active enforcement |
 | R-004 | M2 / M1, M3 | Capability/attach-point review, bounded schema/maps, verifier, parser and stress results | Immediate; before any sensor integration PR |
 | R-005 | M6 / M1 and component owners | Manifests/locks, provenance, SBOM and passing dependency/static/secret/container scans | Immediate; before the next integration merge |
@@ -109,7 +109,82 @@ repository rehearsal is recorded in [Day 14 evidence](day14-member1-evidence.md)
 the human meeting, actual feedback and owner sign-off remain pending in
 [Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14).
 
-## Review requirements
+## October 17 corrective review
+
+[Current verification](member1-oct17-verification.md) passes 40 application/
+contract tests. D11-F01 still has four failing customer inventory checks.
+Direct requirements, selected OpenAPI checks and member5-filtered CI now exist;
+earlier absence statements above describe historical review snapshots. These
+improvements do not close R-005/R-011/R-012: transitive locks, dedicated scans,
+full security parity and main-targeting integration checks remain absent.
+
+[Day 15 actions](mid-review-corrective-actions.md) supersede the immediate
+follow-up queue: CA-01/02 map to R-002; CA-03/09 to R-011; CA-04 to
+R-001/004/006/013; CA-05 to R-003; CA-06 to R-010; CA-07/08 to R-005/012;
+CA-10 to R-001/008/009; CA-11 to R-012/013. M5 retains D11-F01 remediation,
+M6 owns CI trigger correction, M4 owns detector/corpus and M3 owns adapter/
+performance evidence. No residual rating or deadline is reduced.
+
+## Days 16–20 control decisions
+
+[ENF-1.0](enforcement-approval-and-rollback.md) supplies R-003/R-013 design gates,
+bounded decision leases and rollback deadlines. The
+[rule review](blocking-rule-review-register.md) and
+[lab authorization decision](lab-blocking-authorization.md) approve zero active
+rules. [LIMIT-LAB-1.0](identity-route-resource-limits.md) supplies R-010 identity,
+route, cost, queue and retry requirements; no limiter/load proof exists.
+[AUDIT-LAB-1.0](audit-retention-and-investigation.md) supplies R-001/R-008/R-009
+retention, RBAC, integrity, deletion and investigation requirements; no runtime
+store/control evidence exists. These are policy progress only: every risk
+remains unresolved and residual ratings are unchanged. Per-day disposition and
+pending human reviews are in [delivery status](member1-days13-20-status.md).
+
+## October 18 evidence and checkpoint correction
+
+[Re-audit](member1-oct18-integration-review.md) pins all six branch revisions,
+credits M3/M6 unmerged implementations and M5 quality CI, and reconfirms D11-F01
+against current main. Documentation/contract assessment and automated regression
+results do not constitute independent source or integration approval.
+[Ownership controls](ownership-and-review-controls.md) replace placeholder handles
+with verified identities while keeping M4 unconfirmed and protection unchanged.
+
+Day 14 [#14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) is reopened;
+Day 15 [#21](https://github.com/madhab-tech-cyber/APIsenX/issues/21) explicitly
+tracks real feedback/owner acceptance. M1 owns checkpoint and protection
+coordination; M2/M3/M4 own interface proofs, M5/M6 D11-F01 evidence, M4 detector
+results and M6 dashboard/CI evidence. All risk ratings and the October 21
+D11-F01 deadline are unchanged. Monitor-only and zero active authorization
+remain in force. No calendar-day compliance or completed meeting is inferred.
+
+## Review requirements (current)
+
+### October 19 / Day 27 patch verification
+
+[Patch log](patch-verification-log.md) and [executed baseline](member1-oct19-verification.md)
+supersede the current-state claims in older dated reviews. D11-F01 is repaired
+and regression-tested, not independently closed. Contract/security drift and
+the missing main-PR trigger were corrected by M5; do not re-report them as
+current defects. No detector, live transport, protected dashboard, durable audit,
+integrated latency or rollback acceptance is inferred from those improvements.
+
+The October 18 paragraph above records a historical reopening. Issue #14 was
+subsequently closed without human evidence, then reopened by the October 19
+corrective task. #21/#23 stay open; neither human checkpoint is complete.
+The owner closed #14 again at 06:58 UTC on October 19 with no comments. Preserve
+that later issue-state change without treating its unmet human gate as complete.
+[Issue #23](https://github.com/madhab-tech-cyber/APIsenX/issues/23)
+tracks the release hold. Days 21–26 add route failure, masking, dashboard and
+triage specifications, not runtime proof. All 13 risks remain unresolved,
+with 12 High and R-006 Medium; no waiver or rating reduction is made.
+
+[Member 1 corrective evidence](member1-governance-correction.md) supersedes
+current coordination/status claims. [Checkpoint bookkeeping](member1-checkpoints.json)
+is pending for Days 14/15/30. Main protection was explicitly approved by the
+owner but remains blocked by HTTP 403/CLI authentication rejection; only actual
+settings readback can establish enabled protection. No self-sign-off, false
+calendar completion, active rule or release approval is introduced.
+
+### Required update record
 
 Update this register whenever an interface, dependency, test result, security
 finding, control implementation or ownership decision changes. Each update must:

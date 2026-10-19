@@ -1,5 +1,10 @@
 # Day 11 Function-Level Authorization Matrix Review
 
+> Historical Day 11 finding. October 19 follow-up: PR #20 repairs D11-F01;
+> 53 regression tests and all nine inventory diagnostics pass. See the
+> [patch log](patch-verification-log.md) for current status. The failure table
+> below is the original observation, not a failure reproduced on current main.
+
 **Reviewer:** Member 1 - Team Lead and Security Architect
 
 **Date:** 2026-10-14

@@ -105,3 +105,29 @@ security setting is changed. The current R-011 note now recognizes the API's
 400 validation responses while retaining its unresolved authentication/contract
 drift; no risk rating is reduced. Human meeting and component review are pending,
 so Issue #14 stays open and the PR remains draft.
+
+## October 17 continuation
+
+The original meeting agenda and October 15 record are preserved. The appended
+repository re-review in [day14-mid-review.md](day14-mid-review.md) uses merged
+`6b1a427` and [current checks](member1-oct17-verification.md): 40 tests PASS,
+compile PASS, four customer admin-inventory policy FAIL cases and five expected
+diagnostic outcomes. Raw runtime logs were not committed.
+
+This source now includes requirements, additional tests and limited CI; its
+integration trigger coverage and remaining contract drift are explicitly
+recorded. Live issue/PR/protection status was not re-audited in this refresh;
+historical issue/PR statements above must not be treated as current status.
+Review rehearsal is updated, but human feedback, sign-off and runtime approval
+remain pending. Risk ratings and the original finding deadline are unchanged.
+
+## October 18 checkpoint correction
+
+[Current re-audit](member1-oct18-integration-review.md) credits unmerged M3/M6
+implementation and the successful M5 quality/dependency run. It independently
+reconfirms four D11-F01 failures despite 40 passing local tests.
+[Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) is reopened:
+actual attendees, reviewer comments, owner responses and independent sign-off
+are still missing. Historical PR/draft/CI statements above are dated snapshots,
+not current state. This change completes tracking correction, not the human
+meeting or integration checkpoint.
