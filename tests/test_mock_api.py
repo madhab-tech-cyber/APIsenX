@@ -418,5 +418,29 @@ class MockAPITests(unittest.TestCase):
         )
 
 
+    def test_observation_hook_emits_route_template_without_sensitive_values(self):
+        with self.assertLogs("apisenx.audit", level="INFO") as captured:
+            response = client.get(
+                "/orders/order-1001?tenant_id=tenant-secret&debug=query-secret",
+                headers=USER_A,
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.headers.get("X-Correlation-ID"))
+        log_text = "\\n".join(captured.output)
+        self.assertIn("route=/orders/{orderId}", log_text)
+        self.assertIn("method=GET", log_text)
+        self.assertIn("status=200", log_text)
+        for forbidden_value in (
+            "user-a",
+            "order-1001",
+            "lab-user-a-token",
+            "tenant-secret",
+            "query-secret",
+        ):
+            with self.subTest(forbidden_value=forbidden_value):
+                self.assertNotIn(forbidden_value, log_text)
+
+
 if __name__ == "__main__":
     unittest.main()
