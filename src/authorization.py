@@ -55,11 +55,11 @@ def authorize(
     # Enforce function-level permissions here as well as at API route
     # boundaries, so direct callers cannot accidentally skip the role policy.
     if action == "orders:manage":
+        if role != "admin":
+            return False, "admin_role_required"
         if "orders:manage:any" not in permissions:
             return False, "missing_orders_manage_permission"
-        if role == "admin":
-            return True, "admin_management_allowed"
-        return False, "admin_role_required"
+        return True, "admin_management_allowed"
 
     if action == "orders:read":
         if role == "admin":
