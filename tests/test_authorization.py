@@ -1,6 +1,7 @@
 
 import sys
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -92,6 +93,32 @@ class AuthorizationTests(unittest.TestCase):
         )
         self.assertFalse(allowed)
         self.assertEqual(reason, "inactive_user")
+
+    def test_admin_manage_requires_explicit_role_permission(self):
+        users = {
+            "admin-1": {"id": "admin-1", "role": "admin", "active": True}
+        }
+        policy = {"roles": {"admin": ["orders:read:any"]}}
+        with patch("authorization.load_json", return_value=policy):
+            allowed, reason = authorize(
+                "admin-1", "orders:manage", "order-1001",
+                users, self.orders
+            )
+        self.assertFalse(allowed)
+        self.assertEqual(reason, "missing_orders_manage_permission")
+
+    def test_admin_read_requires_explicit_role_permission(self):
+        users = {
+            "admin-1": {"id": "admin-1", "role": "admin", "active": True}
+        }
+        policy = {"roles": {"admin": ["orders:manage:any"]}}
+        with patch("authorization.load_json", return_value=policy):
+            allowed, reason = authorize(
+                "admin-1", "orders:read", "order-1001",
+                users, self.orders
+            )
+        self.assertFalse(allowed)
+        self.assertEqual(reason, "missing_orders_read_any_permission")
 
     def test_unknown_action_is_denied(self):
         allowed, reason = authorize(
