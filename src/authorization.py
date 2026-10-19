@@ -47,18 +47,31 @@ def authorize(
         return False, "order_not_found"
 
     role = actor.get("role")
+    role_permissions = load_json("users.json").get("roles", {})
+    permissions = role_permissions.get(role, [])
+    if not isinstance(permissions, list):
+        return False, "invalid_role_policy"
 
+    # Enforce function-level permissions here as well as at API route
+    # boundaries, so direct callers cannot accidentally skip the role policy.
     if action == "orders:manage":
+        if "orders:manage:any" not in permissions:
+            return False, "missing_orders_manage_permission"
         if role == "admin":
             return True, "admin_management_allowed"
         return False, "admin_role_required"
 
     if action == "orders:read":
         if role == "admin":
+            if "orders:read:any" not in permissions:
+                return False, "missing_orders_read_any_permission"
             return True, "admin_read_allowed"
 
-        if role == "customer" and order.get("owner_id") == actor_id:
-            return True, "owner_read_allowed"
+        if role == "customer":
+            if "orders:read:own" not in permissions:
+                return False, "missing_orders_read_own_permission"
+            if order.get("owner_id") == actor_id:
+                return True, "owner_read_allowed"
 
         return False, "order_ownership_required"
 
