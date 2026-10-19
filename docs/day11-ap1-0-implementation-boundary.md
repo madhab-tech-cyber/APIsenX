@@ -40,13 +40,13 @@ Run from the repository root, not from `mock-api/`. Use the Python executable av
 ```powershell
 python --version
 python -m venv .venv
-.\\.venv\\Scripts\\python.exe -m pip install --upgrade pip
-.\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt
-.\\.venv\\Scripts\\python.exe -m pip install ruff==0.17.1 pip-audit==2.10.1
-.\\.venv\\Scripts\\python.exe -m uvicorn main:app --app-dir mock-api --host 127.0.0.1 --port 8000 --no-access-log
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install ruff==0.17.1 pip-audit==2.10.1
+.\.venv\Scripts\python.exe -m uvicorn main:app --app-dir mock-api --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-If the `python` command is not found, install Python 3.13 and ensure it is on PATH, then open a new PowerShell terminal. If venv activation is preferred and permitted, run `.\\.venv\\Scripts\\Activate.ps1` and then use `python -m ...`. The explicit `.venv\\Scripts\\python.exe` commands above avoid dependence on shell activation policy.
+If the `python` command is not found, install Python 3.13 and ensure it is on PATH, then open a new PowerShell terminal. If venv activation is preferred and permitted, run `.\.venv\Scripts\Activate.ps1` and then use `python -m ...`. The explicit `.venv\Scripts\python.exe` commands above avoid dependence on shell activation policy.
 
 Open `http://127.0.0.1:8000/docs` for the interactive Swagger API page, or `http://127.0.0.1:8000/openapi.json` for the generated schema. The root path `/` is not defined; a 404 there is expected and does not mean the server failed to start. Keep the server terminal running; press Ctrl+C to stop it.
 
@@ -57,9 +57,9 @@ Synthetic tokens are public, lab-only fixtures: `lab-user-a-token`, `lab-user-b-
 Run from the repository root in a second terminal:
 
 ```powershell
-.\\.venv\\Scripts\\python.exe -m unittest discover -s tests -v
-.\\.venv\\Scripts\\python.exe -m ruff check mock-api tests
-.\\.venv\\Scripts\\python.exe -m pip_audit -r requirements.txt
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m ruff check mock-api tests
+.\.venv\Scripts\python.exe -m pip_audit -r requirements.txt
 git diff --check
 git status --short --branch
 ```
