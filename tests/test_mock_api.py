@@ -427,7 +427,7 @@ class MockAPITests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.headers.get("X-Correlation-ID"))
-        log_text = "\\n".join(captured.output)
+        log_text = "\n".join(captured.output)
         self.assertIn("route=/orders/{orderId}", log_text)
         self.assertIn("method=GET", log_text)
         self.assertIn("status=200", log_text)
