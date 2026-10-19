@@ -1,6 +1,7 @@
 # Verified Ownership and Review-Control Handoff
 
-**Owner:** Member 1. **Observed:** 2026-10-18 (Asia/Calcutta).
+**Owner:** Member 1. **Identity observed:** 2026-10-18 (Asia/Calcutta).
+**Control/CI status refreshed:** 2026-10-19.
 
 ## Identity evidence
 
@@ -33,7 +34,9 @@ This mapping does not activate protection by itself.
 
 On October 18, branch-list responses reported every branch `protected: false`;
 the ruleset list was empty. PR #18 and #19 each had zero review submissions at
-the audit. No protection, ruleset or collaborator permission was changed here.
+the audit. October 19 reconfirms unprotected branches and an empty ruleset list;
+merged PRs #20/#22 also have zero submitted reviews. No protection, ruleset or
+collaborator permission was changed here.
 
 M1 (repository owner), with M6 CI support, must review and configure:
 
@@ -57,7 +60,7 @@ and demonstrate execution before requiring it.
 
 | Context observed | Current evidence | Required next evidence |
 |---|---|---|
-| `API Security and Quality Gates` | Member 5 push run 39100612961 succeeded: API/contract tests, Ruff and dependency audit | M6/M5 add main-targeting PR trigger and relevant branches; verify the actual PR revision runs it |
+| `API Security and Quality Gates` | Member 5 PR run 39103365610 succeeded: API/contract tests, Ruff and dependency audit; main-targeting PR trigger now exists | Preserve actual observed job contexts; verify coverage on this policy PR and other relevant member PRs before making checks required |
 | `Repository security checks` | Member 6 push run 38860076271 succeeded: sensitive-file names and repository structure | Do not call this dashboard test coverage or a dedicated secret scan |
 | Dashboard validation | No build/typecheck/UI-test job in the inspected successful Member 6 run | M6 supplies locked install, lint, typecheck, production build, state/privacy tests and dependency evidence |
 | Collector/sensor integration | M3 reports local Rust checks; M2 reports prerequisite/layout checks | M2/M3/M4 Linux producer/consumer, failure, loss and privacy evidence; reproducible CI where supported |
@@ -69,9 +72,12 @@ one passing job does not cover unexecuted gates.
 
 ## Checkpoint closure
 
-Keep [#14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) and
-[#21](https://github.com/madhab-tech-cyber/APIsenX/issues/21) open until real
+Treat [#14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) and
+[#21](https://github.com/madhab-tech-cyber/APIsenX/issues/21) as incomplete until real
 attendees/comments, owner responses, dispositions and independent sign-offs
-are linked. PR approval cannot replace the missing human checkpoint. A review
+are linked. On October 19, #14 is closed again with unmet requirements and no
+comments; #21 remains open. Issue state alone is not checkpoint completion;
+the lead must reconcile #14 through the tracked release hold in #23.
+PR approval cannot replace the missing human checkpoint. A review
 added after merge cannot retroactively provide pre-merge approval. Preserve
 dated evidence and distinguish artifact delivery, review and runtime acceptance.

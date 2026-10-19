@@ -180,8 +180,13 @@ mock API demonstrates only customer owner read/list, customer cross-owner and
 manage denial, admin global read/manage, inactive/unknown identities,
 unknown-role/action denial and update-field restriction.
 
-Sharing, support, tenant attributes, tenant-admin scope, explicit permission
-evaluation, policy-version rejection and consistent non-disclosure remain
-unimplemented. They default to denial and must not be claimed as verified. R-002
-remains mitigating until the complete labelled matrix and cross-component
-false-positive/false-negative evidence pass.
+As verified on October 19, merged PR #20 adds explicit admin-read/manage function
+permission gates; the inventory-shape, missing-permission and denied-mutation
+regressions pass. [D11-F01 patch verification](patch-verification-log.md)
+records the evidence and pending independent closure review.
+
+Sharing, support, tenant attributes, tenant-admin scope, policy-version rejection
+and consistent non-disclosure remain unimplemented. Their required behavior is
+deny-by-default, but no executable implementation of those policy inputs is
+claimed. R-002 remains mitigating until the complete labelled matrix and
+cross-component false-positive/false-negative evidence pass.
