@@ -15,6 +15,11 @@ tasks, not proof of 30 calendar workdays, completed human checkpoints or a
 production-ready engine. Monitor-only remains mandatory; no active rules are
 approved.
 
+Member 1's [Days 21–30 delivery index](docs/member1-days21-30-status.md),
+[release hold](docs/release-gate-decision.md) and
+[rehearsal/handover](docs/final-demonstration-and-handover.md) distinguish the
+completed policy package from pending integration and human demonstration.
+
 ## Components
 
 - `ebpf/` - Linux eBPF observation layer.

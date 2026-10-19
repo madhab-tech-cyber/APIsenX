@@ -1,5 +1,10 @@
 # Member 1 Days 13–20 Delivery Status
 
+> October 19 follow-up: [current verification](member1-oct19-verification.md)
+> and [patch log](patch-verification-log.md) credit the D11/contract/CI fixes.
+> Older failure statements below are dated history. Human Day 14/15 checkpoints
+> still need actual participation/sign-off; see [next delivery](member1-days21-30-status.md).
+
 **Prepared:** 2026-10-17 (Asia/Calcutta). **Branch:** `member1/security-architecture`.
 
 The supplied responsibility plan defines these schedule tasks. Days 13/14

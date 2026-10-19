@@ -58,3 +58,30 @@ condition violated its expectation. BLOCKED means missing prerequisites;
 NOT RUN means not attempted; PENDING means an actual review/response is needed.
 A design approval does not mark runtime controls PASS. An open risk cannot be
 silently accepted by preparing a day-numbered file.
+
+PARTIAL means that an executed subset passed but the entire gate did not; it
+must never be counted as a full PASS.
+
+## Final package recheck / Day 30
+
+The 53-test suite and compilation were rerun after the documentation work and
+PASS. The exact eight-case Python rehearsal in
+[the handover](final-demonstration-and-handover.md) executed with all expected
+statuses, unchanged denial/invalid-write state, restored original inventory and
+unchanged hashes for all JSON fixtures. It is overlapping reference-API
+evidence, not additional unique detector coverage.
+
+Harness caveat: the first strict-sandbox TestClient attempts stalled (the suite
+reached its 45-second timeout; the rehearsal process was stopped). Rerunning
+with sandbox network permission completed normally: suite exit 0 in 0.121s,
+rehearsal exit 0. The rehearsal itself uses only in-process `testserver`, not a
+listening server or remote target. This is an execution-environment limitation,
+not a measured application latency or performance result. The dependency
+deprecation warning remains; no dependency upgrade was attempted here.
+
+Documentation checks PASS across 32 changed Markdown files: local link targets,
+balanced code fences, Python snippet syntax; unique RF=5, MK=10, DV=8, TR=8,
+TF=7, PV=4 and RG=14 table IDs; all ten evidence notes have the actual date and
+branch. The risk-table check confirms 13 unresolved entries, 12 High and R-006
+Medium. `git diff --check` passes. These are documentation checks, never called
+dashboard or security-runtime test coverage.
