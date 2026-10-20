@@ -141,6 +141,72 @@ class MockAPITests(unittest.TestCase):
                     {"code": "NOT_FOUND", "message": "Order not found"},
                 )
 
+    def test_malformed_future_wrong_tenant_and_wrong_version_grants_fail_closed(self):
+        grants = [
+            {
+                "grant_id": "not-yet-valid",
+                "policy_version": "AP-1.0",
+                "tenant_id": "lab-tenant",
+                "resource_id": "order-1002",
+                "grantee_subject": "user-a",
+                "actions": ["orders:read"],
+                "starts_at": "2099-01-01T00:00:00+00:00",
+                "expires_at": "2100-01-01T00:00:00+00:00",
+                "revoked": False,
+            },
+            {
+                "grant_id": "wrong-tenant",
+                "policy_version": "AP-1.0",
+                "tenant_id": "other-tenant",
+                "resource_id": "order-1002",
+                "grantee_subject": "user-a",
+                "actions": ["orders:read"],
+                "expires_at": "2099-01-01T00:00:00+00:00",
+                "revoked": False,
+            },
+            {
+                "grant_id": "wrong-version",
+                "policy_version": "AP-9.9",
+                "tenant_id": "lab-tenant",
+                "resource_id": "order-1002",
+                "grantee_subject": "user-a",
+                "actions": ["orders:read"],
+                "expires_at": "2099-01-01T00:00:00+00:00",
+                "revoked": False,
+            },
+            {
+                "grant_id": "malformed-actions",
+                "policy_version": "AP-1.0",
+                "tenant_id": "lab-tenant",
+                "resource_id": "order-1002",
+                "grantee_subject": "user-a",
+                "actions": "orders:read",
+                "expires_at": "2099-01-01T00:00:00+00:00",
+                "revoked": False,
+            },
+            {
+                "grant_id": "naive-expiry",
+                "policy_version": "AP-1.0",
+                "tenant_id": "lab-tenant",
+                "resource_id": "order-1002",
+                "grantee_subject": "user-a",
+                "actions": ["orders:read"],
+                "expires_at": "2099-01-01T00:00:00",
+                "revoked": False,
+            },
+        ]
+        for grant in grants:
+            with (
+                self.subTest(grant=grant["grant_id"]),
+                patch("authorization.load_sharing_grants", return_value=[grant]),
+            ):
+                response = client.get("/orders/order-1002", headers=USER_A)
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(
+                    response.json()["error"],
+                    {"code": "NOT_FOUND", "message": "Order not found"},
+                )
+
     # Customer access and ownership
 
     def test_customer_sees_only_own_orders(self):
