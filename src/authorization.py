@@ -30,7 +30,7 @@ def authorize(
     users: dict[str, dict[str, Any]],
     orders: dict[str, dict[str, Any]],
 ) -> tuple[bool, str]:
-    """Evaluate the Day 1 local authorization policy."""
+    """Evaluate authorization with tenant isolation before permissions."""
     actor = users.get(actor_id)
 
     if actor is None:
@@ -46,30 +46,50 @@ def authorize(
     if order is None:
         return False, "order_not_found"
 
+    # Fail closed when authoritative tenant context is missing or invalid.
+    actor_tenant = actor.get("tenant_id")
+    resource_tenant = order.get("tenant_id")
+
+    if (
+        not isinstance(actor_tenant, str)
+        or not actor_tenant.strip()
+        or not isinstance(resource_tenant, str)
+        or not resource_tenant.strip()
+    ):
+        return False, "tenant_context_missing_or_invalid"
+
+    # Tenant isolation takes precedence over role permissions and ownership.
+    if actor_tenant != resource_tenant:
+        return False, "tenant_mismatch"
+
     role = actor.get("role")
     role_permissions = load_json("users.json").get("roles", {})
     permissions = role_permissions.get(role, [])
+
     if not isinstance(permissions, list):
         return False, "invalid_role_policy"
 
-    # Enforce function-level permissions here as well as at API route
-    # boundaries, so direct callers cannot accidentally skip the role policy.
+    # Enforce function-level permissions independently of API route checks.
     if action == "orders:manage":
         if role != "admin":
             return False, "admin_role_required"
+
         if "orders:manage:any" not in permissions:
             return False, "missing_orders_manage_permission"
+
         return True, "admin_management_allowed"
 
     if action == "orders:read":
         if role == "admin":
             if "orders:read:any" not in permissions:
                 return False, "missing_orders_read_any_permission"
+
             return True, "admin_read_allowed"
 
         if role == "customer":
             if "orders:read:own" not in permissions:
                 return False, "missing_orders_read_own_permission"
+
             if order.get("owner_id") == actor_id:
                 return True, "owner_read_allowed"
 
@@ -82,7 +102,7 @@ def main() -> None:
     users = load_users()
     orders = load_orders()
 
-    print("API-Sentinel Day 1 Authorization Demo")
+    print("API-Sentinel Authorization Demo")
     print("-------------------------------------")
 
     for actor, action, order_id in [

@@ -1,3 +1,4 @@
+
 import asyncio
 import logging
 import sys
@@ -44,12 +45,35 @@ class MockAPITests(unittest.TestCase):
         ids = {order["id"] for order in response.json()["orders"]}
         self.assertEqual(ids, {"order-1001", "order-1003"})
 
+    def test_customer_list_excludes_cross_tenant_owned_order(self):
+        # Ownership alone must not override the tenant boundary.
+        main.ORDERS["order-1003"]["tenant_id"] = "other-tenant"
+
+        response = client.get("/orders", headers=USER_A)
+
+        self.assertEqual(response.status_code, 200)
+        ids = {order["id"] for order in response.json()["orders"]}
+        self.assertEqual(ids, {"order-1001"})
+
     def test_owner_can_read_order(self):
         response = client.get("/orders/order-1001", headers=USER_A)
         self.assertEqual(response.status_code, 200)
 
     def test_cross_user_order_is_denied(self):
         response = client.get("/orders/order-1002", headers=USER_A)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["error"]["code"], "FORBIDDEN"
+        )
+
+    def test_cross_tenant_single_order_read_is_denied(self):
+        main.ORDERS["order-1001"]["tenant_id"] = "other-tenant"
+
+        response = client.get(
+            "/orders/order-1001",
+            headers=USER_A,
+        )
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
@@ -172,6 +196,48 @@ class MockAPITests(unittest.TestCase):
             )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(main.ORDERS["order-1001"], before)
+
+    def test_cross_tenant_order_update_is_denied_without_mutation(self):
+        main.ORDERS["order-1001"]["tenant_id"] = "other-tenant"
+        original_status = main.ORDERS["order-1001"]["status"]
+
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": "shipped"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["error"]["code"], "FORBIDDEN"
+        )
+        self.assertEqual(
+            main.ORDERS["order-1001"]["status"],
+            original_status,
+        )
+
+    def test_admin_list_denies_mixed_tenant_inventory(self):
+        # Do not return partial inventory if any order crosses the boundary.
+        main.ORDERS["order-1002"]["tenant_id"] = "other-tenant"
+
+        response = client.get("/admin/orders", headers=ADMIN)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["error"]["code"], "FORBIDDEN"
+        )
+        self.assertNotIn("orders", response.json())
+
+    def test_admin_list_denies_order_with_missing_tenant(self):
+        main.ORDERS["order-1002"].pop("tenant_id")
+
+        response = client.get("/admin/orders", headers=ADMIN)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["error"]["code"], "FORBIDDEN"
+        )
+        self.assertNotIn("orders", response.json())
 
     # Authentication
 
@@ -420,6 +486,7 @@ class MockAPITests(unittest.TestCase):
             original_status,
         )
 
+    # Privacy-safe observation logging
 
     def test_observation_exception_does_not_log_exception_text_or_traceback(self):
         sentinel = "exception-secret-sentinel"
@@ -447,7 +514,7 @@ class MockAPITests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, sentinel):
                 asyncio.run(main.observe_request(request, fail_call_next))
 
-        logged = "\\n".join(captured.output)
+        logged = "\n".join(captured.output)
         self.assertIn("status=500", logged)
         self.assertIn("outcome=unhandled_exception", logged)
         self.assertNotIn(sentinel, logged)
