@@ -78,11 +78,15 @@ def authorize(
 
     # Enforce function-level permissions independently of API route checks.
     if action == "orders:manage":
-        if role == "admin" and "orders:manage:any" in permissions:
-            return True, "admin_management_allowed"
-        if role == "tenant_admin" and "orders:manage:tenant" in permissions:
-            return True, "tenant_admin_management_allowed"
-        return False, "missing_manage_permission"
+        if role == "admin":
+            if "orders:manage:any" in permissions:
+                return True, "admin_management_allowed"
+            return False, "missing_orders_manage_permission"
+        if role == "tenant_admin":
+            if "orders:manage:tenant" in permissions:
+                return True, "tenant_admin_management_allowed"
+            return False, "missing_tenant_manage_permission"
+        return False, "admin_role_required"
 
     if action == "orders:read":
         if role == "admin":
@@ -120,7 +124,7 @@ def authorize(
                 ):
                     return True, "shared_read_allowed"
 
-        return False, "ownership_or_active_grant_required"
+        return False, "order_ownership_required"
 
     return False, "access_denied"
 
