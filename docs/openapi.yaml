@@ -94,19 +94,15 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PolicyVersion'
       description: >
-        Customers require orders:read:own and may read an owned order.
-        Lab administrators require orders:read:any. The current
-        implementation checks actor and resource tenant identifiers
-        where present, but it does not implement the complete AP-1.0
-        tenant-context model or policy-version negotiation. Missing,
-        blank, invalid, or mismatched tenant context is denied by the
-        current fixture-based checks where applicable. This does not
-        represent the complete AP-1.0 tenant-context model. Cross-owner
-        sharing remains unsupported until its authoritative grant,
-        tenant-context, and revocation policies are implemented and
-        independently reviewed. A different object ID alone is not proof
-        of an attack. Tenant identifiers are not exposed in the public
-        order response.
+        Customers require orders:read:own and may read an owned order or an
+        order covered by a valid same-tenant, read-only server-resolved grant.
+        Lab administrators require orders:read:any; tenant admins require
+        orders:read:tenant and are scoped to their server-resolved tenant.
+        Requests must provide X-Policy-Version: AP-1.0. Missing or unknown
+        policy versions are rejected. Revoked, expired, wrong-tenant,
+        wrong-resource, or wrong-version grants are denied. Missing,
+        cross-owner, cross-tenant, and invalid-context objects share a generic
+        404 reply. Tenant identifiers are not exposed in the public response.
       responses:
         '200':
           description: Authorized order details
@@ -131,18 +127,15 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PolicyVersion'
       description: >
-        Requires the server-side orders:manage:any function permission
-        and applicable object-level authorization. The function
-        permission is checked independently of ownership before
-        mutation. The current implementation checks actor and resource
-        tenant identifiers where present, but it does not implement
-        the complete AP-1.0 tenant-context model or policy-version
-        negotiation. Missing, blank, invalid, or mismatched tenant
-        context is denied by the current fixture-based checks where
-        applicable, without changing order state. Ordinary customers
-        are denied this management operation. The server records a
-        privacy-conscious audit event. Clients cannot change the order
-        owner, identifier, total, or currency. Updates are process-local
+        Requires orders:manage:any for platform admins or
+        orders:manage:tenant for tenant admins, plus object-level
+        authorization and a matching X-Policy-Version: AP-1.0 header.
+        Tenant checks precede ownership and permission decisions. Customers
+        and support principals cannot mutate orders. Missing, cross-owner,
+        cross-tenant, and invalid-context objects share a generic 404 reply;
+        function-level permission denials use a generic 403. The server
+        records a privacy-conscious audit event. Clients cannot change the
+        order owner, identifier, total, or currency. Updates are process-local
         and reset when the API process restarts.
       requestBody:
         required: true
