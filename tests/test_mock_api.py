@@ -18,9 +18,12 @@ import main
 app = main.app
 client = TestClient(app)
 
-USER_A = {"Authorization": "Bearer lab-user-a-token"}
-USER_B = {"Authorization": "Bearer lab-user-b-token"}
-ADMIN = {"Authorization": "Bearer lab-admin-token"}
+POLICY = {"X-Policy-Version": "AP-1.0"}
+USER_A = {"Authorization": "Bearer lab-user-a-token", **POLICY}
+USER_B = {"Authorization": "Bearer lab-user-b-token", **POLICY}
+ADMIN = {"Authorization": "Bearer lab-admin-token", **POLICY}
+SUPPORT = {"Authorization": "Bearer lab-support-token", **POLICY}
+TENANT_ADMIN = {"Authorization": "Bearer lab-tenant-admin-token", **POLICY}
 
 
 class MockAPITests(unittest.TestCase):
@@ -35,6 +38,69 @@ class MockAPITests(unittest.TestCase):
         # Restore the canonical fixture after every test.
         main.ORDERS.clear()
         main.ORDERS.update(deepcopy(self.original_orders))
+
+
+    def test_policy_version_is_required_and_unknown_version_is_rejected(self):
+        missing = client.get("/orders", headers={"Authorization": "Bearer lab-user-a-token"})
+        unknown = client.get("/orders", headers={"Authorization": "Bearer lab-user-a-token", "X-Policy-Version": "AP-9.9"})
+        self.assertEqual(missing.status_code, 400)
+        self.assertEqual(unknown.status_code, 400)
+        self.assertEqual(missing.json()["error"]["code"], "INVALID_REQUEST")
+        self.assertEqual(unknown.json()["error"]["code"], "INVALID_REQUEST")
+        self.assertEqual(missing.json()["error"], unknown.json()["error"])
+
+    def test_support_view_returns_only_assigned_masked_fields(self):
+        response = client.get("/support/orders", headers=SUPPORT)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["orders"], [{"id": "order-1002", "status": "shipped"}])
+        self.assertNotIn("total", response.text)
+        self.assertNotIn("owner_id", response.text)
+        self.assertNotIn("currency", response.text)
+
+    def test_support_cannot_use_customer_order_route(self):
+        response = client.get("/orders/order-1002", headers=SUPPORT)
+        self.assertIn(response.status_code, (403, 404))
+        self.assertNotIn("total", response.json())
+
+    def test_tenant_admin_can_read_same_tenant_orders_with_explicit_permission(self):
+        response = client.get("/orders", headers=TENANT_ADMIN)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["orders"]), 3)
+
+    def test_tenant_admin_can_manage_same_tenant_order_with_permission(self):
+        response = client.patch("/orders/order-1001", headers=TENANT_ADMIN, json={"status": "shipped"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "shipped")
+
+    def test_tenant_admin_cannot_access_global_admin_inventory(self):
+        response = client.get("/admin/orders", headers=TENANT_ADMIN)
+        self.assertEqual(response.status_code, 403)
+
+    def test_active_same_tenant_share_grant_allows_read_only_access(self):
+        grant = {
+            "grant_id": "grant-test",
+            "policy_version": "AP-1.0",
+            "tenant_id": "lab-tenant",
+            "resource_id": "order-1002",
+            "grantee_subject": "user-a",
+            "actions": ["orders:read"],
+            "expires_at": "2099-01-01T00:00:00+00:00",
+            "revoked": False,
+        }
+        with patch("authorization.load_sharing_grants", return_value=[grant]):
+            response = client.get("/orders/order-1002", headers=USER_A)
+        self.assertEqual(response.status_code, 200)
+
+    def test_revoked_or_expired_share_grants_are_denied_without_disclosure(self):
+        grants = [
+            {"grant_id": "revoked", "policy_version": "AP-1.0", "tenant_id": "lab-tenant", "resource_id": "order-1002", "grantee_subject": "user-a", "actions": ["orders:read"], "expires_at": "2099-01-01T00:00:00+00:00", "revoked": True},
+            {"grant_id": "expired", "policy_version": "AP-1.0", "tenant_id": "lab-tenant", "resource_id": "order-1002", "grantee_subject": "user-a", "actions": ["orders:read"], "expires_at": "2000-01-01T00:00:00+00:00", "revoked": False},
+        ]
+        for grant in grants:
+            with self.subTest(grant=grant["grant_id"]), patch("authorization.load_sharing_grants", return_value=[grant]):
+                response = client.get("/orders/order-1002", headers=USER_A)
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(response.json()["error"], {"code": "NOT_FOUND", "message": "Order not found"})
 
     # Customer access and ownership
 
@@ -62,10 +128,8 @@ class MockAPITests(unittest.TestCase):
     def test_cross_user_order_is_denied(self):
         response = client.get("/orders/order-1002", headers=USER_A)
 
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.json()["error"]["code"], "FORBIDDEN"
-        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["error"]["code"], "NOT_FOUND")
 
     def test_cross_tenant_single_order_read_is_denied(self):
         main.ORDERS["order-1001"]["tenant_id"] = "other-tenant"
@@ -75,10 +139,8 @@ class MockAPITests(unittest.TestCase):
             headers=USER_A,
         )
 
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.json()["error"]["code"], "FORBIDDEN"
-        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["error"]["code"], "NOT_FOUND")
 
     def test_customer_cannot_list_admin_orders(self):
         response = client.get("/admin/orders", headers=USER_A)
@@ -207,10 +269,8 @@ class MockAPITests(unittest.TestCase):
             json={"status": "shipped"},
         )
 
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.json()["error"]["code"], "FORBIDDEN"
-        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["error"]["code"], "NOT_FOUND")
         self.assertEqual(
             main.ORDERS["order-1001"]["status"],
             original_status,
