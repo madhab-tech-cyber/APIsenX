@@ -242,18 +242,30 @@ class OpenAPIContractTests(unittest.TestCase):
         self.assertIn("does not establish scoped", description)
         self.assertIn("cross-tenant operations", description)
 
-    def test_contract_documents_sharing_as_not_yet_supported(self):
+    def test_contract_documents_server_resolved_read_only_sharing(self):
         description = self.contract["paths"]["/orders/{orderId}"]["get"][
             "description"
         ].lower()
 
         self.assertIn("sharing", description)
-        self.assertTrue(
-            "not supported" in description
-            or "unsupported" in description
-            or "pending" in description,
-            "Contract must not imply sharing grants are implemented",
-        )
+        self.assertIn("read-only", description)
+        self.assertIn("revoked", description)
+        self.assertIn("generic 404", description)
+
+    def test_policy_version_header_is_required_in_contract_and_runtime(self):
+        parameter = self.contract["components"]["parameters"]["PolicyVersion"]
+        self.assertEqual(parameter["name"], "X-Policy-Version")
+        self.assertEqual(parameter["in"], "header")
+        self.assertTrue(parameter["required"])
+        self.assertEqual(parameter["schema"]["enum"], ["AP-1.0"])
+        for path, methods in self.generated["paths"].items():
+            for method, operation in methods.items():
+                if method not in HTTP_METHODS:
+                    continue
+                self.assertTrue(any(
+                    p.get("name") == "X-Policy-Version" and p.get("required")
+                    for p in operation.get("parameters", [])
+                ), f"{method.upper()} {path} must require policy version")
 
     def test_contract_documents_process_local_patch_behavior(self):
         description = self.contract["paths"]["/orders/{orderId}"]["patch"][

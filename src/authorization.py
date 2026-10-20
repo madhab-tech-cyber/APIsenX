@@ -23,14 +23,21 @@ def load_orders() -> dict[str, dict[str, Any]]:
     return {order["id"]: order for order in data["orders"]}
 
 
+def load_sharing_grants() -> list[dict[str, Any]]:
+    return load_json("sharing_grants.json").get("grants", [])
+
+
 def authorize(
     actor_id: str,
     action: str,
     order_id: str,
     users: dict[str, dict[str, Any]],
     orders: dict[str, dict[str, Any]],
+    policy_version: str = "AP-1.0",
 ) -> tuple[bool, str]:
-    """Evaluate authorization with tenant isolation before permissions."""
+    """Evaluate authorization with version and tenant checks before access rules."""
+    if policy_version != "AP-1.0":
+        return False, "policy_version_unsupported"
     actor = users.get(actor_id)
 
     if actor is None:
@@ -71,13 +78,15 @@ def authorize(
 
     # Enforce function-level permissions independently of API route checks.
     if action == "orders:manage":
-        if role != "admin":
-            return False, "admin_role_required"
-
-        if "orders:manage:any" not in permissions:
+        if role == "admin":
+            if "orders:manage:any" in permissions:
+                return True, "admin_management_allowed"
             return False, "missing_orders_manage_permission"
-
-        return True, "admin_management_allowed"
+        if role == "tenant_admin":
+            if "orders:manage:tenant" in permissions:
+                return True, "tenant_admin_management_allowed"
+            return False, "missing_tenant_manage_permission"
+        return False, "admin_role_required"
 
     if action == "orders:read":
         if role == "admin":
@@ -86,12 +95,34 @@ def authorize(
 
             return True, "admin_read_allowed"
 
+        if role == "tenant_admin":
+            if "orders:read:tenant" in permissions:
+                return True, "tenant_admin_read_allowed"
+            return False, "missing_tenant_read_permission"
+
         if role == "customer":
             if "orders:read:own" not in permissions:
                 return False, "missing_orders_read_own_permission"
-
             if order.get("owner_id") == actor_id:
                 return True, "owner_read_allowed"
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
+            for grant in load_sharing_grants():
+                try:
+                    expires_at = datetime.fromisoformat(grant.get("expires_at", ""))
+                except (TypeError, ValueError):
+                    continue
+                if (
+                    grant.get("grantee_subject") == actor_id
+                    and grant.get("resource_id") == order_id
+                    and grant.get("tenant_id") == actor_tenant
+                    and "orders:read" in grant.get("actions", [])
+                    and grant.get("revoked") is False
+                    and grant.get("policy_version") == policy_version
+                    and expires_at.tzinfo is not None
+                    and expires_at > now
+                ):
+                    return True, "shared_read_allowed"
 
         return False, "order_ownership_required"
 

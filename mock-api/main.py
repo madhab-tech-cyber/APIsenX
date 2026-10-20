@@ -81,6 +81,8 @@ TOKENS = {
     "lab-user-a-token": "user-a",
     "lab-user-b-token": "user-b",
     "lab-admin-token": "admin-1",
+    "lab-support-token": "support-1",
+    "lab-tenant-admin-token": "tenant-admin-1",
 }
 
 bearer_scheme = HTTPBearer(auto_error=False, scheme_name="bearerAuth")
@@ -107,6 +109,15 @@ class Order(BaseModel):
 
 class OrdersResponse(BaseModel):
     orders: list[Order]
+
+
+class SupportOrder(BaseModel):
+    id: str
+    status: Literal["processing", "shipped", "delivered"]
+
+
+class SupportOrdersResponse(BaseModel):
+    orders: list[SupportOrder]
 
 
 class ErrorDetail(BaseModel):
@@ -190,6 +201,7 @@ def audit(
 
 
 def get_principal(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Security(
         bearer_scheme
     ),
@@ -216,6 +228,17 @@ def get_principal(
             ),
         )
 
+    # A caller must explicitly select the policy contract; unknown or missing
+    # versions fail closed before any protected operation is evaluated.
+    if request.headers.get("x-policy-version") != "AP-1.0":
+        raise HTTPException(
+            status_code=400,
+            detail=error_response(
+                "INVALID_REQUEST",
+                "Unsupported or missing policy version",
+            ),
+        )
+
     return actor
 
 
@@ -236,6 +259,7 @@ def require_read_permission(actor: dict, action: str) -> None:
     permission_by_role = {
         "customer": "orders:read:own",
         "admin": "orders:read:any",
+        "tenant_admin": "orders:read:tenant",
     }
     permission = permission_by_role.get(actor.get("role"))
     if permission is None:
@@ -281,27 +305,15 @@ def check_access(
     )
 
     if not allowed:
-        if reason == "order_not_found":
-            audit(
-                actor["id"],
-                action,
-                order_id,
+        # Do not reveal whether an inaccessible order exists. Missing,
+        # cross-owner, cross-tenant and invalid-context objects share one reply.
+        audit(actor["id"], action, order_id, "NOT_FOUND_OR_NOT_DISCLOSED")
+        raise HTTPException(
+            status_code=404,
+            detail=error_response(
                 "NOT_FOUND",
-            )
-
-            raise HTTPException(
-                status_code=404,
-                detail=error_response(
-                    "NOT_FOUND",
-                    "Order not found",
-                ),
-            )
-
-        deny(
-            actor["id"],
-            action,
-            order_id,
-            reason,
+                "Order not found",
+            ),
         )
 
     return ORDERS[order_id]
@@ -389,7 +401,13 @@ def update_order(
     actor: dict = Depends(get_principal),
 ):
     # Function-level permission is checked independently of object ownership.
-    require_permission(actor, "orders:manage:any", "orders:manage")
+    manage_permission = {
+        "admin": "orders:manage:any",
+        "tenant_admin": "orders:manage:tenant",
+    }.get(actor.get("role"))
+    if manage_permission is None:
+        deny(actor["id"], "orders:manage", orderId, "role_not_permitted")
+    require_permission(actor, manage_permission, "orders:manage")
     order = check_access(actor, "orders:manage", orderId)
 
     # Only status can be changed by this endpoint.
@@ -440,6 +458,44 @@ def list_admin_orders(
     return {"orders": list(ORDERS.values())}
 
 
+
+@app.get(
+    "/support/orders",
+    operation_id="listSupportOrders",
+    response_model=SupportOrdersResponse,
+    responses={
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+    },
+)
+def list_support_orders(actor: dict = Depends(get_principal)):
+    # Support receives only explicitly assigned records and only masked fields.
+    if (
+        actor.get("role") != "support"
+        or not has_permission(actor, "orders:read:assigned")
+    ):
+        deny(
+            actor["id"], "support:orders:read", "*", "support_permission_required"
+        )
+    assigned = actor.get("assigned_order_ids")
+    if not isinstance(assigned, list):
+        deny(actor["id"], "support:orders:read", "*", "support_assignment_missing")
+    visible = []
+    for order_id in assigned:
+        order = ORDERS.get(order_id)
+        if order is None:
+            continue
+        if (
+            not actor.get("tenant_id")
+            or order.get("tenant_id") != actor.get("tenant_id")
+        ):
+            continue
+        visible.append({"id": order["id"], "status": order["status"]})
+    audit(actor["id"], "support:orders:read", "*", "ALLOW")
+    return {"orders": visible}
+
+
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -452,12 +508,29 @@ def custom_openapi():
     )
 
     # Validation errors are converted to HTTP 400 by the custom handler.
-    # Remove FastAPI's default 422 response from every operation.
+    # Remove FastAPI's default 422 response and document the policy version
+    # required by the request dependency on every operation.
     for path_item in openapi_schema.get("paths", {}).values():
         for operation in path_item.values():
             if isinstance(operation, dict):
                 responses = operation.get("responses", {})
                 responses.pop("422", None)
+                parameters = operation.setdefault("parameters", [])
+                if not any(
+                    parameter.get("name") == "X-Policy-Version"
+                    and parameter.get("in") == "header"
+                    for parameter in parameters
+                ):
+                    parameters.append({
+                        "name": "X-Policy-Version",
+                        "in": "header",
+                        "required": True,
+                        "description": (
+                            "Authorization policy contract version; "
+                            "only AP-1.0 is accepted."
+                        ),
+                        "schema": {"type": "string", "enum": ["AP-1.0"]},
+                    })
 
     app.openapi_schema = openapi_schema
 

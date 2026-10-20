@@ -35,19 +35,16 @@ drift and MUST NOT replace an API authorization decision.
 
 | Role | Approved capability | Current implementation |
 |---|---|---|
-| `customer` | List owned objects; read an object owned by the principal; read a same-tenant object with an active read grant once sharing exists | Owner list/read implemented and tested; sharing absent |
-| `support` | Read only explicitly assigned, masked support views in the same tenant; no order mutation | Not implemented; deny as unknown role |
-| `tenant_admin` | Tenant-scoped read/manage only with explicit permission; no cross-tenant access | Not implemented; deny as unknown role |
+| `customer` | List owned objects; read an object owned by the principal; read a same-tenant object with an active read grant | Owner list/read and server-resolved, read-only, versioned, expiring/revocable grant evaluation implemented; grant storage is a lab fixture |
+| `support` | Read only explicitly assigned, masked support views in the same tenant; no order mutation | Implemented on `GET /support/orders`; assigned IDs only and response exposes only ID/status |
+| `tenant_admin` | Tenant-scoped read/manage only with explicit permission; no cross-tenant access | Implemented for list/read/status update with `orders:read:tenant` / `orders:manage:tenant`; global admin route denied |
 | `admin` | Local-lab platform administration with explicit `orders:read:any` and `orders:manage:any` permissions | Global synthetic-order read/manage implemented; permission lookup and tenant scope are incomplete |
 
 Customer updates, sharing administration, support access and tenant-aware roles
 are not active capabilities. Their policy rows below are requirements for future
 implementation, not evidence that those accesses currently work.
 
-The current fixture has no `tenant_id`. It is an isolated single-tenant lab, not
-proof of tenant enforcement. Before multi-tenant use, the server MUST resolve a
-tenant for every principal and resource and the tenant cases in Section 7 MUST
-pass. A client cannot opt into a tenant by sending an identifier.
+The mock fixture resolves `tenant_id` from server-side principal and order records and fails closed when either is missing or invalid. All shipped fixtures use one lab tenant; cross-tenant behavior is tested by mutating test fixtures, not by a deployed multi-tenant identity provider. A client cannot opt into a tenant by sending an identifier.
 
 ## 3. Decision inputs and precedence
 
@@ -85,22 +82,22 @@ last column.
 | ID | Principal and context | Requested capability | Policy decision / reason | Current state |
 |---|---|---|---|---|
 | PT-01 | Missing, invalid or inactive principal | Any | Deny / `IDENTITY_REQUIRED` or `IDENTITY_INACTIVE` | Implemented for current routes |
-| PT-02 | Any principal; unknown role, action or policy version | Any | Deny / `POLICY_CONTEXT_INVALID` | Unknown role/action tested; version absent |
+| PT-02 | Any principal; unknown role, action or policy version | Any | Deny / `POLICY_CONTEXT_INVALID` | Unknown/missing `X-Policy-Version` rejected; unknown role/action denied |
 | PT-03 | Customer; same tenant; resource owner | `orders:read` | Allow / `OWNER_READ_ALLOWED` | Implemented without tenant field |
 | PT-04 | Customer; same tenant; resource owner | `orders:manage` | Deny / `ADMIN_PERMISSION_REQUIRED` | Implemented |
 | PT-05 | Customer; same tenant; not owner; no grant | `orders:read` | Deny / `OWNERSHIP_OR_GRANT_REQUIRED` | Cross-owner denial implemented without tenant field |
-| PT-06 | Customer; same tenant; active read grant | `orders:read` | Allow* / `SHARED_READ_ALLOWED` | Sharing absent; current result is deny |
+| PT-06 | Customer; same tenant; active read grant | `orders:read` | Allow / `SHARED_READ_ALLOWED` | Implemented and tested with server-resolved fixture grant |
 | PT-07 | Customer; same tenant; read grant only | `orders:manage` | Deny / `GRANT_ACTION_NOT_ALLOWED` | Sharing absent; manage already denied |
-| PT-08 | Customer; expired, revoked, not-yet-valid or wrong-resource grant | Any | Deny / `GRANT_INVALID` | Sharing absent |
-| PT-09 | Customer; owner or grantee; tenant differs | Any | Deny / `TENANT_MISMATCH` | Tenant context absent |
+| PT-08 | Customer; expired, revoked, not-yet-valid or wrong-resource grant | Any | Deny / `GRANT_INVALID` | Expired/revoked/version/tenant/resource/action constraints checked; expired and revoked denial tested |
+| PT-09 | Customer; owner or grantee; tenant differs | Any | Deny / `TENANT_MISMATCH` | Tenant mismatch denied before ownership/grant; regression tests present |
 | PT-10 | Customer; client asserts another owner/tenant/role | Any | Ignore assertion; decide from server context, otherwise deny | Owner is server-resolved; tenant absent |
-| PT-11 | Support; same tenant; active case assignment and read permission | Masked support read | Allow* / `SUPPORT_READ_ALLOWED` | Role/view absent; current result is deny |
-| PT-12 | Support without assignment, in another tenant or requesting mutation | Read/manage | Deny / `SUPPORT_SCOPE_REQUIRED` | Role absent; current result is deny |
-| PT-13 | Tenant admin; same tenant; explicit read permission | Tenant order read/list | Allow* / `TENANT_ADMIN_READ_ALLOWED` | Role and tenant scope absent; current result is deny |
-| PT-14 | Tenant admin; same tenant; explicit manage permission | Allowed status update | Allow* / `TENANT_ADMIN_MANAGE_ALLOWED` | Role and tenant scope absent; current result is deny |
-| PT-15 | Tenant admin; resource belongs to another tenant | Any | Deny / `TENANT_MISMATCH` | Tenant context absent |
-| PT-16 | Lab platform admin; explicit read permission | Order read/list and `GET /admin/orders` | Allow / `ADMIN_READ_ALLOWED` | Implemented through role behavior, not explicit permission evaluation |
-| PT-17 | Lab platform admin; explicit manage permission | Status-only order update | Allow / `ADMIN_MANAGE_ALLOWED` | Implemented through role behavior; field restriction tested |
+| PT-11 | Support; same tenant; active assignment and read permission | Masked support read | Allow / `SUPPORT_READ_ALLOWED` | Implemented on dedicated masked support list; assignment and tenant scoped |
+| PT-12 | Support without assignment, in another tenant or requesting mutation | Read/manage | Deny / `SUPPORT_SCOPE_REQUIRED` | Support cannot use customer order routes or mutate; only assigned same-tenant IDs returned |
+| PT-13 | Tenant admin; same tenant; explicit read permission | Tenant order read/list | Allow / `TENANT_ADMIN_READ_ALLOWED` | Implemented and tested |
+| PT-14 | Tenant admin; same tenant; explicit manage permission | Allowed status update | Allow / `TENANT_ADMIN_MANAGE_ALLOWED` | Implemented and tested |
+| PT-15 | Tenant admin; resource belongs to another tenant | Any | Deny / `TENANT_MISMATCH` | Tenant mismatch denied; regression tests present |
+| PT-16 | Lab platform admin; explicit read permission | Order read/list and `GET /admin/orders` | Allow / `ADMIN_READ_ALLOWED` | Explicit permission gate implemented and tested |
+| PT-17 | Lab platform admin; explicit manage permission | Status-only order update | Allow / `ADMIN_MANAGE_ALLOWED` | Explicit permission gate implemented and tested |
 | PT-18 | Admin without required permission or requesting unknown action | Any | Deny / `ADMIN_PERMISSION_REQUIRED` or `ACTION_UNKNOWN` | Unknown action tested; permissions are fixture metadata but not evaluated |
 | PT-19 | Any principal; owner, tenant or grant context is conflicting/ambiguous | Any context-dependent action | Deny / `POLICY_CONTEXT_INVALID` | Partial: missing object denied; full context model absent |
 | PT-20 | Any principal; cross-tenant list request | `orders:list` | Filter to authorised tenant/objects or deny; never return another tenant | Owner filtering exists; tenant filtering absent |
@@ -120,8 +117,7 @@ capability is not implemented. Until then, it is denied. Invalid or extra update
 fields are rejected before mutation. Cross-owner and function-level denials use
 a generic client response and privacy-safe audit outcome.
 
-The 403-versus-404 non-disclosure response remains to be made consistent in the
-OpenAPI contract and implementation before non-local integration.
+Object-level reads and updates use a generic 404 response for missing, cross-owner, cross-tenant, or invalid-context objects, preventing existence disclosure. Function-level permission denials remain generic 403 responses. The runtime OpenAPI schema documents the required `X-Policy-Version: AP-1.0` header.
 
 ## 6. Sharing and administrative constraints
 
@@ -185,8 +181,4 @@ permission gates; the inventory-shape, missing-permission and denied-mutation
 regressions pass. [D11-F01 patch verification](patch-verification-log.md)
 records the evidence and pending independent closure review.
 
-Sharing, support, tenant attributes, tenant-admin scope, policy-version rejection
-and consistent non-disclosure remain unimplemented. Their required behavior is
-deny-by-default, but no executable implementation of those policy inputs is
-claimed. R-002 remains mitigating until the complete labelled matrix and
-cross-component false-positive/false-negative evidence pass.
+Sharing grant evaluation, the masked assigned-support view, tenant-admin scoped permissions, policy-version rejection and object-level non-disclosure now have implementation and regression evidence in the mock API. Grant persistence and administration are still fixture-based, not a production sharing-management service. R-002 remains mitigating until independent review, the complete labelled matrix and cross-component false-positive/false-negative evidence pass.
