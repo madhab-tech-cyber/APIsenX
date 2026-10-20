@@ -4,23 +4,31 @@
       "id": "user-a",
       "name": "Alice Example",
       "role": "customer",
-      "active": true
+      "active": true,
+      "tenant_id": "lab-tenant"
     },
     {
       "id": "user-b",
       "name": "Bob Example",
       "role": "customer",
-      "active": true
+      "active": true,
+      "tenant_id": "lab-tenant"
     },
     {
       "id": "admin-1",
       "name": "Alex Admin",
       "role": "admin",
-      "active": true
+      "active": true,
+      "tenant_id": "lab-tenant"
     }
   ],
   "roles": {
-    "customer": ["orders:read:own"],
-    "admin": ["orders:read:any", "orders:manage:any"]
+    "customer": [
+      "orders:read:own"
+    ],
+    "admin": [
+      "orders:read:any",
+      "orders:manage:any"
+    ]
   }
 }
