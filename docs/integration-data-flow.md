@@ -4,8 +4,9 @@
 
 **Date:** 2026-10-13
 
-**Current-status refresh:** 2026-10-19; baseline main
-`596b592f6c5a5bd60e3037746cf2c0ee1071777e`. See
+**Current-status refresh:** 2026-10-20 (Asia/Calcutta); baseline main
+`683a93a7f59938d6e22e8402ed617d1f8cb36101`. See
+[current Member 1 closeout](member1-closeout-2026-10-20.md), the historical
 [Member 1 corrective evidence](member1-governance-correction.md) and the
 [checkpoint register](member1-checkpoints.json). Older dated reviews are history.
 
@@ -22,16 +23,18 @@ minimum information that may cross each component boundary. It is a design and
 handoff baseline, not evidence that the full pipeline is running.
 
 In merged main, the local mock API request path is implemented and tested.
-PR #20 repaired D11-F01; 53 API/contract test methods and all nine inventory
+PR #20 repaired D11-F01; 57 API/authorization/contract methods and all nine inventory
 diagnostics pass. Independent closure review is still pending; the full
 tenant/sharing/support/version matrix remains incomplete:
 
 `lab client -> FastAPI authentication -> authorization policy -> synthetic JSON fixtures -> response and basic audit log`
 
-M2 capture design/headers, M3's tested collector library and M6's React fixture
-dashboard exist on separate unmerged branches; no live integrated sensor/
-collector/detector/dashboard acceptance is established. M4 analytics remains a
-scaffold. Main now has API/contract tests plus Ruff/dependency-audit CI with a
+M2 capture remains design/headers. M3's library is merged by PR #32 at
+`006bd13`, with proposed v1.1 schemas, explicit null/ambiguous correlation and
+unavailable/reset loss states. Its owner reports 22 macOS tests; the successful
+PR job runs Python checks, not Rust/Linux integration. M6's React fixture UI is
+still unmerged. No live sensor/collector/detector/dashboard acceptance is
+established. M4 analytics remains a scaffold. Main has API/contract tests plus Ruff/dependency-audit CI with a
 verified main-targeting PR trigger. M6's locked install, lint, TypeScript/build
 and dependency audit pass locally on `39902b3`; no UI test command exists, and
 its limited repository CI does not execute these build checks. None of that
@@ -67,7 +70,7 @@ still apply at every crossing.
 | ID | Producer -> consumer | Minimum data / contract | Classification | Security and failure requirements | Owner / status |
 |---|---|---|---|---|---|
 | IF-01 | Lab client -> mock API | HTTP method, documented route, bounded body and bearer credential under `openapi.yaml` | Credential is Secret in real use; current demo token is a Public lab fixture; request data is Internal or Restricted | Authenticate first, authorise server-side, validate size/type, return safe errors and never log credentials | M5 with independent review / local implementation and current operation/security contract checks pass; full AP-1.0 acceptance pending |
-| IF-02 | Mock API -> approved observation point | Allowlisted method, normalised route marker, response status, timing and correlation reference | Internal; Restricted when linked to identity, object or finding | Preserve TLS; exclude raw credentials, cookies, query values and bodies by default; loss must not bypass API authentication/authorisation | M1/M2/M5 / observation point not selected |
+| IF-02 | Mock API -> approved observation point | Allowlisted method, normalised route marker, response status, timing and correlation reference | Internal; Restricted when linked to identity, object or finding | Preserve TLS; exclude raw credentials, cookies, query values and bodies by default; loss must not bypass API authentication/authorisation | M5 candidate application hook and server-generated request UUID exist and pass API/privacy tests; M1/M2/M4 joint contract/attachment acceptance pending |
 | IF-03 | eBPF sensor -> collector | Versioned bounded kernel event: timestamp, process/cgroup reference, socket tuple or approved route marker, sequence and flags | Internal or Restricted | Verifier-safe bounded maps/events, type and length checks, sequence/drop counters; malformed events are rejected without crashing | M2 producer, M3 consumer / planned |
 | IF-04 | Collector -> analytics | Versioned batch of normalised events plus source, batch, correlation and health metadata | Restricted | Mutually authenticated encrypted transport, replay/freshness checks, maximum batch/event sizes, bounded queues, timeout and backpressure | M3 producer, M4 consumer / planned |
 | IF-05 | Analytics -> storage/audit | Masked telemetry summary, route inventory, policy version, finding and append-only audit event | Restricted; policy/contract material is Internal security-critical | Mask before write, separate least-privilege identities, encryption, idempotency, tamper evidence and approved retention/purge | M4 with M1/M6 review / storage not selected |
@@ -168,8 +171,9 @@ data classification is confirmed and the relevant risk evidence is linked.
 
 ## 9. Open blockers
 
-- The HTTPS-safe observation point and route-level coverage are not selected.
-- M3 has unmerged event/decision schemas and a library; IF-03 through IF-08
+- A candidate HTTPS-safe application hook exists, but observation provenance,
+  request-marker transport and route coverage lack joint M1/M2/M4 acceptance.
+- M3's event/decision schemas and library are merged; IF-03 through IF-08
   still lack accepted live producer/consumer compatibility evidence.
 - Storage technology, management API and service-identity mechanism are not
   selected.
@@ -181,8 +185,10 @@ data classification is confirmed and the relevant risk evidence is linked.
   evidence exists.
 - Producer and consumer owners have not yet recorded acceptance of these
   interface proposals.
-- Human checkpoint evidence remains pending in #14/#21/#23. PRs #20/#22/#24/#25
-  have no submitted reviews at this snapshot; merge is not independent approval.
+- Human checkpoint evidence remains pending despite closed #14/#21/#23; #33
+  tracks actual closeout. M5 supplied real responses; PR #28 has one M1 approval
+  for its own pinned revision. PRs #26/#31/#32 lack submitted independent reviews
+  at the October 20 snapshot. That approval does not cover later changes.
 - Main protection was approved by the project owner but could not be applied:
   the connector's protection endpoint returns HTTP 403 and CLI authentication
   is rejected. See the [owner action](main-protection-owner-action.md); do not

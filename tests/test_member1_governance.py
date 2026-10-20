@@ -51,6 +51,34 @@ class Member1GovernanceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_register(self.record)
 
+    def test_case_changed_author_signoff_is_still_self_approval(self):
+        item = self.completed_example()
+        item["independent_signoffs"][0]["by"] = self.record["document_author"].upper()
+        with self.assertRaises(ValueError):
+            validate_register(self.record)
+
+    def test_component_approval_cannot_complete_human_checkpoint(self):
+        self.assertTrue(self.record["component_reviews"])
+        self.record["checkpoints"][1]["status"] = "complete"
+        with self.assertRaises(ValueError):
+            validate_register(self.record)
+
+    def test_component_approval_rejects_self_review_or_unpinned_revision(self):
+        for field, value in (("by", "PAPPUKUMAR96727-SKETCH"), ("revision", "main")):
+            record = deepcopy(self.record)
+            record["component_reviews"][0][field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_register(record)
+
+    def test_closed_trackers_and_partial_response_do_not_complete_checkpoint(self):
+        observed = self.record["tracker_observations"]
+        observed["states"] = dict.fromkeys(observed["states"], "closed")
+        validate_register(self.record)
+        self.assertTrue(self.record["checkpoints"][1]["owner_responses"])
+        self.assertTrue(
+            all(c["status"] == "pending" for c in self.record["checkpoints"])
+        )
+
     def test_signoff_requires_pinned_revision_and_repository_reference(self):
         item = self.completed_example()
         for field, value in (("revision", "main"), ("reference", "http://example.com")):

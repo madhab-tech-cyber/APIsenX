@@ -1,5 +1,9 @@
 # Day 27 Patch Verification Log
 
+> October 20 follow-up: [current closeout](member1-closeout-2026-10-20.md)
+> records M5's later privacy/permission/startup changes, real handoff comments
+> and the pinned PR #28 approval, separately from missing review of PR #31.
+
 **Recorded:** 2026-10-19. **Owner:** M1. **Baseline:** main `c165964`.
 
 Assignment: verify fixes and update the risk register and patch log. This log

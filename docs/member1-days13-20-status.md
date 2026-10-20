@@ -1,5 +1,9 @@
 # Member 1 Days 13–20 Delivery Status
 
+> Current October 20 follow-up: [closeout](member1-closeout-2026-10-20.md)
+> credits real partial responses without completing human Days 14/15; earlier
+> issue-state snapshots below are historical. #33 tracks missing owner actions.
+
 > October 19 follow-up: [current verification](member1-oct19-verification.md)
 > and [patch log](patch-verification-log.md) credit the D11/contract/CI fixes.
 > Older failure statements below are dated history. Human Day 14/15 checkpoints
