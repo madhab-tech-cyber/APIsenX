@@ -6,12 +6,15 @@ info:
   version: 1.0.0
   description: >
     API contract for the authorized APIsenX security lab.
-    Authorization is enforced by the API using the authenticated
-    principal, role, resource ownership, sharing grants, and policy.
+    Authorization is enforced using authenticated identity, server-side
+    role permissions, tenant context, resource ownership, and policy.
+    Sharing grants remain unsupported until their policy and implementation
+    are approved and validated. This contract describes the mock lab only;
+    it does not claim production readiness or integrated AP-1.0 completion.
 
 servers:
   - url: http://localhost:8000
-    description: Local authorized lab (update to match the implementation)
+    description: Local authorized lab
 
 tags:
   - name: Orders
@@ -28,10 +31,15 @@ paths:
       summary: List orders accessible to the authenticated principal
       operationId: listOrders
       description: >
-        Customers require the server-side orders:read:own permission and
-        receive only their authorized owned orders. Lab administrators require
-        orders:read:any. The server derives identity and permissions from
-        server-side policy, never client-supplied owner or role fields.
+        Customers require the server-side orders:read:own permission.
+        Lab administrators require orders:read:any. Identity and permissions
+        are derived from server-side policy, never client-supplied owner or
+        role fields. Every returned order must pass tenant-context validation
+        before ownership-based visibility is evaluated. Missing, blank,
+        invalid, or mismatched tenant context is denied. The tenant identifier
+        is internal authorization context and is not exposed in the public
+        order response. This mock lab uses one shared lab tenant and does not
+        establish cross-tenant administration.
       responses:
         '200':
           description: Authorized order list
@@ -64,10 +72,14 @@ paths:
       operationId: getOrder
       description: >
         Customers require orders:read:own and may read an owned order.
-        Lab administrators require orders:read:any. Cross-owner sharing
-        remains unsupported and denied until its AP-1.0 grant and tenant
-        context are implemented. A different object ID alone is not proof
-        of an attack.
+        Lab administrators require orders:read:any. Tenant context is
+        validated before role permissions and ownership are evaluated.
+        Missing, blank, invalid, or mismatched tenant context is denied.
+        Cross-owner sharing remains unsupported and denied until its AP-1.0
+        grant, tenant context, and revocation policy are implemented and
+        independently reviewed. A different object ID alone is not proof
+        of an attack. Tenant identifiers are not exposed in the public
+        order response.
       responses:
         '200':
           description: Authorized order details
@@ -91,10 +103,14 @@ paths:
       operationId: updateOrder
       description: >
         Requires the server-side orders:manage:any function permission
-        and applicable object-level authorization. Permission is checked
-        independently of ownership before any mutation. Ordinary customers
-        must be denied. The server must record an audit event. Clients
-        cannot change the order owner, identifier, total, or currency.
+        and applicable object-level authorization. The API checks the
+        function permission independently of ownership before mutation.
+        Tenant context is validated before the order is changed. Missing,
+        blank, invalid, or mismatched tenant context is denied without
+        changing order state. Ordinary customers are denied. The server
+        records a privacy-conscious audit event. Clients cannot change
+        the order owner, identifier, total, or currency. Updates are
+        process-local and reset when the API process restarts.
       requestBody:
         required: true
         content:
@@ -123,16 +139,21 @@ paths:
     get:
       tags:
         - Administration
-      summary: List all orders for authorized administrators
+      summary: List orders for authorized lab administrators
       operationId: listAdminOrders
       description: >
         Requires the server-side orders:read:any function permission.
-        This check occurs before inventory iteration, including when the
-        inventory is empty. Object ownership cannot grant this function.
-        Denials produce a security audit event.
+        The permission check occurs before inventory iteration, including
+        when the inventory is empty. Object ownership cannot grant this
+        function permission. The mock fixtures use one shared lab tenant.
+        Tenant context must be valid and consistent; mixed-tenant inventory
+        is denied. This lab-wide administrative behavior does not establish
+        scoped tenant-administrator or support access and must not be used
+        to authorize cross-tenant operations. Denials produce a security
+        audit event.
       responses:
         '200':
-          description: All orders visible to the administrator
+          description: Orders visible to the authorized lab administrator
           content:
             application/json:
               schema:
@@ -196,6 +217,9 @@ components:
 
     Order:
       type: object
+      description: >
+        Public order representation. Tenant identifiers are internal
+        authorization context and are intentionally omitted from responses.
       required:
         - id
         - owner_id
@@ -279,7 +303,7 @@ components:
             $ref: '#/components/schemas/Error'
 
     Forbidden:
-      description: Authenticated principal lacks permission
+      description: Authenticated principal lacks permission or tenant access
       content:
         application/json:
           schema:
