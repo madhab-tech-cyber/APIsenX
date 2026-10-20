@@ -1,5 +1,10 @@
 # Member 1 Corrective Evidence and Remaining Gates
 
+> Historical October 19 correction. The
+> [October 20 closeout](member1-closeout-2026-10-20.md) supersedes current-state
+> claims below: M3 is merged, M5 handoffs and PR #28 approval are recorded, and
+> #14/#21/#23 are closed with underlying human requirements still pending.
+
 **Date:** 2026-10-19. **Branch:** `member1/security-architecture`.
 **Reviewed main:** `596b592f6c5a5bd60e3037746cf2c0ee1071777e`.
 

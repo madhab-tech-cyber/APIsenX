@@ -47,6 +47,16 @@ does not claim that any planned interface has been implemented or accepted.
 
 ## Review evidence
 
+Current October 20 state: M3's library is merged by PR #32, but not live Linux
+integration; M5's candidate hook/privacy/startup fixes and real handoffs exist.
+PR #28 has one M1 approval for its own SHA; PRs #26/#31/#32 have no submitted
+reviews. #14/#21/#23 are now closed with human gates still pending. Use
+[current closeout](member1-closeout-2026-10-20.md), the
+[checkpoint register](member1-checkpoints.json) and
+[Issue #33](https://github.com/madhab-tech-cyber/APIsenX/issues/33) for actual
+owner actions; older issue-state paragraphs below are dated history. M4's
+identity is still unconfirmed, with M1 coordinating rather than inventing it.
+
 [October 19 verification](member1-oct19-verification.md) credits the repaired API,
 main-PR CI and unmerged M3 library/M6 fixture dashboard, without accepting live
 integration. [Issue #14](https://github.com/madhab-tech-cyber/APIsenX/issues/14)

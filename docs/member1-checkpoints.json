@@ -1,8 +1,24 @@
 {
   "schema_version": 1,
-  "recorded_at": "2026-10-19T06:44:04Z",
-  "baseline": "596b592f6c5a5bd60e3037746cf2c0ee1071777e",
+  "recorded_at": "2026-10-20T06:13:42Z",
+  "baseline": "683a93a7f59938d6e22e8402ed617d1f8cb36101",
   "document_author": "madhab-tech-cyber",
+  "followup_issue": 33,
+  "tracker_observations": {
+    "observed_at": "2026-10-20T06:13:42Z",
+    "states": {"14": "closed", "21": "closed", "23": "closed", "33": "open"}
+  },
+  "component_reviews": [
+    {
+      "pull_request": 28,
+      "author": "pappukumar96727-sketch",
+      "by": "madhab-tech-cyber",
+      "state": "APPROVED",
+      "revision": "974e5129116380ed10ab17c12695c911fb8b6ee3",
+      "submitted_at": "2026-10-19T07:15:56Z",
+      "reference": "https://github.com/madhab-tech-cyber/APIsenX/pull/28#pullrequestreview-5568121111"
+    }
+  ],
   "integration_status": "blocked",
   "release_status": "held",
   "active_rule_count": 0,
@@ -22,7 +38,12 @@
       "status": "pending",
       "meeting": null,
       "reviewer_comments": [],
-      "owner_responses": [],
+      "owner_responses": [
+        {
+          "by": "pappukumar96727-sketch",
+          "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/21#issuecomment-6261814495"
+        }
+      ],
       "independent_signoffs": []
     },
     {
@@ -31,7 +52,16 @@
       "status": "pending",
       "meeting": null,
       "reviewer_comments": [],
-      "owner_responses": [],
+      "owner_responses": [
+        {
+          "by": "pappukumar96727-sketch",
+          "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/23#issuecomment-6264209411"
+        },
+        {
+          "by": "pappukumar96727-sketch",
+          "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/23#issuecomment-6264857467"
+        }
+      ],
       "independent_signoffs": [],
       "run_manifest": null
     }
