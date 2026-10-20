@@ -1,4 +1,3 @@
-
 import sys
 import unittest
 from pathlib import Path
@@ -9,6 +8,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
 
 import main
+
+HTTP_METHODS = {"get", "post", "patch", "put", "delete"}
 
 
 class OpenAPIContractTests(unittest.TestCase):
@@ -30,9 +31,7 @@ class OpenAPIContractTests(unittest.TestCase):
     def test_documented_operations_exist(self):
         for path, methods in self.contract["paths"].items():
             for method in methods:
-                if method not in {
-                    "get", "post", "patch", "put", "delete"
-                }:
+                if method not in HTTP_METHODS:
                     continue
 
                 with self.subTest(path=path, method=method):
@@ -45,9 +44,7 @@ class OpenAPIContractTests(unittest.TestCase):
     def test_operation_ids_match(self):
         for path, methods in self.contract["paths"].items():
             for method, operation in methods.items():
-                if method not in {
-                    "get", "post", "patch", "put", "delete"
-                }:
+                if method not in HTTP_METHODS:
                     continue
 
                 actual = self.generated["paths"][path][method]
@@ -61,9 +58,7 @@ class OpenAPIContractTests(unittest.TestCase):
     def test_documented_responses_exist_in_generated_schema(self):
         for path, methods in self.contract["paths"].items():
             for method, operation in methods.items():
-                if method not in {
-                    "get", "post", "patch", "put", "delete"
-                }:
+                if method not in HTTP_METHODS:
                     continue
 
                 actual = self.generated["paths"][path][method]
@@ -123,7 +118,9 @@ class OpenAPIContractTests(unittest.TestCase):
     def test_security_scheme_matches_runtime_bearer_auth(self):
         documented = self.contract["components"]["securitySchemes"]
         generated = self.generated["components"]["securitySchemes"]
+
         self.assertEqual(set(documented), set(generated))
+        self.assertIn("bearerAuth", documented)
         self.assertEqual(documented["bearerAuth"]["type"], "http")
         self.assertEqual(documented["bearerAuth"]["scheme"], "bearer")
         self.assertEqual(
@@ -138,15 +135,22 @@ class OpenAPIContractTests(unittest.TestCase):
     def test_every_operation_requires_authentication(self):
         for path, methods in self.generated["paths"].items():
             for method, operation in methods.items():
-                if method not in {"get", "post", "patch", "put", "delete"}:
+                if method not in HTTP_METHODS:
                     continue
+
                 with self.subTest(path=path, method=method):
                     security = operation.get(
-                        "security", self.generated.get("security", [])
+                        "security",
+                        self.generated.get("security", []),
                     )
-                    self.assertTrue(security)
+
                     self.assertTrue(
-                        any("bearerAuth" in item for item in security)
+                        security,
+                        "Operation must declare authentication security",
+                    )
+                    self.assertTrue(
+                        any("bearerAuth" in item for item in security),
+                        "Operation must require bearerAuth",
                     )
 
     def test_documented_and_runtime_operation_sets_match_exactly(self):
@@ -155,7 +159,7 @@ class OpenAPIContractTests(unittest.TestCase):
                 (path, method)
                 for path, methods in schema["paths"].items()
                 for method in methods
-                if method in {"get", "post", "patch", "put", "delete"}
+                if method in HTTP_METHODS
             }
 
         self.assertEqual(
@@ -171,6 +175,7 @@ class OpenAPIContractTests(unittest.TestCase):
         patch_description = self.contract["paths"]["/orders/{orderId}"]["patch"][
             "description"
         ]
+
         self.assertIn("orders:read:any", admin_description)
         self.assertIn("orders:manage", patch_description)
 
@@ -202,6 +207,65 @@ class OpenAPIContractTests(unittest.TestCase):
         self.assertIn("error", error["required"])
         self.assertIn("code", detail["required"])
         self.assertIn("message", detail["required"])
+
+    def test_tenant_boundary_is_documented_for_order_operations(self):
+        operations = (
+            self.contract["paths"]["/orders"]["get"],
+            self.contract["paths"]["/orders/{orderId}"]["get"],
+            self.contract["paths"]["/orders/{orderId}"]["patch"],
+            self.contract["paths"]["/admin/orders"]["get"],
+        )
+
+        for operation in operations:
+            with self.subTest(operation=operation.get("operationId")):
+                description = operation["description"].lower()
+                self.assertIn("tenant", description)
+                self.assertIn("denied", description)
+
+    def test_public_order_schema_does_not_expose_tenant_id(self):
+        documented = self.contract["components"]["schemas"]["Order"]
+        generated = self.generated["components"]["schemas"]["Order"]
+
+        self.assertNotIn("tenant_id", documented["properties"])
+        self.assertNotIn("tenant_id", generated["properties"])
+        self.assertIn(
+            "tenant identifiers",
+            documented["description"].lower(),
+        )
+
+    def test_admin_contract_does_not_claim_scoped_tenant_admin_access(self):
+        description = self.contract["paths"]["/admin/orders"]["get"][
+            "description"
+        ].lower()
+
+        self.assertIn("one shared lab tenant", description)
+        self.assertIn("does not establish scoped", description)
+        self.assertIn("cross-tenant operations", description)
+
+    def test_contract_documents_sharing_as_not_yet_supported(self):
+        description = self.contract["paths"]["/orders/{orderId}"]["get"][
+            "description"
+        ].lower()
+
+        self.assertIn("sharing", description)
+        self.assertTrue(
+            "not supported" in description
+            or "unsupported" in description
+            or "pending" in description,
+            "Contract must not imply sharing grants are implemented",
+        )
+
+    def test_contract_documents_process_local_patch_behavior(self):
+        description = self.contract["paths"]["/orders/{orderId}"]["patch"][
+            "description"
+        ].lower()
+
+        self.assertTrue(
+            "process-local" in description
+            or "process local" in description
+            or "restart" in description,
+            "Contract must document that mock API updates are not durable",
+        )
 
 
 if __name__ == "__main__":
