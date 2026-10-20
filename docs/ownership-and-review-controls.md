@@ -1,7 +1,7 @@
 # Verified Ownership and Review-Control Handoff
 
 **Owner:** Member 1. **Identity observed:** 2026-10-18 (Asia/Calcutta).
-**Control/CI status refreshed:** 2026-10-19.
+**Control/CI status refreshed:** 2026-10-20 (Asia/Calcutta).
 
 ## Identity evidence
 
@@ -46,6 +46,14 @@ is rejected. Implementation/readback is BLOCKED; see the exact
 does not mean protection is enabled. Do not merge this correction without real
 independent reviews simply because it fixes a prior review-control failure.
 
+October 20 update: PR #28 has an independent M1 approval for `974e512`.
+PRs #26/#31/#32 have no submitted reviews; the earlier approval does not extend
+to the latest API or collector revisions. M5's #21/#23 handoffs are real partial
+responses and are now linked in the checkpoint register. Earlier zero-response
+snapshots above remain historical. Main is still unprotected; the exact
+approved payload and safe owner utility are in
+[the protection instructions](main-protection-owner-action.md).
+
 M1 (repository owner), with M6 CI support, must review and configure:
 
 - PR-only changes into main; block direct/force pushes and branch deletion;
@@ -85,8 +93,10 @@ Treat [#14](https://github.com/madhab-tech-cyber/APIsenX/issues/14) and
 attendees/comments, owner responses, dispositions and independent sign-offs
 are linked. The corrective task reopened #14 at 06:44 UTC on October 19 with
 its unmet requirements retained; the owner closed it again at 06:58 UTC, still
-with zero comments. That later external change is preserved; #21/#23 stay open.
-The
+with zero comments. The owner has now also closed #21/#23; those state changes
+are preserved. M5 responses are credited, but actual meetings, M6 responses and
+checkpoint sign-offs are not fabricated. [Issue #33](https://github.com/madhab-tech-cyber/APIsenX/issues/33)
+tracks remaining owner actions. The
 [checkpoint register](member1-checkpoints.json) keeps Days 14/15/30 pending.
 Issue state alone is not checkpoint completion. Real comments/responses and
 independent sign-offs must be supplied by their actual authors.

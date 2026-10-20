@@ -8,11 +8,12 @@ API-Sentinel is an authorised lab project for runtime API inventory, shadow API 
 
 Development and testing must use the team-owned mock API or another environment with written authorisation. Do not capture production traffic, test third-party systems, intercept real credentials, or store real personal information.
 
-See the [October 19 verification](docs/member1-oct19-verification.md) and
+See the [October 20 Member 1 closeout](docs/member1-closeout-2026-10-20.md) and
 [final architecture/limitations](docs/final-architecture-and-presentation.md):
 the mock API authorization fix, contract checks and selected quality gates are
-merged; the Rust collector library and React fixture dashboard remain on peer
-branches; the detection component is a scaffold; and live sensor-to-analytics
+merged. The Rust collector library is now merged through PR #32; the React
+fixture dashboard remains on its peer branch. The detection component is a
+scaffold, and live sensor-to-analytics
 integration, detection validation and integrated acceptance remain incomplete.
 These descriptions distinguish implementation progress from accepted operation.
 
@@ -33,7 +34,10 @@ Independent review, owner acceptance, repository-protection verification and
 the human-led integrated demonstration remain outstanding. See the
 [October 19 verification](docs/member1-oct19-verification.md) and
 [Member 1 corrective status](docs/member1-governance-correction.md) for the
-dated evidence snapshots and current blockers.
+dated evidence snapshots. The [current checkpoint register](docs/member1-checkpoints.json)
+credits the real M5 handoffs and PR #28 approval without completing the human
+checkpoints. Earlier Issues #14/#21/#23 are closed; remaining actual owner
+actions are tracked in [#33](https://github.com/madhab-tech-cyber/APIsenX/issues/33).
 
 ## Intended component responsibilities
 
@@ -66,6 +70,14 @@ branches were unprotected, the ruleset list was empty, and protection setup was
 blocked by administrative access.** The required workflow is policy, not proof
 that branch protection is enabled. See [ownership and review controls](docs/ownership-and-review-controls.md)
 for the observed state and owner handoff.
+
+The October 20 readback still reports main unprotected and administration access
+denied. The approved settings now have a tested owner utility:
+`python scripts/manage_main_protection.py --check` is read-only;
+`--apply` creates only the approved main rule and verifies readback when run
+with actual repository administration access. See the
+[owner instructions](docs/main-protection-owner-action.md). A passing unit test
+or prepared settings file does not enable protection.
 
 ## Security objective
 

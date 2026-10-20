@@ -1,5 +1,9 @@
 # Day 29 Release Gate Decision
 
+> This is the dated decision on the candidate pinned below, not approval of
+> later main revisions. [October 20 closeout](member1-closeout-2026-10-20.md)
+> credits later work and keeps the release held pending a new frozen full gate.
+
 **Evaluated:** 2026-10-19. **Decision record:** `RG-LAB-20261019-01`.
 
 **Reviewed candidate scope:** API/main `c16596428d241fd2f61a97e62f8a50bf6c0768d6`,
