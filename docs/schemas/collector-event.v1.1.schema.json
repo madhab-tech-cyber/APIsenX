@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apisentinel.example/schemas/collector-event.v1.1.schema.json",
+  "title": "API-Sentinel normalized collector event v1.1 proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_name",
+    "schema_version",
+    "event_id",
+    "correlation_id",
+    "correlation_quality",
+    "source_id",
+    "sensor_sequence",
+    "sensor_monotonic_ns",
+    "observed_at",
+    "direction",
+    "method",
+    "status_code",
+    "route_template",
+    "route_quality",
+    "data_classification"
+  ],
+  "properties": {
+    "schema_name": {
+      "const": "collector_event"
+    },
+    "schema_version": {
+      "const": "1.1"
+    },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlation_id": {
+      "type": "null"
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "sensor_sequence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "sensor_monotonic_ns": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "direction": {
+      "enum": [
+        "ingress",
+        "egress"
+      ]
+    },
+    "method": {
+      "enum": [
+        "UNKNOWN",
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS"
+      ]
+    },
+    "status_code": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "route_template": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^/[^?#]*$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "route_quality": {
+      "enum": [
+        "approved_template",
+        "route_unavailable"
+      ]
+    },
+    "data_classification": {
+      "const": "restricted"
+    },
+    "correlation_quality": {
+      "enum": [
+        "unsupported",
+        "ambiguous"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "route_quality": {
+            "const": "approved_template"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "route_template": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "route_quality": {
+            "const": "route_unavailable"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "route_template": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

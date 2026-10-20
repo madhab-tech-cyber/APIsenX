@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import sys
 import unittest
 from copy import deepcopy
@@ -5,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
@@ -416,6 +419,70 @@ class MockAPITests(unittest.TestCase):
             main.ORDERS["order-1001"]["status"],
             original_status,
         )
+
+
+    def test_observation_exception_does_not_log_exception_text_or_traceback(self):
+        sentinel = "exception-secret-sentinel"
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0"},
+            "http_version": "1.1",
+            "method": "GET",
+            "scheme": "http",
+            "path": "/test-route",
+            "raw_path": b"/test-route",
+            "query_string": b"",
+            "headers": [],
+            "client": ("testclient", 123),
+            "server": ("testserver", 80),
+            "root_path": "",
+            "route": type("Route", (), {"path": "/test-route"})(),
+        }
+        request = Request(scope)
+
+        async def fail_call_next(_request):
+            raise RuntimeError(sentinel)
+
+        with self.assertLogs("apisenx.audit", level="ERROR") as captured:
+            with self.assertRaisesRegex(RuntimeError, sentinel):
+                asyncio.run(main.observe_request(request, fail_call_next))
+
+        logged = "\\n".join(captured.output)
+        self.assertIn("status=500", logged)
+        self.assertIn("outcome=unhandled_exception", logged)
+        self.assertNotIn(sentinel, logged)
+        self.assertNotIn("Traceback", logged)
+
+    def test_observation_hook_emits_route_template_without_sensitive_values(self):
+        # Keep httpx's test-client logger from printing the intentionally
+        # synthetic query values while the application hook is under test.
+        httpx_logger = logging.getLogger("httpx")
+        previous_level = httpx_logger.level
+        httpx_logger.setLevel(logging.WARNING)
+        try:
+            with self.assertLogs("apisenx.audit", level="INFO") as captured:
+                response = client.get(
+                    "/orders/order-1001?tenant_id=tenant-secret&debug=query-secret",
+                    headers=USER_A,
+                )
+        finally:
+            httpx_logger.setLevel(previous_level)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.headers.get("X-Correlation-ID"))
+        log_text = "\n".join(captured.output)
+        self.assertIn("route=/orders/{orderId}", log_text)
+        self.assertIn("method=GET", log_text)
+        self.assertIn("status=200", log_text)
+        for forbidden_value in (
+            "user-a",
+            "order-1001",
+            "lab-user-a-token",
+            "tenant-secret",
+            "query-secret",
+        ):
+            with self.subTest(forbidden_value=forbidden_value):
+                self.assertNotIn(forbidden_value, log_text)
 
 
 if __name__ == "__main__":

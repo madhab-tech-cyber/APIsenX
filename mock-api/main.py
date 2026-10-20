@@ -1,6 +1,8 @@
 
 import logging
 import sys
+import time
+import uuid
 from pathlib import Path
 from typing import Literal
 
@@ -36,6 +38,42 @@ app = FastAPI(
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("apisenx.audit")
+
+
+@app.middleware("http")
+async def observe_request(request: Request, call_next):
+    """Emit allowlisted request metadata; never inspect payloads or query values."""
+    correlation_id = str(uuid.uuid4())
+    started = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        route = request.scope.get("route")
+        route_template = getattr(route, "path", "unmatched")
+        # Never emit exception text or traceback in routine telemetry: either
+        # may contain request-derived or otherwise sensitive values.
+        logger.error(
+            "observation correlation_id=%s method=%s route=%s status=500 "
+            "outcome=unhandled_exception",
+            correlation_id,
+            request.method,
+            route_template,
+        )
+        raise
+
+    route = request.scope.get("route")
+    route_template = getattr(route, "path", "unmatched")
+    elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+    logger.info(
+        "observation correlation_id=%s method=%s route=%s status=%s elapsed_ms=%s",
+        correlation_id,
+        request.method,
+        route_template,
+        response.status_code,
+        elapsed_ms,
+    )
+    response.headers["X-Correlation-ID"] = correlation_id
+    return response
 
 # Demo credentials for the local security lab only.
 # Never use these tokens in production.
@@ -140,12 +178,14 @@ def audit(
     order_id: str,
     outcome: str,
 ) -> None:
+    # Do not put raw subject/resource identifiers into routine logs. The
+    # identifiers remain server-side inputs to the decision, not telemetry.
     logger.info(
-        "audit actor=%s action=%s order_id=%s outcome=%s",
-        actor,
+        "audit action=%s outcome=%s actor_ref_present=%s resource_ref_present=%s",
         action,
-        order_id,
         outcome,
+        bool(actor),
+        bool(order_id and order_id != "*"),
     )
 
 
