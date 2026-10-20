@@ -94,6 +94,8 @@ class MockAPITests(unittest.TestCase):
     def test_active_same_tenant_share_grant_allows_read_only_access(self):
         grant = {
             "grant_id": "grant-test",
+            "resource_type": "order",
+            "issuer": "apisenx-test-fixture",
             "policy_version": "AP-1.0",
             "tenant_id": "lab-tenant",
             "resource_id": "order-1002",
@@ -106,10 +108,41 @@ class MockAPITests(unittest.TestCase):
             response = client.get("/orders/order-1002", headers=USER_A)
         self.assertEqual(response.status_code, 200)
 
+    def test_share_grant_missing_required_schema_fields_is_denied(self):
+        base_grant = {
+            "grant_id": "grant-schema-test",
+            "resource_type": "order",
+            "issuer": "apisenx-test-fixture",
+            "policy_version": "AP-1.0",
+            "tenant_id": "lab-tenant",
+            "resource_id": "order-1002",
+            "grantee_subject": "user-a",
+            "actions": ["orders:read"],
+            "expires_at": "2099-01-01T00:00:00+00:00",
+            "revoked": False,
+        }
+
+        for missing_field in ("grant_id", "resource_type", "issuer"):
+            grant = deepcopy(base_grant)
+            grant.pop(missing_field)
+
+            with (
+                self.subTest(missing_field=missing_field),
+                patch("authorization.load_sharing_grants", return_value=[grant]),
+            ):
+                response = client.get("/orders/order-1002", headers=USER_A)
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(
+                    response.json()["error"],
+                    {"code": "NOT_FOUND", "message": "Order not found"},
+                )
+
     def test_revoked_or_expired_share_grants_are_denied_without_disclosure(self):
         grants = [
             {
                 "grant_id": "revoked",
+                "resource_type": "order",
+                "issuer": "apisenx-test-fixture",
                 "policy_version": "AP-1.0",
                 "tenant_id": "lab-tenant",
                 "resource_id": "order-1002",
@@ -120,6 +153,8 @@ class MockAPITests(unittest.TestCase):
             },
             {
                 "grant_id": "expired",
+                "resource_type": "order",
+                "issuer": "apisenx-test-fixture",
                 "policy_version": "AP-1.0",
                 "tenant_id": "lab-tenant",
                 "resource_id": "order-1002",
@@ -145,6 +180,8 @@ class MockAPITests(unittest.TestCase):
         grants = [
             {
                 "grant_id": "not-yet-valid",
+                "resource_type": "order",
+                "issuer": "apisenx-test-fixture",
                 "policy_version": "AP-1.0",
                 "tenant_id": "lab-tenant",
                 "resource_id": "order-1002",
@@ -156,6 +193,8 @@ class MockAPITests(unittest.TestCase):
             },
             {
                 "grant_id": "wrong-tenant",
+                "resource_type": "order",
+                "issuer": "apisenx-test-fixture",
                 "policy_version": "AP-1.0",
                 "tenant_id": "other-tenant",
                 "resource_id": "order-1002",
@@ -166,6 +205,8 @@ class MockAPITests(unittest.TestCase):
             },
             {
                 "grant_id": "wrong-version",
+                "resource_type": "order",
+                "issuer": "apisenx-test-fixture",
                 "policy_version": "AP-9.9",
                 "tenant_id": "lab-tenant",
                 "resource_id": "order-1002",
@@ -176,6 +217,8 @@ class MockAPITests(unittest.TestCase):
             },
             {
                 "grant_id": "malformed-actions",
+                "resource_type": "order",
+                "issuer": "apisenx-test-fixture",
                 "policy_version": "AP-1.0",
                 "tenant_id": "lab-tenant",
                 "resource_id": "order-1002",
@@ -186,6 +229,8 @@ class MockAPITests(unittest.TestCase):
             },
             {
                 "grant_id": "naive-expiry",
+                "resource_type": "order",
+                "issuer": "apisenx-test-fixture",
                 "policy_version": "AP-1.0",
                 "tenant_id": "lab-tenant",
                 "resource_id": "order-1002",
