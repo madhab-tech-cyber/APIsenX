@@ -61,7 +61,8 @@ paths:
         Unknown or missing policy versions are rejected. Tenant identifiers
         are internal authorization context and are omitted from responses.
         Sharing grants are server-resolved, same-tenant, read-only and
-        rejected when revoked, expired or version-mismatched.
+        denied when revoked, expired or version-mismatched. Invalid tenant
+        context is denied; tenant identifiers remain internal.
       responses:
         '200':
           description: Authorized order list
@@ -95,7 +96,7 @@ paths:
         - $ref: '#/components/parameters/PolicyVersion'
       description: >
         Customers require orders:read:own and may read an owned order or an
-        order covered by a valid same-tenant, read-only server-resolved grant.
+        order covered by a valid same-tenant, read-only server-resolved sharing grant.
         Lab administrators require orders:read:any; tenant admins require
         orders:read:tenant and are scoped to their server-resolved tenant.
         Requests must provide X-Policy-Version: AP-1.0. Missing or unknown
@@ -136,7 +137,7 @@ paths:
         function-level permission denials use a generic 403. The server
         records a privacy-conscious audit event. Clients cannot change the
         order owner, identifier, total, or currency. Updates are process-local
-        and reset when the API process restarts.
+        and reset when the API process restarts. Cross-tenant access is denied.
       requestBody:
         required: true
         content:
