@@ -500,12 +500,26 @@ def custom_openapi():
     )
 
     # Validation errors are converted to HTTP 400 by the custom handler.
-    # Remove FastAPI's default 422 response from every operation.
+    # Remove FastAPI's default 422 response and document the policy version
+    # required by the request dependency on every operation.
     for path_item in openapi_schema.get("paths", {}).values():
         for operation in path_item.values():
             if isinstance(operation, dict):
                 responses = operation.get("responses", {})
                 responses.pop("422", None)
+                parameters = operation.setdefault("parameters", [])
+                if not any(
+                    parameter.get("name") == "X-Policy-Version"
+                    and parameter.get("in") == "header"
+                    for parameter in parameters
+                ):
+                    parameters.append({
+                        "name": "X-Policy-Version",
+                        "in": "header",
+                        "required": True,
+                        "description": "Authorization policy contract version; only AP-1.0 is accepted.",
+                        "schema": {"type": "string", "enum": ["AP-1.0"]},
+                    })
 
     app.openapi_schema = openapi_schema
 
