@@ -106,20 +106,41 @@ def authorize(
             if order.get("owner_id") == actor_id:
                 return True, "owner_read_allowed"
             from datetime import datetime, timezone
+
             now = datetime.now(timezone.utc)
             for grant in load_sharing_grants():
+                if not isinstance(grant, dict):
+                    continue
                 try:
                     expires_at = datetime.fromisoformat(grant.get("expires_at", ""))
+                    starts_at_raw = grant.get("starts_at")
+                    starts_at = (
+                        datetime.fromisoformat(starts_at_raw)
+                        if starts_at_raw is not None
+                        else None
+                    )
                 except (TypeError, ValueError):
+                    continue
+
+                # Naive timestamps are ambiguous and therefore fail closed.
+                if (
+                    expires_at.tzinfo is None
+                    or (starts_at is not None and starts_at.tzinfo is None)
+                ):
+                    continue
+                actions = grant.get("actions")
+                if not isinstance(actions, list) or not all(
+                    isinstance(item, str) for item in actions
+                ):
                     continue
                 if (
                     grant.get("grantee_subject") == actor_id
                     and grant.get("resource_id") == order_id
-                    and grant.get("tenant_id") == actor_tenant
-                    and "orders:read" in grant.get("actions", [])
+                    and grant.get("tenant_id") == actor_tenant == resource_tenant
+                    and "orders:read" in actions
                     and grant.get("revoked") is False
                     and grant.get("policy_version") == policy_version
-                    and expires_at.tzinfo is not None
+                    and (starts_at is None or starts_at <= now)
                     and expires_at > now
                 ):
                     return True, "shared_read_allowed"
