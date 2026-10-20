@@ -1,4 +1,4 @@
-
+﻿
 import json
 from pathlib import Path
 from typing import Any
@@ -108,11 +108,31 @@ def authorize(
             from datetime import datetime, timezone
 
             now = datetime.now(timezone.utc)
+
             for grant in load_sharing_grants():
                 if not isinstance(grant, dict):
                     continue
+
+                # Required grant schema fields must be non-empty strings.
+                required_text_fields = (
+                    "grant_id",
+                    "resource_type",
+                    "issuer",
+                    "policy_version",
+                    "tenant_id",
+                    "resource_id",
+                    "grantee_subject",
+                )
+                if any(
+                    not isinstance(grant.get(field), str)
+                    or not grant[field].strip()
+                    for field in required_text_fields
+                ):
+                    continue
+
                 try:
                     expires_at = datetime.fromisoformat(grant.get("expires_at", ""))
+
                     starts_at_raw = grant.get("starts_at")
                     starts_at = (
                         datetime.fromisoformat(starts_at_raw)
