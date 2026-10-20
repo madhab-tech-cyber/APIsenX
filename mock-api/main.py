@@ -471,8 +471,13 @@ def list_admin_orders(
 )
 def list_support_orders(actor: dict = Depends(get_principal)):
     # Support receives only explicitly assigned records and only masked fields.
-    if actor.get("role") != "support" or not has_permission(actor, "orders:read:assigned"):
-        deny(actor["id"], "support:orders:read", "*", "support_permission_required")
+    if (
+        actor.get("role") != "support"
+        or not has_permission(actor, "orders:read:assigned")
+    ):
+        deny(
+            actor["id"], "support:orders:read", "*", "support_permission_required"
+        )
     assigned = actor.get("assigned_order_ids")
     if not isinstance(assigned, list):
         deny(actor["id"], "support:orders:read", "*", "support_assignment_missing")
@@ -481,7 +486,10 @@ def list_support_orders(actor: dict = Depends(get_principal)):
         order = ORDERS.get(order_id)
         if order is None:
             continue
-        if not actor.get("tenant_id") or order.get("tenant_id") != actor.get("tenant_id"):
+        if (
+            not actor.get("tenant_id")
+            or order.get("tenant_id") != actor.get("tenant_id")
+        ):
             continue
         visible.append({"id": order["id"], "status": order["status"]})
     audit(actor["id"], "support:orders:read", "*", "ALLOW")
@@ -517,7 +525,10 @@ def custom_openapi():
                         "name": "X-Policy-Version",
                         "in": "header",
                         "required": True,
-                        "description": "Authorization policy contract version; only AP-1.0 is accepted.",
+                        "description": (
+                            "Authorization policy contract version; "
+                            "only AP-1.0 is accepted."
+                        ),
                         "schema": {"type": "string", "enum": ["AP-1.0"]},
                     })
 
