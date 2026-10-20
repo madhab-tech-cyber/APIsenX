@@ -24,7 +24,6 @@ jobs:
         shell: bash
         run: |
           set -e
-
           forbidden_files=(
             ".env"
             ".env.local"
@@ -36,7 +35,7 @@ jobs:
           )
 
           for pattern in "${forbidden_files[@]}"; do
-            if find . -type f -not -path './.git/*' -name "$pattern" | grep -q .; then
+            if find . -type f -not -path './.git/*' -not -path './dashboard/node_modules/*' -name "$pattern" | grep -q .; then
               echo "Forbidden sensitive file detected: $pattern"
               exit 1
             fi
@@ -46,10 +45,42 @@ jobs:
         shell: bash
         run: |
           set -e
-
           test -d dashboard
           test -d tests
           test -f SECURITY.md
           test -f CONTRIBUTING.md
-
           echo "Repository foundation checks passed."
+
+  dashboard-check:
+    name: Dashboard quality and security checks
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: dashboard
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        run: npm ci
+
+      - name: Lint dashboard
+        run: npm run lint
+
+      - name: Run dashboard tests
+        run: npm test
+
+      - name: Build dashboard
+        run: npm run build
+
+      - name: Audit dashboard dependencies
+        run: npm audit --audit-level=high
