@@ -41,8 +41,16 @@ class MockAPITests(unittest.TestCase):
 
 
     def test_policy_version_is_required_and_unknown_version_is_rejected(self):
-        missing = client.get("/orders", headers={"Authorization": "Bearer lab-user-a-token"})
-        unknown = client.get("/orders", headers={"Authorization": "Bearer lab-user-a-token", "X-Policy-Version": "AP-9.9"})
+        missing = client.get(
+            "/orders", headers={"Authorization": "Bearer lab-user-a-token"}
+        )
+        unknown = client.get(
+            "/orders",
+            headers={
+                "Authorization": "Bearer lab-user-a-token",
+                "X-Policy-Version": "AP-9.9",
+            },
+        )
         self.assertEqual(missing.status_code, 400)
         self.assertEqual(unknown.status_code, 400)
         self.assertEqual(missing.json()["error"]["code"], "INVALID_REQUEST")
@@ -52,7 +60,10 @@ class MockAPITests(unittest.TestCase):
     def test_support_view_returns_only_assigned_masked_fields(self):
         response = client.get("/support/orders", headers=SUPPORT)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["orders"], [{"id": "order-1002", "status": "shipped"}])
+        self.assertEqual(
+            response.json()["orders"],
+            [{"id": "order-1002", "status": "shipped"}],
+        )
         self.assertNotIn("total", response.text)
         self.assertNotIn("owner_id", response.text)
         self.assertNotIn("currency", response.text)
@@ -68,7 +79,11 @@ class MockAPITests(unittest.TestCase):
         self.assertEqual(len(response.json()["orders"]), 3)
 
     def test_tenant_admin_can_manage_same_tenant_order_with_permission(self):
-        response = client.patch("/orders/order-1001", headers=TENANT_ADMIN, json={"status": "shipped"})
+        response = client.patch(
+            "/orders/order-1001",
+            headers=TENANT_ADMIN,
+            json={"status": "shipped"},
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "shipped")
 
@@ -93,14 +108,38 @@ class MockAPITests(unittest.TestCase):
 
     def test_revoked_or_expired_share_grants_are_denied_without_disclosure(self):
         grants = [
-            {"grant_id": "revoked", "policy_version": "AP-1.0", "tenant_id": "lab-tenant", "resource_id": "order-1002", "grantee_subject": "user-a", "actions": ["orders:read"], "expires_at": "2099-01-01T00:00:00+00:00", "revoked": True},
-            {"grant_id": "expired", "policy_version": "AP-1.0", "tenant_id": "lab-tenant", "resource_id": "order-1002", "grantee_subject": "user-a", "actions": ["orders:read"], "expires_at": "2000-01-01T00:00:00+00:00", "revoked": False},
+            {
+                "grant_id": "revoked",
+                "policy_version": "AP-1.0",
+                "tenant_id": "lab-tenant",
+                "resource_id": "order-1002",
+                "grantee_subject": "user-a",
+                "actions": ["orders:read"],
+                "expires_at": "2099-01-01T00:00:00+00:00",
+                "revoked": True,
+            },
+            {
+                "grant_id": "expired",
+                "policy_version": "AP-1.0",
+                "tenant_id": "lab-tenant",
+                "resource_id": "order-1002",
+                "grantee_subject": "user-a",
+                "actions": ["orders:read"],
+                "expires_at": "2000-01-01T00:00:00+00:00",
+                "revoked": False,
+            },
         ]
         for grant in grants:
-            with self.subTest(grant=grant["grant_id"]), patch("authorization.load_sharing_grants", return_value=[grant]):
+            with (
+                self.subTest(grant=grant["grant_id"]),
+                patch("authorization.load_sharing_grants", return_value=[grant]),
+            ):
                 response = client.get("/orders/order-1002", headers=USER_A)
                 self.assertEqual(response.status_code, 404)
-                self.assertEqual(response.json()["error"], {"code": "NOT_FOUND", "message": "Order not found"})
+                self.assertEqual(
+                    response.json()["error"],
+                    {"code": "NOT_FOUND", "message": "Order not found"},
+                )
 
     # Customer access and ownership
 
