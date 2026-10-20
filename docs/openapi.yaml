@@ -18,26 +18,50 @@ security:
   - bearerAuth: []
 
 paths:
+  /support/orders:
+    get:
+      tags:
+        - Orders
+      summary: List assigned support orders with masked fields only
+      operationId: listSupportOrders
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
+      responses:
+        '200':
+          description: Assigned, masked support orders
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [orders]
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportOrder'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /orders:
     get:
       tags:
         - Orders
       summary: List orders accessible to the authenticated principal
       operationId: listOrders
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
       description: >
-        Customers require the server-side orders:read:own permission.
-        Lab administrators require orders:read:any. Identity and
-        permissions are resolved server-side, never from client-supplied
-        owner or role fields. The current implementation checks tenant
-        identifiers on actor and order fixtures where present. It does
-        not implement the complete AP-1.0 tenant-context model or
-        policy-version negotiation. Missing, blank, invalid, or mismatched
-        tenant context is denied by the current fixture-based checks where
-        applicable. This does not represent the complete AP-1.0
-        tenant-context model. Tenant identifiers are internal authorization
-        context and are not exposed in the public order response. The mock
-        fixtures use one shared lab tenant; this does not establish
-        cross-tenant administration.
+        Customers require orders:read:own and may read same-tenant active
+        read shares. Tenant admins require orders:read:tenant and are scoped
+        to their server-resolved tenant. Lab administrators require
+        orders:read:any. Requests must send X-Policy-Version: AP-1.0.
+        Unknown or missing policy versions are rejected. Tenant identifiers
+        are internal authorization context and are omitted from responses.
+        Sharing grants are server-resolved, same-tenant, read-only and
+        rejected when revoked, expired or version-mismatched.
       responses:
         '200':
           description: Authorized order list
@@ -67,6 +91,8 @@ paths:
         - Orders
       summary: Read an order
       operationId: getOrder
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
       description: >
         Customers require orders:read:own and may read an owned order.
         Lab administrators require orders:read:any. The current
@@ -102,6 +128,8 @@ paths:
         - Orders
       summary: Update an order
       operationId: updateOrder
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
       description: >
         Requires the server-side orders:manage:any function permission
         and applicable object-level authorization. The function
@@ -146,6 +174,8 @@ paths:
         - Administration
       summary: List orders for authorized lab administrators
       operationId: listAdminOrders
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
       description: >
         Requires the server-side orders:read:any function permission.
         The permission check occurs before inventory iteration,
@@ -189,6 +219,15 @@ components:
       scheme: bearer
 
   parameters:
+    PolicyVersion:
+      name: X-Policy-Version
+      in: header
+      required: true
+      description: Authorization policy contract version; only AP-1.0 is accepted.
+      schema:
+        type: string
+        enum: [AP-1.0]
+      example: AP-1.0
     OrderId:
       name: orderId
       in: path
@@ -259,6 +298,17 @@ components:
           type: string
           pattern: '^[A-Z]{3}$'
           example: INR
+
+    SupportOrder:
+      type: object
+      required: [id, status]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [processing, shipped, delivered]
+      additionalProperties: false
 
     OrderUpdate:
       type: object
