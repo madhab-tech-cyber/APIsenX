@@ -12,8 +12,10 @@ See the [October 20 Member 1 closeout](docs/member1-closeout-2026-10-20.md) and
 [final architecture/limitations](docs/final-architecture-and-presentation.md):
 the mock API authorization fix, contract checks and selected quality gates are
 merged. The Rust collector library is now merged through PR #32; the React
-fixture dashboard remains on its peer branch. The detection component is a
-scaffold, and live sensor-to-analytics
+fixture dashboard remains on its peer branch. On `member4/detection`,
+[Days 1–10 analytics](docs/member4-days01-10-evidence.md) now supplies authenticated
+local ingestion, strict schemas, volatile masked storage, route discovery and
+fixture-backed ownership evaluation. Live sensor-to-analytics
 integration, detection validation and integrated acceptance remain incomplete.
 These descriptions distinguish implementation progress from accepted operation.
 
@@ -46,7 +48,7 @@ is implemented, merged or accepted:
 
 - `ebpf/` - Intended Linux eBPF observation layer.
 - `collector/` - Intended Rust event collector, enforcement adapter, and performance measurement.
-- `analytics/` - Intended Python ingestion, route discovery, BOLA/BFLA detection, masking, and audit APIs.
+- `analytics/` - Local monitor-only ingestion, route discovery and read-ownership evaluation; BFLA, durable audit and dashboard read APIs remain pending.
 - `mock-api/` - Authorised e-commerce reference application and OpenAPI contract.
 - `dashboard/` - Intended React endpoint inventory, alerts, investigation, and health views; current peer-branch UI is fixture-based.
 - `tests/` - Security, contract, integration, performance, and failure tests; actual coverage depends on the executed test suite.
