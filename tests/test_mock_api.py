@@ -518,6 +518,50 @@ class MockAPITests(unittest.TestCase):
             response.json()["error"]["code"], "FORBIDDEN"
         )
 
+    def test_altered_demo_token_is_denied(self):
+        # Opaque demo tokens must match the configured token exactly.
+        altered_headers = {
+            **POLICY,
+            "Authorization": "Bearer lab-user-a-tokeN",
+        }
+
+        response = client.get("/orders", headers=altered_headers)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json()["error"]["code"], "UNAUTHENTICATED"
+        )
+        self.assertNotIn("orders", response.json())
+
+    def test_customer_token_cannot_access_admin_orders(self):
+        response = client.get("/admin/orders", headers=USER_A)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["error"]["code"], "FORBIDDEN")
+        self.assertNotIn("orders", response.json())
+
+    def test_replayed_valid_read_request_follows_bearer_policy(self):
+        # The current demo-token design permits repeated use of a valid token.
+        first = client.get("/orders", headers=USER_A)
+        second = client.get("/orders", headers=USER_A)
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(first.json(), second.json())
+
+    def test_denied_customer_update_does_not_mutate_order(self):
+        before = deepcopy(main.ORDERS["order-1001"])
+
+        response = client.patch(
+            "/orders/order-1001",
+            headers=USER_A,
+            json={"status": "delivered"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["error"]["code"], "FORBIDDEN")
+        self.assertEqual(main.ORDERS["order-1001"], before)
+
     # Admin permissions and valid updates
 
     def test_admin_can_list_all_orders(self):
