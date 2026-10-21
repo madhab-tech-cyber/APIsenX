@@ -10,13 +10,15 @@ sequence are maintained in
 
 ## Implementation status
 
-As of 2026-10-19, main contains the lab mock API, D11-F01 fix, contract checks
-and API/quality CI. A Rust collector library and React fixture dashboard exist
-on separate member branches; neither is an accepted live integration. M2 has
+As of 2026-10-20, main contains the lab mock API, D11-F01/privacy/observation
+fixes, contract checks, API/quality CI and the merged Rust collector library.
+The React fixture dashboard remains on its member branch. Neither library nor
+UI constitutes accepted live integration. M2 has
 design/header work, M4 remains a scaffold, and the live sensor/detector/storage/
 protected management pipeline is incomplete. See the pinned
+[current closeout](member1-closeout-2026-10-20.md); the older
 [final architecture and limitations](final-architecture-and-presentation.md)
-and [verification baseline](member1-oct19-verification.md).
+and [verification baseline](member1-oct19-verification.md) retain their dates.
 
 The responsibilities below describe the intended system, not implemented
 capabilities. In particular, multi-tenancy, shadow-route detection, active

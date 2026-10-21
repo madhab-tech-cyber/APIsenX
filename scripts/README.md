@@ -10,3 +10,10 @@ The checker does not contact GitHub, prove a linked statement is true, enforce
 branch protection or grant release/active-rule approval. Owners must inspect the
 actual evidence and live settings. Tests run in the normal unittest discovery.
 
+`python scripts/manage_main_protection.py --check` checks only the approved
+main-branch settings using the authenticated GitHub CLI. The explicit `--apply`
+mode creates those settings only for this repository's main branch, refuses
+to overwrite an existing noncompliant rule, and requires verified readback.
+It never writes on authentication/permission failure. See
+[owner instructions](../docs/main-protection-owner-action.md).
+

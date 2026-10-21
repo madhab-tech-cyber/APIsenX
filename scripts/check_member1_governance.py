@@ -17,11 +17,13 @@ def require(condition, message):
 
 
 def timestamp(value):
+    require(isinstance(value, str), "timestamp must be text")
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     require(parsed.tzinfo is not None, "timestamp must include a timezone")
 
 
 def evidence_reference(value):
+    require(isinstance(value, str), "evidence reference must be text")
     parsed = urlsplit(value)
     require(
         parsed.scheme == "https"
@@ -39,6 +41,31 @@ def validate_register(record):
     require(record["release_status"] in {"held", "approved"}, "bad release status")
     require(type(record["active_rule_count"]) is int, "rule count must be an int")
     require(record["active_rule_count"] >= 0, "negative rule count")
+    if "tracker_observations" in record:
+        observation = record["tracker_observations"]
+        timestamp(observation["observed_at"])
+        require(
+            all(
+                state in {"open", "closed"} for state in observation["states"].values()
+            ),
+            "invalid observed tracker state",
+        )
+    for review in record.get("component_reviews", []):
+        require(
+            type(review["pull_request"]) is int and review["pull_request"] > 0,
+            "component review requires a PR number",
+        )
+        require(review["state"] == "APPROVED", "record actual component approval only")
+        require(
+            review["by"].casefold() != review["author"].casefold(),
+            "component author cannot independently approve their own PR",
+        )
+        require(
+            re.fullmatch(r"[0-9a-f]{40}", review["revision"]),
+            "component approval must pin its own revision",
+        )
+        timestamp(review["submitted_at"])
+        evidence_reference(review["reference"])
     if record["integration_status"] != "accepted":
         require(record["release_status"] == "held", "blocked integration holds release")
         require(
@@ -70,7 +97,7 @@ def validate_register(record):
                 evidence_reference(entry["reference"])
                 if field == "independent_signoffs":
                     require(
-                        entry["by"] != record["document_author"],
+                        entry["by"].casefold() != record["document_author"].casefold(),
                         "author cannot independently approve their own work",
                     )
                     require(

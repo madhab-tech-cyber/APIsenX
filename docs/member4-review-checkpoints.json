@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "observed_date": "2026-10-21",
+  "timezone": "Asia/Calcutta",
+  "implementation_owner": "madhab-tech-cyber",
+  "calendar_days_claimed": false,
+  "mode": "monitor_only",
+  "active_rules": 0,
+  "followup_issue": 48,
+  "prior_delivery": {"pr": 42, "merged_by_owner": true, "submitted_reviews": 0, "comments": 0},
+  "day14": {
+    "status": "pending_human_demonstration",
+    "automated_artifact": "analytics/review_demo.py",
+    "meeting_date": null,
+    "actual_attendees": [],
+    "review_comments": [],
+    "independent_signoffs": []
+  },
+  "day15": {
+    "status": "pending_actual_feedback",
+    "engineering_regressions": "tests/test_analytics_detection.py",
+    "actual_feedback": [],
+    "owner_dispositions": [],
+    "independent_signoffs": []
+  }
+}
