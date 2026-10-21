@@ -7,8 +7,9 @@
 /.github/ @madhab-tech-cyber @jayitape
 /ebpf/ @renu-stack @madhab-tech-cyber
 /collector/ @aadi3006 @madhab-tech-cyber
-# Member 4 identity is unconfirmed: Member 1 is the explicitly interim owner.
-/analytics/ @madhab-tech-cyber
+# M1 implements unavailable Member 4's work; independent component review needed.
+# Multiple listed owners still mean ANY owner, not approval from each.
+/analytics/ @madhab-tech-cyber @aadi3006 @pappukumar96727-sketch @jayitape
 /mock-api/ @pappukumar96727-sketch @madhab-tech-cyber
 /src/authorization.py @pappukumar96727-sketch @madhab-tech-cyber
 /docs/openapi.yaml @pappukumar96727-sketch @madhab-tech-cyber

@@ -5,15 +5,18 @@
 | 1 / madhab-tech-cyber | `@madhab-tech-cyber` | Team Lead and Security Architect | `member1/security-architecture` | Scope, architecture, threat model, policies, risks, reviews, integration and release |
 | 2 / renu-stack | `@renu-stack` | eBPF Traffic Engineer | `member2/ebpf-capture` | Linux/eBPF probes, maps, privileges, kernel events and capture performance |
 | 3 / aadi3006 | `@aadi3006` | Rust Enforcement and Performance Engineer | `member3/rust-enforcement` | Collector, enforcement adapter, resilience, rate limits and latency |
-| 4 / identity pending | Not confirmed; M1 interim review owner | Python Detection Engineer | `member4/detection` | Ingestion, route discovery, BOLA/BFLA, masking and audit APIs |
+| 4 / unavailable teammate; M1 takeover | `@madhab-tech-cyber` implementing at user request | Python Detection Engineer | `member4/detection` | Ingestion, route discovery, BOLA/BFLA, masking and audit APIs |
 | 5 / Pappu kumar | `@pappukumar96727-sketch` | Mock API and OpenAPI Engineer | `member5/mock-api` | Lab application, authentication, ownership, contract and attack scripts |
 | 6 / Jay Itape | `@jayitape` | Dashboard, QA and DevSecOps Engineer | `member6/dashboard-devsecops` | React UI, CI, scans, containers, SBOM, tests and documentation |
 
 Verified on 2026-10-18 from authors linked to assigned-branch commits and
 repository permission reads: M1 admin; M2/M3/M5/M6 write. Display names are
 published Git identities, not invented full personal names or owner sign-offs.
-Member 4 has no attributable implementation commit in the inspected branch;
-confirm that person's identity before adding a handle. See
+The original Member 4 identity was unconfirmed at that historical snapshot.
+On 2026-10-21 the user confirmed the teammate is unavailable and took over this
+work as `madhab-tech-cyber`; [Days 1–10](member4-days01-10-evidence.md) records the
+actual implementation. No original teammate identity or consent is invented.
+The implementer cannot supply independent approval of their own work. See
 [ownership controls](ownership-and-review-controls.md) for provenance, review
 requirements and the distinction between CODEOWNERS and enforced protection.
 
