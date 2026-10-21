@@ -223,4 +223,19 @@ mod tests {
         );
         assert_eq!(worker.queued_batches(), 0);
     }
+
+    #[test]
+    fn permanent_schema_or_auth_rejection_is_not_retried() {
+        let transport = ScriptedTransport {
+            results: Mutex::new(VecDeque::from([Err(TransportError::Rejected), Ok(())])),
+            sent: Mutex::new(Vec::new()),
+        };
+        let now = Instant::now();
+        let mut worker = DeliveryWorker::new(transport, config()).unwrap();
+        worker.enqueue(batch(), now).unwrap();
+        assert_eq!(worker.tick(now), DeliveryOutcome::Exhausted);
+        assert_eq!(worker.queued_batches(), 0);
+        assert_eq!(worker.transport.sent.lock().unwrap().len(), 1);
+        assert!(!retryable(&TransportError::Stale));
+    }
 }
