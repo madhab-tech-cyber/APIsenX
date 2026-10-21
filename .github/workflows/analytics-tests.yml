@@ -28,6 +28,10 @@ jobs:
           ruff==0.17.1 bandit==1.8.6 pip-audit==2.10.1 detect-secrets==1.5.0
       - name: Run existing API, contract and new analytics regressions
         run: python -m unittest discover -s tests -v
+      - name: Reproduce self-labelled detection corpus and automated review demo
+        run: |
+          python -m analytics.evaluate
+          python -m analytics.review_demo
       - name: Lint analytics, tests and secret-check helper
         run: >-
           python -m ruff check analytics tests scripts/check_analytics_secrets.py

@@ -5,6 +5,12 @@ is unavailable. [Days 1–10 evidence](../docs/member4-days01-10-evidence.md) an
 [service/contract boundaries](../docs/member4-ingestion-contract.md) distinguish
 implemented local capabilities from unaccepted integration. Monitor-only always.
 
+[Days 11–20](../docs/member4-days11-20-evidence.md) adds BFLA rules, a labelled
+engineering corpus, signed dry-run recommendations, bounded replay/flow state
+and minimal volatile audit records. Human Day 14/15 review/feedback remain
+pending. [LAB-REC-1](../docs/member4-recommendation-contract.md) is not an active
+enforcement contract or an already connected live principal resolver.
+
 ## Run on Kali (repository root)
 
 ```bash
@@ -50,11 +56,28 @@ python -m bandit -r analytics -q
 python scripts/check_analytics_secrets.py
 python -m pip_audit -r requirements.txt
 python -m analytics.schemas
+python -m analytics.evaluate
+python -m analytics.review_demo
 ```
 
-No database, protected dashboard read APIs, BFLA, signed decisions or active
-blocking is shipped in Days 1–10. Ownership evaluation reuses Member 5's fixture
+The Days 1–10 baseline had no BFLA or signed recommendations; the Days 11–20
+extension supplies those as local dry-run capabilities. No database, protected
+dashboard read APIs or active blocking is shipped. Evaluation reuses Member 5's fixture
 policy but cannot run on collector events lacking authenticated actor/object
 context. M3's structural batch format is accepted under stricter limits, but its
 mTLS-only client is not yet authenticated by this lab Bearer endpoint.
+
+`python -m analytics.review_demo` needs no runtime secrets: it generates them
+in memory and injects explicitly synthetic context into an in-process service.
+It demonstrates owner/BOLA/BFLA/shadow outcomes, verifies signatures and checks
+masked audit output without printing private values. This is an automated demo,
+not a completed human review.
+
+The normal Uvicorn service leaves `/v1/recommendations` disabled. Configuring
+separate `APISENTINEL_DECISION_TOKEN` and `APISENTINEL_DECISION_KEY` enables its
+authentication boundary, but **without a trusted internal resolver it returns
+503**, never a guessed decision. Read the contract before integrating. Use one
+loopback worker with per-session keys; volatile replay state is not safe for
+distributed/active enforcement. Do not set public test credentials or expose it
+with `--host 0.0.0.0`.
 

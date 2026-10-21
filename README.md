@@ -19,6 +19,11 @@ fixture-backed ownership evaluation. Live sensor-to-analytics
 integration, detection validation and integrated acceptance remain incomplete.
 These descriptions distinguish implementation progress from accepted operation.
 
+The [Member 4 Days 11–20 extension](docs/member4-days11-20-evidence.md) adds
+function-level detection, a self-labelled corpus, signed monitor-only
+recommendations and volatile structured audit. It does not establish live
+identity provenance, accepted accuracy or completed human review/feedback.
+
 Days 21–30 are Member 1 policy/review tasks, not proof of 30 calendar workdays,
 completed human checkpoints or a production-ready engine. Passing reference-API
 tests and documentation checks do not establish detector accuracy, integrated
@@ -48,7 +53,7 @@ is implemented, merged or accepted:
 
 - `ebpf/` - Intended Linux eBPF observation layer.
 - `collector/` - Intended Rust event collector, enforcement adapter, and performance measurement.
-- `analytics/` - Local monitor-only ingestion, route discovery and read-ownership evaluation; BFLA, durable audit and dashboard read APIs remain pending.
+- `analytics/` - Local monitor-only ingestion, route discovery, object/function evaluation and signed recommendations; durable audit, live context and dashboard read APIs remain pending.
 - `mock-api/` - Authorised e-commerce reference application and OpenAPI contract.
 - `dashboard/` - Intended React endpoint inventory, alerts, investigation, and health views; current peer-branch UI is fixture-based.
 - `tests/` - Security, contract, integration, performance, and failure tests; actual coverage depends on the executed test suite.

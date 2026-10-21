@@ -11,8 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     files = [
         "analytics",
-        "docs/member4-days01-10-evidence.md",
-        "docs/member4-ingestion-contract.md",
+        *[
+            str(path.relative_to(ROOT))
+            for path in sorted((ROOT / "docs").glob("member4*"))
+        ],
+        "tests/fixtures/detection_cases.json",
         "scripts/check_analytics_secrets.py",
         *[
             str(path.relative_to(ROOT))
