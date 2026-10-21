@@ -6,6 +6,8 @@ use std::time::Duration;
 
 use chrono::{DateTime, Utc};
 use reqwest::blocking::Client;
+use reqwest::header::{HeaderValue, AUTHORIZATION};
+use reqwest::redirect::Policy;
 use reqwest::Identity;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -59,6 +61,8 @@ pub enum TransportError {
     Serialization,
     Timeout,
     Remote,
+    Rejected,
+    Stale,
     Acknowledgement,
 }
 
@@ -91,6 +95,137 @@ pub struct HttpsAnalytics {
     client: Client,
 }
 
+/// A separate compatibility path for Member 4's loopback-only lab receiver.
+/// It does not replace the HTTPS/mTLS client or authorize shared deployment.
+pub struct LoopbackAnalytics {
+    endpoint: reqwest::Url,
+    client: Client,
+    authorization: HeaderValue,
+    source_id: String,
+}
+
+impl LoopbackAnalytics {
+    pub fn new(
+        endpoint: &str,
+        ingest_token: &str,
+        source_id: &str,
+        timeout: Duration,
+    ) -> Result<Self, TransportError> {
+        let endpoint = reqwest::Url::parse(endpoint).map_err(|_| TransportError::Endpoint)?;
+        if endpoint.scheme() != "http"
+            || endpoint.host_str() != Some("127.0.0.1")
+            || endpoint.port().is_none_or(|port| port == 0)
+            || endpoint.path() != "/v1/batches"
+            || endpoint.username() != ""
+            || endpoint.password().is_some()
+            || endpoint.query().is_some()
+            || endpoint.fragment().is_some()
+            || timeout.is_zero()
+            || timeout > Duration::from_secs(2)
+        {
+            return Err(TransportError::Endpoint);
+        }
+        if !(32..=128).contains(&ingest_token.len())
+            || !ingest_token
+                .bytes()
+                .all(|byte| (0x21..=0x7e).contains(&byte))
+            || source_id.is_empty()
+            || source_id.len() > 64
+            || !source_id
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
+        {
+            return Err(TransportError::Identity);
+        }
+        let authorization = HeaderValue::from_str(&format!("Bearer {ingest_token}"))
+            .map_err(|_| TransportError::Identity)?;
+        let client = Client::builder()
+            .no_proxy()
+            .redirect(Policy::none())
+            .connect_timeout(timeout)
+            .timeout(timeout)
+            .build()
+            .map_err(|_| TransportError::Endpoint)?;
+        Ok(Self {
+            endpoint,
+            client,
+            authorization,
+            source_id: source_id.to_string(),
+        })
+    }
+}
+
+impl AnalyticsTransport for LoopbackAnalytics {
+    fn send(&self, batch: &EventBatch) -> Result<(), TransportError> {
+        if batch.events.is_empty() || batch.events.len() > 64 {
+            return Err(TransportError::BatchBounds);
+        }
+        let now = Utc::now();
+        let fresh = |time: DateTime<Utc>| {
+            time >= now - chrono::Duration::seconds(2) && time <= now + chrono::Duration::seconds(1)
+        };
+        if !fresh(batch.created_at) || batch.events.iter().any(|event| !fresh(event.observed_at)) {
+            return Err(TransportError::Stale);
+        }
+        if batch
+            .events
+            .iter()
+            .any(|event| event.source_id != self.source_id)
+        {
+            return Err(TransportError::Rejected);
+        }
+        for event in &batch.events {
+            if serde_json::to_vec(event)
+                .map_err(|_| TransportError::Serialization)?
+                .len()
+                > 4096
+            {
+                return Err(TransportError::BatchBounds);
+            }
+        }
+        let encoded = serde_json::to_vec(batch).map_err(|_| TransportError::Serialization)?;
+        if encoded.len() > 262_144 {
+            return Err(TransportError::BatchBounds);
+        }
+        let response = self
+            .client
+            .post(self.endpoint.clone())
+            .header(AUTHORIZATION, self.authorization.clone())
+            .header("content-type", "application/json")
+            .body(encoded)
+            .send()
+            .map_err(|error| {
+                if error.is_timeout() {
+                    TransportError::Timeout
+                } else {
+                    TransportError::Remote
+                }
+            })?;
+        if !response.status().is_success() {
+            return Err(
+                if response.status().is_server_error()
+                    || response.status() == reqwest::StatusCode::REQUEST_TIMEOUT
+                {
+                    TransportError::Remote
+                } else {
+                    TransportError::Rejected
+                },
+            );
+        }
+        let mut body = Vec::new();
+        response
+            .take((MAX_ACK_BYTES + 1) as u64)
+            .read_to_end(&mut body)
+            .map_err(|_| TransportError::Acknowledgement)?;
+        if body.len() > MAX_ACK_BYTES {
+            return Err(TransportError::Acknowledgement);
+        }
+        let ack: BatchAck =
+            serde_json::from_slice(&body).map_err(|_| TransportError::Acknowledgement)?;
+        check_ack(batch, ack)
+    }
+}
+
 impl HttpsAnalytics {
     /// `client_identity_pem` must contain the lab client's certificate and key.
     /// Provision it at runtime; never commit or log it.
@@ -116,6 +251,7 @@ impl HttpsAnalytics {
         let client = Client::builder()
             .identity(identity)
             .https_only(true)
+            .redirect(Policy::none())
             .connect_timeout(timeout)
             .timeout(timeout)
             .build()
@@ -147,7 +283,15 @@ impl AnalyticsTransport for HttpsAnalytics {
                 }
             })?;
         if !response.status().is_success() {
-            return Err(TransportError::Remote);
+            return Err(
+                if response.status().is_server_error()
+                    || response.status() == reqwest::StatusCode::REQUEST_TIMEOUT
+                {
+                    TransportError::Remote
+                } else {
+                    TransportError::Rejected
+                },
+            );
         }
         let mut body = Vec::new();
         response
@@ -248,5 +392,54 @@ mod tests {
             HttpsAnalytics::new("http://localhost/ingest", &[], Duration::from_secs(1)).err(),
             Some(TransportError::Endpoint)
         );
+    }
+
+    #[test]
+    fn loopback_sender_refuses_remote_and_ambiguous_endpoints() {
+        let token = "x".repeat(32);
+        for endpoint in [
+            "https://127.0.0.1:8001/v1/batches",
+            "http://localhost:8001/v1/batches",
+            "http://127.0.0.2:8001/v1/batches",
+            "http://127.0.0.1:8001/other",
+            "http://127.0.0.1:8001/v1/batches?token=x",
+            "http://user@127.0.0.1:8001/v1/batches",
+        ] {
+            assert_eq!(
+                LoopbackAnalytics::new(endpoint, &token, "lab_collector_1", Duration::from_secs(1))
+                    .err(),
+                Some(TransportError::Endpoint)
+            );
+        }
+        assert_eq!(
+            LoopbackAnalytics::new(
+                "http://127.0.0.1:8001/v1/batches",
+                "short",
+                "lab_collector_1",
+                Duration::from_secs(1)
+            )
+            .err(),
+            Some(TransportError::Identity)
+        );
+    }
+
+    #[test]
+    fn loopback_sender_rejects_stale_wrong_source_and_large_batch_before_network() {
+        let sender = LoopbackAnalytics::new(
+            "http://127.0.0.1:8001/v1/batches",
+            &"x".repeat(32),
+            "lab_collector_1",
+            Duration::from_secs(1),
+        )
+        .unwrap();
+        let mut stale = batch();
+        stale.created_at = Utc::now() - chrono::Duration::seconds(3);
+        assert_eq!(sender.send(&stale), Err(TransportError::Stale));
+        let mut wrong_source = batch();
+        wrong_source.events[0].source_id = "other_source".into();
+        assert_eq!(sender.send(&wrong_source), Err(TransportError::Rejected));
+        let event = batch().events.remove(0);
+        let large = EventBatch::new(vec![event; 65], Utc::now()).unwrap();
+        assert_eq!(sender.send(&large), Err(TransportError::BatchBounds));
     }
 }
