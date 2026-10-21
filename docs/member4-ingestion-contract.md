@@ -6,6 +6,12 @@ request. This does not attribute work or consent to the unavailable teammate.
 Contracts remain proposed for independent M1/M3/M5/M6 review. Monitor-only;
 no traffic-control adapter, active rule, live sensor or release approval.
 
+Historical Days 1–10 baseline: the later
+[Days 11–20 contract](member4-recommendation-contract.md) adds an optional,
+separately authenticated signed-recommendation endpoint and internal BFLA/flow
+evaluation. Statements below about missing later capabilities describe the
+original baseline, not a claim that the new extension is integrated or approved.
+
 ## Boundaries (Day 1)
 
 `analytics.app:create_app` is a separate FastAPI service on loopback port 8001,

@@ -15,9 +15,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+from analytics.decisions import DecisionError, DecisionService, RequestContext
+from analytics.detection import DetectionEngine
+from analytics.flow import FlowMonitor
 from analytics.models import Alert, ApplicationEvent, CollectorBatch, fresh
 from analytics.normalization import RouteNormalizer
 from analytics.store import MemoryStore, StoreError
+from src.authorization import load_orders, load_users
 
 ROOT = Path(__file__).resolve().parents[1]
 LOG = logging.getLogger("apisenx.analytics")
@@ -32,6 +36,8 @@ class Settings:
     contract: Path = ROOT / "docs/openapi.yaml"
     capacity: int = 1000
     retention_seconds: int = 300
+    decision_token: str | None = field(default=None, repr=False)
+    decision_key: bytes | None = field(default=None, repr=False)
 
     def __post_init__(self):
         if not self.ingest_token.isascii() or not 32 <= len(self.ingest_token) <= 128:
@@ -42,6 +48,17 @@ class Settings:
         from analytics.models import SourceID
 
         TypeAdapter(SourceID).validate_python(self.source_id)
+        if (self.decision_token is None) != (self.decision_key is None):
+            raise ValueError("Configure both decision credential and signing key")
+        if self.decision_token is not None:
+            if (
+                not self.decision_token.isascii()
+                or not 32 <= len(self.decision_token) <= 128
+                or self.decision_token == self.ingest_token
+                or len(self.decision_key) < 32
+                or self.decision_key == self.hmac_key
+            ):
+                raise ValueError("Separate bounded decision credentials are required")
 
     @classmethod
     def from_env(cls):
@@ -51,6 +68,12 @@ class Settings:
                 source_id=os.environ["APISENTINEL_SOURCE_ID"],
                 hmac_key=bytes.fromhex(os.environ["APISENTINEL_HMAC_KEY"]),
                 key_version=os.environ["APISENTINEL_KEY_VERSION"],
+                decision_token=os.environ.get("APISENTINEL_DECISION_TOKEN"),
+                decision_key=(
+                    bytes.fromhex(os.environ["APISENTINEL_DECISION_KEY"])
+                    if "APISENTINEL_DECISION_KEY" in os.environ
+                    else None
+                ),
             )
         except (KeyError, ValueError):
             raise ValueError(
@@ -71,7 +94,7 @@ def reject_constant(_):
     raise ValueError("Nonfinite JSON")
 
 
-def create_app(settings=None, clock=None):
+def create_app(settings=None, clock=None, resolver=None):
     settings = settings or Settings.from_env()
     clock = clock or (lambda: datetime.now(timezone.utc))
     normalizer = RouteNormalizer.from_file(
@@ -80,12 +103,23 @@ def create_app(settings=None, clock=None):
     store = MemoryStore(
         settings.hmac_key, settings.capacity, settings.retention_seconds
     )
+    decision_service = None
+    if settings.decision_token is not None:
+        engine = DetectionEngine(
+            normalizer, load_users(), load_orders(), flow=FlowMonitor(settings.hmac_key)
+        )
+        decision_service = DecisionService(
+            engine, resolver, settings.decision_key, settings.hmac_key, clock
+        )
 
     @asynccontextmanager
     async def lifespan(_):
         async def expire():
             while True:
                 store.purge(clock())
+                if decision_service is not None:
+                    decision_service.audit.store.purge(clock())
+                    decision_service.engine.flow.purge(clock())
                 await asyncio.sleep(1)
 
         task = asyncio.create_task(expire())
@@ -105,6 +139,7 @@ def create_app(settings=None, clock=None):
     )
     app.state.store = store
     app.state.normalizer = normalizer
+    app.state.decisions = decision_service
     in_flight = 0
 
     def error(status, code):
@@ -116,8 +151,14 @@ def create_app(settings=None, clock=None):
         nonlocal in_flight
         if request.method == "GET" and request.url.path == "/health":
             return await call_next(request)
+        is_decision = request.url.path == "/v1/recommendations"
+        if is_decision and decision_service is None:
+            return error(404, "NOT_FOUND")
         authorization = request.headers.getlist("authorization")
-        expected = ("Bearer " + settings.ingest_token).encode("ascii")
+        expected = (
+            "Bearer "
+            + (settings.decision_token if is_decision else settings.ingest_token)
+        ).encode("ascii")
         if (
             len(authorization) != 1
             or len(authorization[0]) > 256
@@ -127,6 +168,7 @@ def create_app(settings=None, clock=None):
         if request.method != "POST" or request.url.path not in {
             "/v1/events",
             "/v1/batches",
+            "/v1/recommendations",
         }:
             return error(404, "NOT_FOUND")
         if request.headers.get("content-encoding", "identity") != "identity":
@@ -137,7 +179,7 @@ def create_app(settings=None, clock=None):
             "application/json; charset=utf-8",
         }:
             return error(415, "JSON_REQUIRED")
-        limit = 4096 if request.url.path == "/v1/events" else 262144
+        limit = 262144 if request.url.path == "/v1/batches" else 4096
         lengths = request.headers.getlist("content-length")
         if lengths:
             if (
@@ -288,6 +330,22 @@ def create_app(settings=None, clock=None):
             "batch_id": str(batch.batch_id),
             "accepted_event_ids": [str(value) for value in ids],
         }
+
+    @app.post("/v1/recommendations")
+    async def recommendations(request: Request):
+        try:
+            context = RequestContext.model_validate_json(request.state.wire)
+        except ValidationError:
+            return error(422, "SCHEMA_INVALID")
+        try:
+            reply = decision_service.issue(context)
+        except DecisionError as failure:
+            status = {"REPLAY_REJECTED": 409, "REQUEST_TIME_INVALID": 422}.get(
+                str(failure), 503
+            )
+            return error(status, str(failure))
+        LOG.info("ingestion outcome=RECOMMENDATION_ISSUED")
+        return reply.model_dump(mode="json")
 
     return app
 
