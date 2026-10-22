@@ -587,7 +587,7 @@ def get_order(
 )
 def update_order(
     update: OrderUpdate,
-    nonce: str = Header(..., alias="X-Request-Nonce"),
+    nonce: str | None = Header(None, alias="X-Request-Nonce"),
     orderId: str = APIPath(
         min_length=1,
         max_length=64,
@@ -616,15 +616,16 @@ def update_order(
         "orders:manage",
     )
 
-    # Reject missing, malformed, or previously used nonces.
-    require_fresh_nonce(nonce)
-
-    # Enforce object-level authorization.
+    # Enforce object-level authorization before replay validation so
+    # unauthorized callers receive the documented authorization response.
     order = check_access(
         actor,
         "orders:manage",
         orderId,
     )
+
+    # Reject missing, malformed, or previously used nonces before mutation.
+    require_fresh_nonce(nonce)
 
     # Only the status field is mutable through this endpoint.
     order["status"] = update.status
