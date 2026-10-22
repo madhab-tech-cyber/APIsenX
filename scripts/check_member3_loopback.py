@@ -4,8 +4,8 @@ This starts a short-lived loopback analytics process, generates per-run secrets
 only in memory, and never claims a Linux sensor, TLS or active enforcement.
 """
 
-import os
 import json
+import os
 import secrets
 import shutil
 import socket
@@ -17,7 +17,6 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
-
 
 ROOT = Path(__file__).resolve().parents[1]
 
