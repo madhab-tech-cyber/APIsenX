@@ -3,8 +3,8 @@ import asyncio
 import logging
 import sys
 import unittest
-from itertools import count
 from copy import deepcopy
+from itertools import count
 from pathlib import Path
 from unittest.mock import patch
 
@@ -825,7 +825,9 @@ class MockAPITests(unittest.TestCase):
         from datetime import timedelta
         metadata = main.TOKEN_METADATA["lab-user-a-token"].copy()
         try:
-            main.TOKEN_METADATA["lab-user-a-token"]["expires_at"] = main.utc_now() - timedelta(seconds=1)
+            main.TOKEN_METADATA["lab-user-a-token"]["expires_at"] = (
+                main.utc_now() - timedelta(seconds=1)
+            )
             response = client.get("/orders", headers=USER_A)
         finally:
             main.TOKEN_METADATA["lab-user-a-token"] = metadata
@@ -842,7 +844,10 @@ class MockAPITests(unittest.TestCase):
         self.assertEqual(response.json()["error"]["code"], "UNAUTHENTICATED")
 
     def test_unknown_token_is_rejected(self):
-        response = client.get("/orders", headers={"Authorization": "Bearer unknown-token"})
+        response = client.get(
+            "/orders",
+            headers={"Authorization": "Bearer unknown-token"},
+        )
         self.assertEqual(response.status_code, 401)
 
     def test_patch_requires_nonce_and_does_not_mutate(self):
@@ -858,10 +863,18 @@ class MockAPITests(unittest.TestCase):
 
     def test_duplicate_patch_nonce_is_rejected_without_second_mutation(self):
         headers = {**ADMIN, "X-Request-Nonce": "nonce-replay-0001"}
-        first = patch_request("/orders/order-1001", headers=headers, json={"status": "shipped"})
+        first = patch_request(
+            "/orders/order-1001",
+            headers=headers,
+            json={"status": "shipped"},
+        )
         self.assertEqual(first.status_code, 200)
         before = deepcopy(main.ORDERS["order-1001"])
-        second = patch_request("/orders/order-1001", headers=headers, json={"status": "delivered"})
+        second = patch_request(
+            "/orders/order-1001",
+            headers=headers,
+            json={"status": "delivered"},
+        )
         self.assertEqual(second.status_code, 400)
         self.assertEqual(main.ORDERS["order-1001"], before)
 
