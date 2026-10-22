@@ -14,10 +14,10 @@ from fastapi import (
     FastAPI,
     Header,
     HTTPException,
+    Path as APIPath,
     Request,
     Security,
 )
-from fastapi import Path as APIPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
