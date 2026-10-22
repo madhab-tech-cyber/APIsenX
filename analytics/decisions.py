@@ -21,6 +21,11 @@ Digest = Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
 Contract = Annotated[str, StringConstraints(pattern=r"^sha256:[a-f0-9]{64}$")]
 
 
+def canonical_bytes(path: Path) -> bytes:
+    """Normalize text line endings before calculating source digests."""
+    return path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
 def rules_digest():
     directory = Path(__file__).resolve().parent
     names = (
@@ -36,11 +41,11 @@ def rules_digest():
         "store.py",
     )
     sources = {
-        name: hashlib.sha256((directory / name).read_bytes()).hexdigest()
+        name: hashlib.sha256(canonical_bytes(directory / name)).hexdigest()
         for name in names
     }
     sources["src/authorization.py"] = hashlib.sha256(
-        (directory.parent / "src/authorization.py").read_bytes()
+        canonical_bytes(directory.parent / "src/authorization.py")
     ).hexdigest()
     # Bind file names and boundaries, not an ambiguous concatenation of sources.
     return hashlib.sha256(canonical(sources)).hexdigest()

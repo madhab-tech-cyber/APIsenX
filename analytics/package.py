@@ -60,6 +60,11 @@ FILES = (
 )
 
 
+def canonical_bytes(path: Path) -> bytes:
+    """Normalize text line endings for cross-platform reproducibility."""
+    return path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
 def current_manifest():
     hashes = {}
     for name in sorted(FILES):
@@ -70,7 +75,7 @@ def current_manifest():
             or path.stat().st_size > 1048576
         ):
             raise ValueError("Unsafe candidate input")
-        hashes[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+        hashes[name] = hashlib.sha256(canonical_bytes(path)).hexdigest()
     return {
         "package_version": "0.1.0-lab-candidate",
         "rule_version": RULE_VERSION,
@@ -102,7 +107,9 @@ def build(output):
             info.create_system = 3
             info.external_attr = 0o100644 << 16
             info.compress_type = zipfile.ZIP_DEFLATED
-            archive.writestr(info, (ROOT / name).read_bytes(), compresslevel=9)
+            archive.writestr(
+                info, canonical_bytes(ROOT / name), compresslevel=9
+            )
     return hashlib.sha256(output.read_bytes()).hexdigest()
 
 
