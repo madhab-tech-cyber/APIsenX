@@ -3,6 +3,7 @@ import asyncio
 import logging
 import sys
 import unittest
+from itertools import count
 from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
@@ -17,6 +18,16 @@ import main
 
 app = main.app
 client = TestClient(app)
+_nonce_counter = count(1)
+
+
+def patch_request(*args, **kwargs):
+    """Give ordinary PATCH tests unique nonces unless a test supplies one."""
+    headers = dict(kwargs.get("headers") or {})
+    headers.setdefault("X-Request-Nonce", f"test-nonce-{next(_nonce_counter):08d}")
+    kwargs["headers"] = headers
+    return client.patch(*args, **kwargs)
+
 
 POLICY = {"X-Policy-Version": "AP-1.0"}
 USER_A = {"Authorization": "Bearer lab-user-a-token", **POLICY}
