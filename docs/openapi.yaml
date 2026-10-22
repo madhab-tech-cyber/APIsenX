@@ -1,4 +1,4 @@
-﻿
+
 openapi: 3.1.0
 
 info:
@@ -91,10 +91,216 @@ paths:
       operationId: updateOrder
       description: >
         Requires the server-side orders:manage:any function permission
-        and applicable object-level authorization. Permission is checked
+        and applicable object-level authorization. Each PATCH requires a unique
+        X-Request-Nonce header (8-128 safe characters), rejected if reused
+        within a five-minute process-local window. This is replay detection for
+        this lab, not cryptographic request signing. Permission is checked
         independently of ownership before any mutation. Ordinary customers
         must be denied. The server must record an audit event. Clients
         cannot change the order owner, identifier, total, or currency.
+      parameters:
+        - name: X-Request-Nonce
+          in: header
+          required: true
+          description: Unique nonce for this state-changing request; reuse within five minutes is rejected.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+            pattern: '^[A-Za-z0-9._~-]{8,128}        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderUpdate'
+            example:
+              status: shipped
+      responses:
+        '200':
+          description: Order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin/orders:
+    get:
+      tags:
+        - Administration
+      summary: List all orders for authorized administrators
+      operationId: listAdminOrders
+      description: >
+        Requires the server-side orders:read:any function permission.
+        This check occurs before inventory iteration, including when the
+        inventory is empty. Object ownership cannot grant this function.
+        Denials produce a security audit event.
+      responses:
+        '200':
+          description: All orders visible to the administrator
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - orders
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      description: Unique order identifier
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+        pattern: '^[A-Za-z0-9-]+$'
+      example: order-1001
+
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - role
+        - active
+      properties:
+        id:
+          type: string
+          example: user-a
+        name:
+          type: string
+          example: Alice Example
+        role:
+          type: string
+          enum:
+            - customer
+            - admin
+        active:
+          type: boolean
+          description: Inactive users must not be authorized.
+
+    Order:
+      type: object
+      required:
+        - id
+        - owner_id
+        - status
+        - total
+        - currency
+      properties:
+        id:
+          type: string
+          example: order-1001
+        owner_id:
+          type: string
+          description: Resource owner identifier
+          example: user-a
+        status:
+          type: string
+          enum:
+            - processing
+            - shipped
+            - delivered
+          example: processing
+        total:
+          type: number
+          minimum: 0
+          example: 1200
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          example: INR
+
+    OrderUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - processing
+            - shipped
+            - delivered
+          description: New status for the order
+          example: shipped
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - UNAUTHENTICATED
+                - FORBIDDEN
+                - NOT_FOUND
+                - INVALID_REQUEST
+            message:
+              type: string
+
+  responses:
+    InvalidRequest:
+      description: Invalid request or path parameter
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Missing or invalid authentication credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Authenticated principal lacks permission
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Requested resource does not exist or is not disclosed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
       requestBody:
         required: true
         content:
