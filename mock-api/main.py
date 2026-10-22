@@ -789,6 +789,17 @@ def custom_openapi():
 
             parameters = operation.setdefault("parameters", [])
 
+            # Nonce validation is performed in the endpoint so authorization
+            # failures retain their documented status codes. Document it as
+            # required even though the framework-level default is optional.
+            if operation.get("operationId") == "updateOrder":
+                for parameter in parameters:
+                    if (
+                        parameter.get("name") == "X-Request-Nonce"
+                        and parameter.get("in") == "header"
+                    ):
+                        parameter["required"] = True
+
             if not any(
                 parameter.get("name") == "X-Policy-Version"
                 and parameter.get("in") == "header"
