@@ -169,8 +169,14 @@ class OpenAPIContractTests(unittest.TestCase):
         )
 
     def test_patch_documents_required_nonce_header(self):
-        parameters = self.contract["paths"]["/orders/{orderId}"]["patch"]["parameters"]
-        nonce = next(parameter for parameter in parameters if parameter.get("name") == "X-Request-Nonce")
+        parameters = self.contract["paths"]["/orders/{orderId}"]["patch"][
+            "parameters"
+        ]
+        nonce = next(
+            parameter
+            for parameter in parameters
+            if parameter.get("name") == "X-Request-Nonce"
+        )
         self.assertEqual(nonce["in"], "header")
         self.assertTrue(nonce["required"])
         self.assertEqual(nonce["schema"]["minLength"], 8)
