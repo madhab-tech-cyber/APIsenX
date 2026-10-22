@@ -10,11 +10,11 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import (
+    Path as APIPath,
     Depends,
     FastAPI,
     Header,
     HTTPException,
-    Path as APIPath,
     Request,
     Security,
 )
@@ -28,7 +28,12 @@ from pydantic import BaseModel, ConfigDict, Field
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from authorization import authorize, load_json, load_orders, load_users
+from authorization import (  # noqa: E402, I001
+    authorize,
+    load_json,
+    load_orders,
+    load_users,
+)
 
 
 app = FastAPI(
