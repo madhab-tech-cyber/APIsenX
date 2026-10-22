@@ -1,6 +1,10 @@
 
 import logging
+import os
+import re
 import sys
+import threading
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal
 
@@ -44,6 +48,26 @@ TOKENS = {
     "lab-user-b-token": "user-b",
     "lab-admin-token": "admin-1",
 }
+
+# Lab-only lifecycle state; multi-worker deployments need a shared durable store.
+TOKEN_TTL_SECONDS = int(os.getenv("APISENX_TOKEN_TTL_SECONDS", "900"))
+REPLAY_WINDOW_SECONDS = 300
+
+def utc_now() -> datetime:
+    """Injectable UTC clock for deterministic lifecycle tests."""
+    return datetime.now(timezone.utc)
+
+TOKEN_METADATA = {
+    token: {
+        "subject": subject,
+        "issued_at": utc_now(),
+        "expires_at": utc_now() + timedelta(seconds=TOKEN_TTL_SECONDS),
+    }
+    for token, subject in TOKENS.items()
+}
+REVOKED_TOKENS: set[str] = set()
+USED_NONCES: dict[str, datetime] = {}
+NONCE_LOCK = threading.Lock()
 
 bearer_scheme = HTTPBearer(auto_error=False, scheme_name="bearerAuth")
 
@@ -163,9 +187,26 @@ def get_principal(
             ),
         )
 
-    actor_id = TOKENS.get(credentials.credentials)
+    token = credentials.credentials
+    metadata = TOKEN_METADATA.get(token)
+    now = utc_now()
+    if (
+        metadata is None
+        or token in REVOKED_TOKENS
+        or now >= metadata["expires_at"]
+        or now < metadata["issued_at"]
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail=error_response(
+                "UNAUTHENTICATED",
+                "Invalid, expired, or revoked credentials",
+            ),
+        )
+
+    actor_id = metadata["subject"]
     users = load_users()
-    actor = users.get(actor_id) if actor_id else None
+    actor = users.get(actor_id)
 
     if actor is None or actor.get("active") is not True:
         raise HTTPException(
@@ -177,6 +218,27 @@ def get_principal(
         )
 
     return actor
+
+
+def require_fresh_nonce(nonce: str | None) -> None:
+    """Require a unique client nonce for each state-changing PATCH request."""
+    if nonce is None or not re.fullmatch(r"[A-Za-z0-9._~-]{8,128}", nonce):
+        raise HTTPException(
+            status_code=400,
+            detail=error_response("INVALID_REQUEST", "A valid X-Request-Nonce header is required"),
+        )
+    now = utc_now()
+    cutoff = now - timedelta(seconds=REPLAY_WINDOW_SECONDS)
+    with NONCE_LOCK:
+        for key, seen_at in list(USED_NONCES.items()):
+            if seen_at < cutoff:
+                USED_NONCES.pop(key, None)
+        if nonce in USED_NONCES:
+            raise HTTPException(
+                status_code=400,
+                detail=error_response("INVALID_REQUEST", "Duplicate request nonce"),
+            )
+        USED_NONCES[nonce] = now
 
 
 def has_permission(actor: dict, permission: str) -> bool:
@@ -341,6 +403,7 @@ def get_order(
 )
 def update_order(
     update: OrderUpdate,
+    request: Request,
     orderId: str = APIPath(
         min_length=1,
         max_length=64,
@@ -350,6 +413,7 @@ def update_order(
 ):
     # Function-level permission is checked independently of object ownership.
     require_permission(actor, "orders:manage:any", "orders:manage")
+    require_fresh_nonce(request.headers.get("X-Request-Nonce"))
     order = check_access(actor, "orders:manage", orderId)
 
     # Only status can be changed by this endpoint.
