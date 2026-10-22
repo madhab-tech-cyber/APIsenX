@@ -885,5 +885,70 @@ class MockAPITests(unittest.TestCase):
         self.assertEqual(second.status_code, 200)
 
 
+    def test_token_issued_in_the_future_is_rejected(self):
+        from datetime import timedelta
+
+        metadata = main.TOKEN_METADATA["lab-user-a-token"].copy()
+        try:
+            main.TOKEN_METADATA["lab-user-a-token"]["issued_at"] = (
+                main.utc_now() + timedelta(seconds=60)
+            )
+            response = client.get("/orders", headers=USER_A)
+        finally:
+            main.TOKEN_METADATA["lab-user-a-token"] = metadata
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json()["error"]["code"],
+            "UNAUTHENTICATED",
+        )
+
+    def test_malformed_patch_nonces_are_rejected_without_mutation(self):
+        invalid_nonces = [
+            None,
+            "short",
+            "contains whitespace",
+            "!" * 8,
+            "x" * 129,
+        ]
+
+        for nonce in invalid_nonces:
+            with self.subTest(nonce=repr(nonce)):
+                before = deepcopy(main.ORDERS["order-1001"])
+                headers = dict(ADMIN)
+                if nonce is not None:
+                    headers["X-Request-Nonce"] = nonce
+
+                response = client.patch(
+                    "/orders/order-1001",
+                    headers=headers,
+                    json={"status": "shipped"},
+                )
+
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(
+                    response.json()["error"]["code"],
+                    "INVALID_REQUEST",
+                )
+                self.assertEqual(main.ORDERS["order-1001"], before)
+
+    def test_nonce_can_be_reused_only_after_replay_window_expires(self):
+        from datetime import datetime, timedelta, timezone
+
+        nonce = "nonce-expiry-check-0001"
+        first_seen = datetime.now(timezone.utc)
+        after_window = first_seen + timedelta(
+            seconds=main.REPLAY_WINDOW_SECONDS + 1
+        )
+
+        with patch("main.utc_now", side_effect=[first_seen, after_window]):
+            main.require_fresh_nonce(nonce)
+            # The second use is accepted only after the first entry is stale
+            # and removed from the process-local replay cache.
+            main.require_fresh_nonce(nonce)
+
+        self.assertEqual(main.USED_NONCES[nonce], after_window)
+
+
 if __name__ == "__main__":
     unittest.main()
