@@ -5,21 +5,24 @@
       "owner_id": "user-a",
       "status": "processing",
       "total": 1200,
-      "currency": "INR"
+      "currency": "INR",
+      "tenant_id": "lab-tenant"
     },
     {
       "id": "order-1002",
       "owner_id": "user-b",
       "status": "shipped",
       "total": 850,
-      "currency": "INR"
+      "currency": "INR",
+      "tenant_id": "lab-tenant"
     },
     {
       "id": "order-1003",
       "owner_id": "user-a",
       "status": "delivered",
       "total": 450,
-      "currency": "INR"
+      "currency": "INR",
+      "tenant_id": "lab-tenant"
     }
   ]
 }

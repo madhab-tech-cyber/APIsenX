@@ -4,23 +4,55 @@
       "id": "user-a",
       "name": "Alice Example",
       "role": "customer",
-      "active": true
+      "active": true,
+      "tenant_id": "lab-tenant"
     },
     {
       "id": "user-b",
       "name": "Bob Example",
       "role": "customer",
-      "active": true
+      "active": true,
+      "tenant_id": "lab-tenant"
     },
     {
       "id": "admin-1",
       "name": "Alex Admin",
       "role": "admin",
-      "active": true
+      "active": true,
+      "tenant_id": "lab-tenant"
+    },
+    {
+      "id": "support-1",
+      "name": "Sam Support",
+      "role": "support",
+      "active": true,
+      "tenant_id": "lab-tenant",
+      "assigned_order_ids": [
+        "order-1002"
+      ]
+    },
+    {
+      "id": "tenant-admin-1",
+      "name": "Taylor Tenant Admin",
+      "role": "tenant_admin",
+      "active": true,
+      "tenant_id": "lab-tenant"
     }
   ],
   "roles": {
-    "customer": ["orders:read:own"],
-    "admin": ["orders:read:any", "orders:manage:any"]
+    "customer": [
+      "orders:read:own"
+    ],
+    "admin": [
+      "orders:read:any",
+      "orders:manage:any"
+    ],
+    "support": [
+      "orders:read:assigned"
+    ],
+    "tenant_admin": [
+      "orders:read:tenant",
+      "orders:manage:tenant"
+    ]
   }
 }
