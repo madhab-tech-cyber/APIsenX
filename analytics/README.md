@@ -11,6 +11,12 @@ and minimal volatile audit records. Human Day 14/15 review/feedback remain
 pending. [LAB-REC-1](../docs/member4-recommendation-contract.md) is not an active
 enforcement contract or an already connected live principal resolver.
 
+[Days 21–30](../docs/member4-days21-30-evidence.md) adds DET-1.2 stale-policy
+guards, mandatory storage projections, scoped inventory/alert read APIs and a
+frozen source candidate. [Management API](../docs/member4-management-contract.md),
+[rule catalog](../docs/member4-rule-catalog.md) and
+[release hold](../docs/member4-release-checklist.md) define the actual boundaries.
+
 ## Run on Kali (repository root)
 
 ```bash
@@ -58,14 +64,17 @@ python -m pip_audit -r requirements.txt
 python -m analytics.schemas
 python -m analytics.evaluate
 python -m analytics.review_demo
+python -m analytics.final_demo
+python -m analytics.package --check
 ```
 
 The Days 1–10 baseline had no BFLA or signed recommendations; the Days 11–20
-extension supplies those as local dry-run capabilities. No database, protected
-dashboard read APIs or active blocking is shipped. Evaluation reuses Member 5's fixture
+extension supplies those as local dry-run capabilities. Days 21–30 adds protected
+lab read APIs, not a database, shared dashboard or active blocking. Evaluation reuses Member 5's fixture
 policy but cannot run on collector events lacking authenticated actor/object
 context. M3's structural batch format is accepted under stricter limits, but its
-mTLS-only client is not yet authenticated by this lab Bearer endpoint.
+M3 now has a separate loopback Bearer client matching the stricter batch contract;
+the shared HTTPS/mTLS deployment and LAB-REC-1 consumer remain unaccepted.
 
 `python -m analytics.review_demo` needs no runtime secrets: it generates them
 in memory and injects explicitly synthetic context into an in-process service.
@@ -80,4 +89,37 @@ authentication boundary, but **without a trusted internal resolver it returns
 loopback worker with per-session keys; volatile replay state is not safe for
 distributed/active enforcement. Do not set public test credentials or expose it
 with `--host 0.0.0.0`.
+
+## Protected inventory/alerts on Kali
+
+Keep the existing ingestion environment above and optionally configure a separate
+short-lived reader before starting the same loopback Uvicorn command:
+
+```bash
+export APISENTINEL_CASE_ID=synthetic_case
+export APISENTINEL_READER_ID=local_analyst
+export APISENTINEL_READER_ROLE=analyst
+export APISENTINEL_READER_CASE=synthetic_case
+export APISENTINEL_READER_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export APISENTINEL_READER_EXPIRES_AT="$(python -c 'from datetime import datetime,timedelta,timezone; print((datetime.now(timezone.utc)+timedelta(hours=1)).isoformat())')"
+```
+
+`GET /v1/inventory`, `GET /v1/alerts` and `GET /v1/alerts/{alert_id}` require
+that reader credential in the Authorization header; a plain browser visit
+returns 401. Tokens in URL/query parameters are never accepted. Viewer role
+can read inventory only; analyst can read masked alert detail in the single
+configured lab case. Header/credential handling belongs in an approved local
+client or backend, not Vite/browser source or localStorage.
+
+For a complete automated demonstration with per-run secrets held only in memory,
+no terminal credential copying is needed:
+
+```bash
+python -m analytics.final_demo
+```
+
+Policy instances now stop issuing recommendations after 300 seconds or a
+source/config change; explicit reinitialization is required. This does not
+activate any rule. Human reviews/final presentation, durable audit, shared
+transport/identity and production release remain pending.
 

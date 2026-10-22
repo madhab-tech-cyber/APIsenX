@@ -5,6 +5,7 @@ import json
 from pydantic import TypeAdapter
 
 from analytics.decisions import RequestContext, SignedReply
+from analytics.management import AlertDetail, AlertPage, InventoryPage
 from analytics.models import Alert, ApplicationEvent, CollectorBatch, CollectorEvent
 from analytics.normalization import RouteResult
 
@@ -18,6 +19,9 @@ def schemas():
         "route_result.v1": TypeAdapter(RouteResult).json_schema(),
         "recommendation_request.v1": RequestContext.model_json_schema(),
         "signed_recommendation_reply.v1": SignedReply.model_json_schema(),
+        "inventory_page.v1": InventoryPage.model_json_schema(),
+        "alert_page.v1": AlertPage.model_json_schema(),
+        "alert_detail.v1": AlertDetail.model_json_schema(),
     }
 
 

@@ -6,6 +6,12 @@
 This extends [Days 1–10](member4-ingestion-contract.md); it does not silently
 change IF-04, IF-07, AP-1.0 or the zero-active-rule authorization decision.
 
+Historical DET-1.1 baseline: [Days 21–30](member4-days21-30-evidence.md) now
+uses DET-1.2, caps the instance policy snapshot at 300 seconds, validates source/
+config freshness and enforces typed masking before storage. The old statements
+below about unimplemented read APIs describe that earlier schedule snapshot;
+current optional reads are specified in [MGT-LAB-1.0](member4-management-contract.md).
+
 ## Detection and explanations
 
 `analytics.detection.DetectionEngine` takes an `Observation` constructed by a

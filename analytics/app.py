@@ -18,6 +18,7 @@ from pydantic import ValidationError
 from analytics.decisions import DecisionError, DecisionService, RequestContext
 from analytics.detection import DetectionEngine
 from analytics.flow import FlowMonitor
+from analytics.management import ManagementError, ManagementService, ReaderGrant
 from analytics.models import Alert, ApplicationEvent, CollectorBatch, fresh
 from analytics.normalization import RouteNormalizer
 from analytics.store import MemoryStore, StoreError
@@ -38,6 +39,8 @@ class Settings:
     retention_seconds: int = 300
     decision_token: str | None = field(default=None, repr=False)
     decision_key: bytes | None = field(default=None, repr=False)
+    case_id: str = "lab_case"
+    readers: tuple[ReaderGrant, ...] = field(default=(), repr=False)
 
     def __post_init__(self):
         if not self.ingest_token.isascii() or not 32 <= len(self.ingest_token) <= 128:
@@ -48,6 +51,16 @@ class Settings:
         from analytics.models import SourceID
 
         TypeAdapter(SourceID).validate_python(self.source_id)
+        TypeAdapter(SourceID).validate_python(self.case_id)
+        if len(self.readers) > 8 or len(
+            {reader.identity for reader in self.readers}
+        ) != len(self.readers):
+            raise ValueError("Invalid reader profile count or identity")
+        tokens = [self.ingest_token, *[reader.token for reader in self.readers]]
+        if self.decision_token is not None:
+            tokens.append(self.decision_token)
+        if len(set(tokens)) != len(tokens):
+            raise ValueError("Credentials must be separate")
         if (self.decision_token is None) != (self.decision_key is None):
             raise ValueError("Configure both decision credential and signing key")
         if self.decision_token is not None:
@@ -63,6 +76,17 @@ class Settings:
     @classmethod
     def from_env(cls):
         try:
+            names = [
+                "APISENTINEL_READER_ID",
+                "APISENTINEL_READER_TOKEN",
+                "APISENTINEL_READER_CASE",
+                "APISENTINEL_READER_ROLE",
+                "APISENTINEL_READER_EXPIRES_AT",
+            ]
+            readers = ()
+            if any(name in os.environ for name in names):
+                values = [os.environ[name] for name in names]
+                readers = (ReaderGrant(*values[:4], datetime.fromisoformat(values[4])),)
             return cls(
                 ingest_token=os.environ["APISENTINEL_INGEST_TOKEN"],
                 source_id=os.environ["APISENTINEL_SOURCE_ID"],
@@ -74,6 +98,8 @@ class Settings:
                     if "APISENTINEL_DECISION_KEY" in os.environ
                     else None
                 ),
+                case_id=os.environ.get("APISENTINEL_CASE_ID", "lab_case"),
+                readers=readers,
             )
         except (KeyError, ValueError):
             raise ValueError(
@@ -101,7 +127,10 @@ def create_app(settings=None, clock=None, resolver=None):
         settings.contract, settings.hmac_key, settings.key_version
     )
     store = MemoryStore(
-        settings.hmac_key, settings.capacity, settings.retention_seconds
+        settings.hmac_key,
+        settings.capacity,
+        settings.retention_seconds,
+        routes=[item.route for item in normalizer.templates],
     )
     decision_service = None
     if settings.decision_token is not None:
@@ -111,6 +140,19 @@ def create_app(settings=None, clock=None, resolver=None):
         decision_service = DecisionService(
             engine, resolver, settings.decision_key, settings.hmac_key, clock
         )
+    management = (
+        ManagementService(
+            store,
+            decision_service.audit if decision_service else None,
+            settings.hmac_key,
+            settings.readers,
+            settings.case_id,
+            [item.route for item in normalizer.templates],
+            clock,
+        )
+        if settings.readers
+        else None
+    )
 
     @asynccontextmanager
     async def lifespan(_):
@@ -120,6 +162,8 @@ def create_app(settings=None, clock=None, resolver=None):
                 if decision_service is not None:
                     decision_service.audit.store.purge(clock())
                     decision_service.engine.flow.purge(clock())
+                if management is not None:
+                    management.access.purge(clock())
                 await asyncio.sleep(1)
 
         task = asyncio.create_task(expire())
@@ -140,17 +184,45 @@ def create_app(settings=None, clock=None, resolver=None):
     app.state.store = store
     app.state.normalizer = normalizer
     app.state.decisions = decision_service
+    app.state.management = management
     in_flight = 0
 
     def error(status, code):
         LOG.info("ingestion outcome=%s", code)
-        return JSONResponse({"detail": code}, status_code=status)
+        return JSONResponse(
+            {"detail": code},
+            status_code=status,
+            headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
+        )
 
     @app.middleware("http")
     async def boundary(request: Request, call_next):
         nonlocal in_flight
         if request.method == "GET" and request.url.path == "/health":
             return await call_next(request)
+        path = request.url.path
+        if path in {"/v1/inventory", "/v1/alerts"} or path.startswith("/v1/alerts/"):
+            if management is None:
+                return error(404, "NOT_FOUND")
+            resource = (
+                "inventory"
+                if path == "/v1/inventory"
+                else ("alerts" if path == "/v1/alerts" else "alert_detail")
+            )
+            try:
+                request.state.reader = management.authorize(
+                    request.headers.getlist("authorization"), resource
+                )
+                if request.method != "GET":
+                    return error(404, "NOT_FOUND")
+                response = await call_next(request)
+                response.headers["Cache-Control"] = "no-store"
+                response.headers["X-Content-Type-Options"] = "nosniff"
+                return response
+            except ManagementError as failure:
+                return error(failure.status, failure.code)
+            except Exception:
+                return error(503, "MANAGEMENT_UNAVAILABLE")
         is_decision = request.url.path == "/v1/recommendations"
         if is_decision and decision_service is None:
             return error(404, "NOT_FOUND")
@@ -346,6 +418,40 @@ def create_app(settings=None, clock=None, resolver=None):
             return error(status, str(failure))
         LOG.info("ingestion outcome=RECOMMENDATION_ISSUED")
         return reply.model_dump(mode="json")
+
+    def managed_read(request, resource, operation):
+        try:
+            result = operation()
+        except ManagementError:
+            management.record(request.state.reader, resource, "denied")
+            raise
+        management.record(request.state.reader, resource, "allowed")
+        return result
+
+    @app.get("/v1/inventory")
+    async def inventory(request: Request):
+        return managed_read(
+            request,
+            "inventory",
+            lambda: management.inventory(request.state.reader, request.query_params),
+        )
+
+    @app.get("/v1/alerts")
+    async def alerts(request: Request):
+        return managed_read(
+            request,
+            "alerts",
+            lambda: management.alerts(request.state.reader, request.query_params),
+        )
+
+    @app.get("/v1/alerts/{alert_id}")
+    async def alert_detail(alert_id: str, request: Request):
+        if request.query_params:
+            management.record(request.state.reader, "alert_detail", "denied")
+            raise ManagementError(400, "INVALID_QUERY")
+        return managed_read(
+            request, "alert_detail", lambda: management.detail(alert_id)
+        )
 
     return app
 
