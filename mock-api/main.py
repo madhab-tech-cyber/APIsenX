@@ -11,6 +11,7 @@ from typing import Literal
 from fastapi import (
     Depends,
     FastAPI,
+    Header,
     HTTPException,
     Request,
     Security,
@@ -403,7 +404,7 @@ def get_order(
 )
 def update_order(
     update: OrderUpdate,
-    request: Request,
+    nonce: str = Header(..., alias="X-Request-Nonce"),
     orderId: str = APIPath(
         min_length=1,
         max_length=64,
@@ -413,7 +414,7 @@ def update_order(
 ):
     # Function-level permission is checked independently of object ownership.
     require_permission(actor, "orders:manage:any", "orders:manage")
-    require_fresh_nonce(request.headers.get("X-Request-Nonce"))
+    require_fresh_nonce(nonce)
     order = check_access(actor, "orders:manage", orderId)
 
     # Only status can be changed by this endpoint.
