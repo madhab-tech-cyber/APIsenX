@@ -1,4 +1,4 @@
-﻿
+
 openapi: 3.1.0
 
 info:
@@ -125,11 +125,9 @@ paths:
         - Orders
       summary: Update an order
       operationId: updateOrder
-      parameters:
-        - $ref: '#/components/parameters/PolicyVersion'
       description: >
-        Requires orders:manage:any for platform admins or
-        orders:manage:tenant for tenant admins, plus object-level
+        Requires orders:manage:any for platform administrators or
+        orders:manage:tenant for tenant administrators, plus object-level
         authorization and a matching X-Policy-Version: AP-1.0 header.
         Tenant checks precede ownership and permission decisions. Customers
         and support principals cannot mutate orders. Missing, cross-owner,
@@ -138,6 +136,20 @@ paths:
         records a privacy-conscious audit event. Clients cannot change the
         order owner, identifier, total, or currency. Updates are process-local
         and reset when the API process restarts. Cross-tenant access is denied.
+        Each PATCH also requires a unique X-Request-Nonce header containing
+        8-128 safe characters. Reuse within five minutes is rejected using
+        process-local replay detection; this is not cryptographic request signing.
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
+        - name: X-Request-Nonce
+          in: header
+          required: true
+          description: Unique nonce for this state-changing request; reuse within five minutes is rejected.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+            pattern: '^[A-Za-z0-9._~-]{8,128}$'
       requestBody:
         required: true
         content:

@@ -168,6 +168,20 @@ class OpenAPIContractTests(unittest.TestCase):
             "OpenAPI contract has missing or undocumented runtime operations",
         )
 
+    def test_patch_documents_required_nonce_header(self):
+        parameters = self.contract["paths"]["/orders/{orderId}"]["patch"][
+            "parameters"
+        ]
+        nonce = next(
+            parameter
+            for parameter in parameters
+            if parameter.get("name") == "X-Request-Nonce"
+        )
+        self.assertEqual(nonce["in"], "header")
+        self.assertTrue(nonce["required"])
+        self.assertEqual(nonce["schema"]["minLength"], 8)
+        self.assertEqual(nonce["schema"]["maxLength"], 128)
+
     def test_admin_and_patch_describe_required_permissions(self):
         admin_description = self.contract["paths"]["/admin/orders"]["get"][
             "description"

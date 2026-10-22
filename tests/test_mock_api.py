@@ -4,6 +4,7 @@ import logging
 import sys
 import unittest
 from copy import deepcopy
+from itertools import count
 from pathlib import Path
 from unittest.mock import patch
 
@@ -17,6 +18,16 @@ import main
 
 app = main.app
 client = TestClient(app)
+_nonce_counter = count(1)
+
+
+def patch_request(*args, **kwargs):
+    """Give ordinary PATCH tests unique nonces unless a test supplies one."""
+    headers = dict(kwargs.get("headers") or {})
+    headers.setdefault("X-Request-Nonce", f"test-nonce-{next(_nonce_counter):08d}")
+    kwargs["headers"] = headers
+    return client.patch(*args, **kwargs)
+
 
 POLICY = {"X-Policy-Version": "AP-1.0"}
 USER_A = {"Authorization": "Bearer lab-user-a-token", **POLICY}
@@ -29,13 +40,15 @@ TENANT_ADMIN = {"Authorization": "Bearer lab-tenant-admin-token", **POLICY}
 class MockAPITests(unittest.TestCase):
 
     def setUp(self):
-        # Start every test from the canonical fixture, not the prior test's state.
+        # Start every test from canonical fixtures and isolated replay state.
+        main.USED_NONCES.clear()
         self.original_orders = main.load_orders()
         main.ORDERS.clear()
         main.ORDERS.update(deepcopy(self.original_orders))
 
     def tearDown(self):
-        # Restore the canonical fixture after every test.
+        # Restore fixtures and replay cache after every test.
+        main.USED_NONCES.clear()
         main.ORDERS.clear()
         main.ORDERS.update(deepcopy(self.original_orders))
 
@@ -79,7 +92,7 @@ class MockAPITests(unittest.TestCase):
         self.assertEqual(len(response.json()["orders"]), 3)
 
     def test_tenant_admin_can_manage_same_tenant_order_with_permission(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
             headers=TENANT_ADMIN,
             json={"status": "shipped"},
@@ -374,7 +387,7 @@ class MockAPITests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_customer_cannot_update_order(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
             headers=USER_A,
             json={"status": "shipped"},
@@ -387,7 +400,7 @@ class MockAPITests(unittest.TestCase):
 
     def test_denied_patch_leaves_order_state_unchanged(self):
         before = deepcopy(main.ORDERS["order-1001"])
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
             headers=USER_A,
             json={"status": "shipped"},
@@ -401,9 +414,9 @@ class MockAPITests(unittest.TestCase):
             "main.load_json",
             return_value={"roles": {"admin": ["orders:read:any"]}},
         ):
-            response = client.patch(
+            response = patch_request(
                 "/orders/order-1001",
-                headers=ADMIN,
+                headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
                 json={"status": "shipped"},
             )
         self.assertEqual(response.status_code, 403)
@@ -413,7 +426,7 @@ class MockAPITests(unittest.TestCase):
         main.ORDERS["order-1001"]["tenant_id"] = "other-tenant"
         original_status = main.ORDERS["order-1001"]["status"]
 
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
             headers=ADMIN,
             json={"status": "shipped"},
@@ -552,7 +565,7 @@ class MockAPITests(unittest.TestCase):
     def test_denied_customer_update_does_not_mutate_order(self):
         before = deepcopy(main.ORDERS["order-1001"])
 
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
             headers=USER_A,
             json={"status": "delivered"},
@@ -571,9 +584,9 @@ class MockAPITests(unittest.TestCase):
         self.assertEqual(len(response.json()["orders"]), 3)
 
     def test_admin_can_update_order_status(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped"},
         )
 
@@ -583,9 +596,9 @@ class MockAPITests(unittest.TestCase):
     # Invalid update payloads
 
     def test_update_rejects_extra_fields(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped", "owner_id": "user-b"},
         )
 
@@ -595,9 +608,9 @@ class MockAPITests(unittest.TestCase):
         )
 
     def test_invalid_order_status_is_rejected(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "hacked"},
         )
 
@@ -607,9 +620,9 @@ class MockAPITests(unittest.TestCase):
         )
 
     def test_empty_update_payload_is_rejected(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={},
         )
 
@@ -623,7 +636,7 @@ class MockAPITests(unittest.TestCase):
     def test_unknown_order_read_returns_404(self):
         response = client.get(
             "/orders/order-9999",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
         )
 
         self.assertEqual(response.status_code, 404)
@@ -632,9 +645,9 @@ class MockAPITests(unittest.TestCase):
         )
 
     def test_unknown_order_update_returns_404(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-9999",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped"},
         )
 
@@ -644,7 +657,7 @@ class MockAPITests(unittest.TestCase):
         )
 
     def test_malformed_json_is_rejected(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
             headers={
                 **ADMIN,
@@ -659,9 +672,9 @@ class MockAPITests(unittest.TestCase):
         )
 
     def test_missing_status_field_is_rejected(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"owner_id": "user-b"},
         )
 
@@ -671,9 +684,9 @@ class MockAPITests(unittest.TestCase):
         )
 
     def test_null_status_is_rejected(self):
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": None},
         )
 
@@ -692,9 +705,9 @@ class MockAPITests(unittest.TestCase):
         for payload in protected_payloads:
             with self.subTest(payload=payload):
                 before = deepcopy(main.ORDERS["order-1001"])
-                response = client.patch(
+                response = patch_request(
                     "/orders/order-1001",
-                    headers=ADMIN,
+                    headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
                     json=payload,
                 )
                 self.assertEqual(response.status_code, 400)
@@ -706,9 +719,9 @@ class MockAPITests(unittest.TestCase):
     def test_protected_total_field_cannot_be_modified(self):
         original_total = main.ORDERS["order-1001"]["total"]
 
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped", "total": 0},
         )
 
@@ -725,9 +738,9 @@ class MockAPITests(unittest.TestCase):
     def test_admin_update_does_not_leak_between_tests(self):
         original_status = self.original_orders["order-1001"]["status"]
 
-        response = client.patch(
+        response = patch_request(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped"},
         )
 
@@ -804,6 +817,72 @@ class MockAPITests(unittest.TestCase):
         ):
             with self.subTest(forbidden_value=forbidden_value):
                 self.assertNotIn(forbidden_value, log_text)
+
+
+    # Day 13: token lifecycle and request replay
+
+    def test_expired_token_is_rejected(self):
+        from datetime import timedelta
+        metadata = main.TOKEN_METADATA["lab-user-a-token"].copy()
+        try:
+            main.TOKEN_METADATA["lab-user-a-token"]["expires_at"] = (
+                main.utc_now() - timedelta(seconds=1)
+            )
+            response = client.get("/orders", headers=USER_A)
+        finally:
+            main.TOKEN_METADATA["lab-user-a-token"] = metadata
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json()["error"]["code"], "UNAUTHENTICATED")
+
+    def test_revoked_token_is_rejected(self):
+        main.REVOKED_TOKENS.add("lab-user-a-token")
+        try:
+            response = client.get("/orders", headers=USER_A)
+        finally:
+            main.REVOKED_TOKENS.discard("lab-user-a-token")
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json()["error"]["code"], "UNAUTHENTICATED")
+
+    def test_unknown_token_is_rejected(self):
+        response = client.get(
+            "/orders",
+            headers={"Authorization": "Bearer unknown-token"},
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_patch_requires_nonce_and_does_not_mutate(self):
+        before = deepcopy(main.ORDERS["order-1001"])
+        response = client.patch(
+            "/orders/order-1001",
+            headers=ADMIN,
+            json={"status": "shipped"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"]["code"], "INVALID_REQUEST")
+        self.assertEqual(main.ORDERS["order-1001"], before)
+
+    def test_duplicate_patch_nonce_is_rejected_without_second_mutation(self):
+        headers = {**ADMIN, "X-Request-Nonce": "nonce-replay-0001"}
+        first = patch_request(
+            "/orders/order-1001",
+            headers=headers,
+            json={"status": "shipped"},
+        )
+        self.assertEqual(first.status_code, 200)
+        before = deepcopy(main.ORDERS["order-1001"])
+        second = patch_request(
+            "/orders/order-1001",
+            headers=headers,
+            json={"status": "delivered"},
+        )
+        self.assertEqual(second.status_code, 400)
+        self.assertEqual(main.ORDERS["order-1001"], before)
+
+    def test_get_requests_remain_repeatable(self):
+        first = client.get("/orders", headers=USER_A)
+        second = client.get("/orders", headers=USER_A)
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
 
 
 if __name__ == "__main__":
