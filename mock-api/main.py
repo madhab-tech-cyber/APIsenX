@@ -1,4 +1,4 @@
-import logging
+import logging  # noqa: I001
 import os
 import re
 import sys
