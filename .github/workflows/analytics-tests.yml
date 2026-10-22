@@ -32,6 +32,11 @@ jobs:
         run: |
           python -m analytics.evaluate
           python -m analytics.review_demo
+          python -m analytics.final_demo
+      - name: Verify frozen source candidate and build without publishing
+        run: |
+          python -m analytics.package --check
+          python -m analytics.package --output "$RUNNER_TEMP/analytics-lab-candidate.zip"
       - name: Lint analytics, tests and secret-check helper
         run: >-
           python -m ruff check analytics tests scripts/check_analytics_secrets.py

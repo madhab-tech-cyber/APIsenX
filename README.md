@@ -24,6 +24,12 @@ function-level detection, a self-labelled corpus, signed monitor-only
 recommendations and volatile structured audit. It does not establish live
 identity provenance, accepted accuracy or completed human review/feedback.
 
+[Member 4 Days 21–30](docs/member4-days21-30-evidence.md) supplies stale-policy
+failure tests, mandatory storage masking, protected paginated inventory/alert
+APIs and a deterministic source candidate. M3 has added a local Rust/Python
+Bearer batch handoff. Shared deployment, durable audit, live context, independent
+reviews and the human final demonstration remain unaccepted; release is held.
+
 Days 21–30 are Member 1 policy/review tasks, not proof of 30 calendar workdays,
 completed human checkpoints or a production-ready engine. Passing reference-API
 tests and documentation checks do not establish detector accuracy, integrated

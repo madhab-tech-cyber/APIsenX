@@ -23,13 +23,27 @@ Contract = Annotated[str, StringConstraints(pattern=r"^sha256:[a-f0-9]{64}$")]
 
 def rules_digest():
     directory = Path(__file__).resolve().parent
-    return hashlib.sha256(
-        b"".join(
-            (directory / name).read_bytes()
-            for name in ("detection.py", "flow.py", "normalization.py")
-        )
-        + (directory.parent / "src/authorization.py").read_bytes()
+    names = (
+        "app.py",
+        "audit.py",
+        "decisions.py",
+        "detection.py",
+        "flow.py",
+        "management.py",
+        "masking.py",
+        "models.py",
+        "normalization.py",
+        "store.py",
+    )
+    sources = {
+        name: hashlib.sha256((directory / name).read_bytes()).hexdigest()
+        for name in names
+    }
+    sources["src/authorization.py"] = hashlib.sha256(
+        (directory.parent / "src/authorization.py").read_bytes()
     ).hexdigest()
+    # Bind file names and boundaries, not an ambiguous concatenation of sources.
+    return hashlib.sha256(canonical(sources)).hexdigest()
 
 
 def permission_digest(roles):
@@ -63,7 +77,7 @@ class SignedPolicy(StrictModel):
     schema_name: Literal["analytics_policy"] = "analytics_policy"
     schema_version: Literal["1.0"] = "1.0"
     policy_version: Literal["AP-1.0"] = POLICY
-    rule_version: Literal["DET-1.1"] = RULE_VERSION
+    rule_version: Literal["DET-1.2"] = RULE_VERSION
     contract_version: Contract
     rules_digest: Digest
     permission_digest: Digest
@@ -84,7 +98,7 @@ class SignedDecision(StrictModel):
     nonce: UUID
     policy_digest: Digest
     policy_version: Literal["AP-1.0"] = POLICY
-    rule_version: Literal["DET-1.1"] = RULE_VERSION
+    rule_version: Literal["DET-1.2"] = RULE_VERSION
     issuer: Name
     key_id: Name
     issued_at: datetime
@@ -139,14 +153,46 @@ class DecisionService:
         self._key = key
         self.rules_digest = rules_digest()
         self.permission_digest = permission_digest(engine.roles)
+        self.contract_version = engine.normalizer.contract_version
+        self.loaded_at = clock()
+        self.policy_expires_at = self.loaded_at + timedelta(seconds=300)
+        self.flow_profile = (
+            engine.flow.threshold,
+            engine.flow.window,
+            engine.flow.capacity,
+        )
         self.replays = ReplayWindow()
-        self.audit = AuditWriter(audit_key)
+        self.audit = AuditWriter(
+            audit_key, routes=[item.route for item in engine.normalizer.templates]
+        )
+
+    def check_policy(self, now):
+        try:
+            current_permissions = permission_digest(load_json("users.json")["roles"])
+            current_rules = rules_digest()
+        except Exception:
+            raise DecisionError("POLICY_UNAVAILABLE") from None
+        if (
+            not self.loaded_at <= now < self.policy_expires_at
+            or current_rules != self.rules_digest
+            or current_permissions != self.permission_digest
+            or permission_digest(self.engine.roles) != self.permission_digest
+            or self.engine.normalizer.contract_version != self.contract_version
+            or (
+                self.engine.flow.threshold,
+                self.engine.flow.window,
+                self.engine.flow.capacity,
+            )
+            != self.flow_profile
+        ):
+            raise DecisionError("POLICY_STALE")
 
     def issue(self, request):
         now = self.clock()
         if not fresh(request.requested_at, now):
             raise DecisionError("REQUEST_TIME_INVALID")
         self.replays.claim(request.nonce, now, now + timedelta(seconds=5))
+        self.check_policy(now)
         if self.resolver is None:
             raise DecisionError("CONTEXT_UNAVAILABLE")
         try:
@@ -160,7 +206,10 @@ class DecisionService:
             or not fresh(observation.observed_at, now)
         ):
             raise DecisionError("CONTEXT_UNAVAILABLE")
-        result = self.engine.evaluate(observation)
+        try:
+            result = self.engine.evaluate(observation)
+        except Exception:
+            raise DecisionError("ANALYSIS_UNAVAILABLE") from None
         if permission_digest(self.engine.roles) != self.permission_digest:
             raise DecisionError("CONTEXT_UNAVAILABLE")
         if (

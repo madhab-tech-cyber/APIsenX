@@ -9,6 +9,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    # Verify every field/hash before excluding the hash-only manifest from entropy
+    # heuristics. This cannot hide an arbitrary secret added to that manifest.
+    frozen = subprocess.run(
+        [sys.executable, "-m", "analytics.package", "--check"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    if frozen.returncode:
+        print("BLOCKED: frozen source/manifest verification failed")
+        return 2
     files = [
         "analytics",
         *[
@@ -23,7 +36,16 @@ def main():
         ],
     ]
     result = subprocess.run(
-        [sys.executable, "-m", "detect_secrets", "scan", "--all-files", *files],
+        [
+            sys.executable,
+            "-m",
+            "detect_secrets",
+            "scan",
+            "--all-files",
+            "--exclude-files",
+            r"(^|/)analytics/release-candidate\.json$",
+            *files,
+        ],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -35,6 +57,7 @@ def main():
         return 2
     findings = json.loads(result.stdout)["results"]
     count = sum(len(values) for values in findings.values())
+    print("Hash-only frozen manifest verified separately (entropy heuristic exclusion)")
     print(f"Member 4 secret scan: {count} candidate(s) in {len(findings)} file(s)")
     return 1 if count else 0
 

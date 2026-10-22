@@ -387,7 +387,7 @@ class AnalyticsServiceTests(unittest.TestCase):
         from analytics.schemas import schemas
 
         exported = schemas()
-        self.assertEqual(len(exported), 7)
+        self.assertEqual(len(exported), 10)
         for name in (
             "application_event.v1",
             "collector_event.v1.1",

@@ -1,4 +1,4 @@
-"""DET-1.1: explainable lab recommendations from authoritative in-process context."""
+"""DET-1.2: explainable lab recommendations from authoritative in-process context."""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -8,7 +8,7 @@ from uuid import UUID
 from src.authorization import authorize, load_json
 
 POLICY = "AP-1.0"
-RULE_VERSION = "DET-1.1"
+RULE_VERSION = "DET-1.2"
 RULES = {"DET-OBS-1", "DET-SHADOW-1", "DET-BOLA-1", "DET-BFLA-1", "DET-FLOW-1"}
 REASONS = {
     "CONTEXT_UNAVAILABLE",
@@ -127,7 +127,11 @@ class DetectionEngine:
             return result("ACCESS_PREVENTED", "DET-BFLA-1", access="denied")
         if route.route == "/orders/{orderId}":
             resource = self.orders.get(observation.object_id)
-            if not isinstance(resource, dict) or not resource.get("owner_id"):
+            if (
+                not isinstance(resource, dict)
+                or not isinstance(resource.get("owner_id"), str)
+                or not resource["owner_id"].strip()
+            ):
                 return result("CONTEXT_UNAVAILABLE")
             # Changed IDs need changed authoritative context; never guess an owner.
             observed_id = (

@@ -8,9 +8,9 @@ from analytics.store import MemoryStore
 
 
 class AuditWriter:
-    def __init__(self, key, capacity=1000):
+    def __init__(self, key, capacity=1000, routes=()):
         self._key = key
-        self.store = MemoryStore(key, capacity, retention_seconds=300)
+        self.store = MemoryStore(key, capacity, retention_seconds=300, routes=routes)
 
     def append(self, observation, detection, contract_version, now):
         if detection.reason_code not in REASONS or detection.rule_id not in RULES:
