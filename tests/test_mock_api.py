@@ -252,7 +252,7 @@ class MockAPITests(unittest.TestCase):
     def test_admin_can_update_order_status(self):
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped"},
         )
 
@@ -264,7 +264,7 @@ class MockAPITests(unittest.TestCase):
     def test_update_rejects_extra_fields(self):
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped", "owner_id": "user-b"},
         )
 
@@ -276,7 +276,7 @@ class MockAPITests(unittest.TestCase):
     def test_invalid_order_status_is_rejected(self):
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "hacked"},
         )
 
@@ -288,7 +288,7 @@ class MockAPITests(unittest.TestCase):
     def test_empty_update_payload_is_rejected(self):
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={},
         )
 
@@ -302,7 +302,7 @@ class MockAPITests(unittest.TestCase):
     def test_unknown_order_read_returns_404(self):
         response = client.get(
             "/orders/order-9999",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
         )
 
         self.assertEqual(response.status_code, 404)
@@ -313,7 +313,7 @@ class MockAPITests(unittest.TestCase):
     def test_unknown_order_update_returns_404(self):
         response = client.patch(
             "/orders/order-9999",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped"},
         )
 
@@ -340,7 +340,7 @@ class MockAPITests(unittest.TestCase):
     def test_missing_status_field_is_rejected(self):
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"owner_id": "user-b"},
         )
 
@@ -352,7 +352,7 @@ class MockAPITests(unittest.TestCase):
     def test_null_status_is_rejected(self):
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": None},
         )
 
@@ -373,7 +373,7 @@ class MockAPITests(unittest.TestCase):
                 before = deepcopy(main.ORDERS["order-1001"])
                 response = client.patch(
                     "/orders/order-1001",
-                    headers=ADMIN,
+                    headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
                     json=payload,
                 )
                 self.assertEqual(response.status_code, 400)
@@ -387,7 +387,7 @@ class MockAPITests(unittest.TestCase):
 
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped", "total": 0},
         )
 
@@ -406,7 +406,7 @@ class MockAPITests(unittest.TestCase):
 
         response = client.patch(
             "/orders/order-1001",
-            headers=ADMIN,
+            headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"},
             json={"status": "shipped"},
         )
 
@@ -448,7 +448,7 @@ class MockAPITests(unittest.TestCase):
 
     def test_patch_requires_nonce_and_does_not_mutate(self):
         before = deepcopy(main.ORDERS["order-1001"])
-        response = client.patch("/orders/order-1001", headers=ADMIN, json={"status": "shipped"})
+        response = client.patch("/orders/order-1001", headers={**ADMIN, "X-Request-Nonce": "nonce-test-0001"}, json={"status": "shipped"})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"]["code"], "INVALID_REQUEST")
         self.assertEqual(main.ORDERS["order-1001"], before)
