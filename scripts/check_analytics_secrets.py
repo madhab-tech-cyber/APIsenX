@@ -43,7 +43,7 @@ def main():
             "scan",
             "--all-files",
             "--exclude-files",
-            r"(^|/)analytics/release-candidate\.json$",
+            r"(^|[\\/])analytics[\\/]release-candidate\.json$",
             *files,
         ],
         cwd=ROOT,
