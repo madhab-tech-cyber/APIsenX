@@ -35,7 +35,7 @@
     "mock_data/users.json": "ca4080e2974a3b050e02fcee8975cb86081cb86c3a22896e07d7f720763b0fb0",
     "pyproject.toml": "6019f19c59d7fd362daaa556c14e3dba53358edc0df44ae37ac57b03b17f3eae",
     "requirements.txt": "d9e82a88f34ed061f70455a7839f2701ed5015bab103fecfd132060a7e2ae561",
-    "scripts/check_analytics_secrets.py": "aed385461a7b3674f5e07e0dd38e66c2a5ec6275ab79f5cc137241314d08c09b",
+    "scripts/check_analytics_secrets.py": "ec2e9137d563d0d371ddbf25fcdc5adb319f95b7b2d25298e223a1cf6da1bd96",
     "src/authorization.py": "3104f58154be16aa1605459be76730e536902625bb3fe393098a136670aae3da",
     "tests/fixtures/detection_cases.json": "1738ad46115224ddf1bdc736e8328d7bdac958c8aafd40dfd3fae9455e28d24e",
     "tests/test_analytics_decisions.py": "f0981eb27f3cd8c4bd90d75a3fd8fda607f1a3a1fc47b6d5d05643acbcd02699",
