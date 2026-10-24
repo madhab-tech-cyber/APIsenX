@@ -1,4 +1,3 @@
-
 name: Mock API Security Tests
 
 on:
@@ -17,14 +16,15 @@ permissions:
 jobs:
   test:
     name: API Security and Quality Gates
-    runs-on: ubuntu-latest
+    # Pin the runner to avoid an unplanned ubuntu-latest image migration.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: "pip"

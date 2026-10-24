@@ -13,11 +13,12 @@ permissions:
 jobs:
   analytics:
     name: Analytics Security and Quality Gates
-    runs-on: ubuntu-latest
+    # Pin the runner to avoid an unplanned ubuntu-latest image migration.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
           cache: pip
