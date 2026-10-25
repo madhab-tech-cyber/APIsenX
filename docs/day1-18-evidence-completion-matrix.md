@@ -18,7 +18,7 @@ This matrix consolidates the available repository and prior user-provided eviden
 | 5 | Endpoint integration and process-local update/reset behavior | Historical completion recorded; reset limitation documented | Verify current behavior and docs |
 | 6 | Security edge cases, validation errors, test isolation | Historical completion recorded | Current-SHA test evidence |
 | 7 | OpenAPI parity and contract-drift test | Historical completion recorded | Current-SHA contract test |
-| 8 | Day 8 objectives | Insufficient specific evidence in this audit record | Recover checklist/commit evidence and validate |
+| 8 | Route-normalization acceptance design | Design baseline documented; 53 labelled RN-* cases and privacy/normalization rules recorded; 26 baseline tests, compileall, diff and documentation checks reported PASS | Runtime normalizer, executable RN corpus, keyed runtime config, fuzz/property tests, and producer/consumer acceptance remain pending; design-only is not implementation acceptance |
 | 9 | Integration/security work | Historical completion recorded; detailed acceptance evidence not consolidated here | Verify issue/commit and current regression |
 | 10 | Dependency audit and Ruff quality gates | Historical commit `8f15563` recorded | Verify current workflow runs and exact-SHA status |
 | 11 | AP-1.0 boundary and privacy-safe observation | Partial; acceptance pending | Policy acceptance and affected-owner review |
