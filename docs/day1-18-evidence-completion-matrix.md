@@ -1,7 +1,7 @@
 # APIsenX Days 1–18 — Evidence-Based Completion Matrix
 
-**Updated:** 2026-10-26  
-**Baseline main SHA inspected:** `5ec283e20f25de55a317a8541e217d5c043518d6`  
+**Updated:** 2026-10-26 (follow-up after PR #67 merge)  
+**Baseline main SHA inspected:** `b8b7c7b5a57a5eb7157ae82e11ae0e18dc094d3c`  
 **Overall status:** IN PROGRESS — not a release approval  
 **Safety posture:** `monitor_only`; zero active enforcement; release **NOT APPROVED**.
 
@@ -32,7 +32,7 @@ This matrix consolidates the available repository and prior user-provided eviden
 
 ## Current verified GitHub facts
 
-- Current `main` at audit time: `5ec283e20f25de55a317a8541e217d5c043518d6`.
+- Current `main` observed in this follow-up: `b8b7c7b5a57a5eb7157ae82e11ae0e18dc094d3c` (merge commit for PR #67, which added this evidence matrix).
 - PR #65: https://github.com/madhab-tech-cyber/APIsenX/pull/65
   - Head SHA: `d970c16a588a53b13f693fd970d84cd08d7a52d2`.
   - Mock API, Analytics, and Member 3 Loopback PR-head workflows passed:
@@ -40,15 +40,15 @@ This matrix consolidates the available repository and prior user-provided eviden
     - https://github.com/madhab-tech-cyber/APIsenX/actions/runs/40242626647
     - https://github.com/madhab-tech-cyber/APIsenX/actions/runs/40242626701
   - These are PR-head checks, **not** checks on current main. At audit time PR #65 was open and no submitted reviews were found.
-- The latest queried Actions listing had no run whose `head_sha` matched current main SHA `5ec283e20f25de55a317a8541e217d5c043518d6`.
+- Exact-SHA Actions status for the newly observed main SHA `b8b7c7b5a57a5eb7157ae82e11ae0e18dc094d3c` has not been verified in this follow-up. Do not infer success from PR-head checks or from the merge itself.
 - Prior local results (240 tests, 18 OpenAPI contract tests, Ruff, Bandit, pip-audit) were supplied by the user for a prior candidate SHA. They are not fresh tests run by this audit and must not be presented as current-main evidence.
 - Branch-protection/ruleset readback previously returned HTTP 403. This does not establish whether protection is enabled or disabled.
 - Known acceptance gaps include AP-1.0 tenant isolation, sharing/revocation, scoped support/tenant-admin authorization, policy-version rejection, and sensor-contract integration.
 
 ## Required closure sequence
 
-1. Obtain independent review on PR #65; merge only under repository review/check policy.
-2. Capture the resulting main SHA and verify relevant workflow runs have that exact `head_sha`.
+1. Refresh PR #65 status, obtain independent review, and merge only under repository review/check policy.
+2. Capture the post-merge main SHA and verify relevant workflow runs have that exact `head_sha`.
 3. Attach reproducible exact-SHA regression, OpenAPI, lint, security/dependency-audit, analytics-package, and loopback evidence.
 4. Obtain authorized administrator readback of branch protection/rulesets.
 5. Complete the actual human demo in Issue #56 and collect the independent reviewer decision.
