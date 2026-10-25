@@ -2,7 +2,7 @@ name: Analytics Security Tests
 
 on:
   push:
-    branches: [member4/detection]
+    branches: [main, member4/detection]
   pull_request:
     branches: [main, member4/detection, member3/rust-enforcement, member6/dashboard-devsecops]
   workflow_dispatch:
