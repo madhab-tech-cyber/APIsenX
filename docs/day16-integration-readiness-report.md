@@ -70,3 +70,32 @@ See [Issue #56 — Day 14 human security demonstration](https://github.com/madha
 The reported local automated checks passed on the pinned candidate revision. That establishes technical verification evidence only for the commands and tests listed above. It does not establish current-main CI success, branch-protection configuration, a completed live human demonstration, independent sign-off, or release approval.
 
 **Do not deploy or enable active enforcement. Maintain `monitor_only`, zero active enforcement, and release status `NOT APPROVED` until the outstanding gates are independently evidenced and the authorized release owner records the decision.**
+
+## 6. Follow-up verification — 2026-10-26
+
+### GitHub CI evidence now observed
+
+PR #60, which updates the GitHub Actions runtime versions and pins the Ubuntu runner, is merged. The resulting `main` merge commit is `66e855f5b5e560ef44da89fb5d65efb1756bc4e7`.
+
+The following three workflows succeeded on PR head `d51e6668197cf2900c6b0b028c0634b192490b46`:
+
+- [Mock API Security Tests](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/40072189001)
+- [Analytics Security Tests](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/40072188985)
+- [Member 3 Loopback Integration](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/40072188960)
+
+These runs verify the PR head, not the post-merge main commit. They must not be described as CI runs against `66e855f5b5e560ef44da89fb5d65efb1756bc4e7`. An exact-main-SHA CI run remains **PENDING VERIFICATION**.
+
+### Branch-protection evidence
+
+The connected GitHub integration returned HTTP 403 (insufficient permission) when attempting to read branch protection for `main`. This is an access limitation, not proof that branch protection is absent or present. An authorized repository administrator must provide a settings/ruleset readback.
+
+### Remaining human and ownership gates
+
+- Issue #56 remains open. Actual Day 14 live demo details and independent reviewer conclusion are not verified.
+- Issue #57's owner/reviewer responses, current-revision dispositions, and owner-confirmed due dates remain incomplete. Its closed state is not treated as proof of acceptance.
+- The AP-1.0 tenant-admin and accepted sensor-contract limitations remain open.
+- Release authorization remains **NOT APPROVED**.
+
+### Reconciled disposition
+
+CI maintenance is merged and the related PR-head workflows passed. Day 16 overall acceptance is still **PENDING** until the exact-main-SHA CI evidence, authorized branch-protection readback, actual human demonstration, independent review, and required owner dispositions are recorded. Maintain `monitor_only`, zero active enforcement, and do not deploy or enable enforcement based on this report.
