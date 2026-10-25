@@ -3,6 +3,7 @@ name: Mock API Security Tests
 on:
   push:
     branches:
+      - main
       - member5/mock-api
   pull_request:
     branches:
