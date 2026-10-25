@@ -1,6 +1,13 @@
 name: Member 3 Loopback Integration
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'collector/**'
+      - 'analytics/**'
+      - 'scripts/check_member3_loopback.py'
+      - '.github/workflows/member3-loopback-integration.yml'
   pull_request:
     branches: [main]
     paths:
