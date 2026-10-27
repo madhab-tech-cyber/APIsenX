@@ -135,6 +135,107 @@ MAX_PATH_SEGMENTS = 32
 MAX_JSON_BODY_BYTES = 16 * 1024
 MAX_PAGE_SIZE = 100
 MAX_RESPONSE_BYTES = 64 * 1024
+app.add_middleware(
+    BoundedHTTPPayloadMiddleware,
+    max_request_bytes=MAX_JSON_BODY_BYTES,
+    max_response_bytes=MAX_RESPONSE_BYTES,
+)
+
+
+class BoundedHTTPPayloadMiddleware:
+    """Bound streamed HTTP request and response bodies without unbounded buffering."""
+
+    def __init__(self, app, max_request_bytes: int, max_response_bytes: int):
+        self.app = app
+        self.max_request_bytes = max_request_bytes
+        self.max_response_bytes = max_response_bytes
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request_bytes = 0
+        request_too_large = False
+        response_start = None
+        response_chunks = []
+        response_bytes = 0
+        response_too_large = False
+
+        async def bounded_receive():
+            nonlocal request_bytes, request_too_large
+            message = await receive()
+            if message.get("type") == "http.request":
+                body = message.get("body", b"")
+                request_bytes += len(body)
+                if request_bytes > self.max_request_bytes:
+                    request_too_large = True
+                    return {"type": "http.request", "body": b"", "more_body": False}
+            return message
+
+        async def buffered_send(message):
+            nonlocal response_start, response_bytes, response_too_large
+            if message.get("type") == "http.response.start":
+                response_start = message
+                return
+            if message.get("type") == "http.response.body":
+                chunk = message.get("body", b"")
+                response_bytes += len(chunk)
+                if response_bytes > self.max_response_bytes:
+                    response_too_large = True
+                    response_chunks.clear()
+                    return
+                if not response_too_large:
+                    response_chunks.append(chunk)
+                if message.get("more_body", False):
+                    return
+                if request_too_large:
+                    body = (
+                        b'{"error":{"code":"INVALID_REQUEST",'
+                        b'"message":"Request body exceeds configured limit"}}'
+                    )
+                    status = 413
+                    headers = [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode("ascii")),
+                    ]
+                elif response_too_large:
+                    body = (
+                        b'{"error":{"code":"RESPONSE_TOO_LARGE",'
+                        b'"message":"Response exceeds configured limit"}}'
+                    )
+                    status = 500
+                    headers = [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode("ascii")),
+                    ]
+                else:
+                    start = response_start or {
+                        "type": "http.response.start",
+                        "status": 200,
+                        "headers": [],
+                    }
+                    body = b"".join(response_chunks)
+                    headers = [
+                        (key, value)
+                        for key, value in start.get("headers", [])
+                        if key.lower() not in {b"content-length", b"transfer-encoding"}
+                    ]
+                    headers.append((b"content-length", str(len(body)).encode("ascii")))
+                    status = start["status"]
+                await send({
+                    "type": "http.response.start",
+                    "status": status,
+                    "headers": headers,
+                })
+                await send({"type": "http.response.body", "body": body, "more_body": False})
+                return
+            await send(message)
+
+        await self.app(scope, bounded_receive, buffered_send)
+
+MAX_PAGE_SIZE = 100
+MAX_RESPONSE_BYTES = 64 * 1024
 
 
 def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
