@@ -1,3 +1,4 @@
+import re
 import unittest
 from pathlib import Path
 
@@ -32,9 +33,9 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
 
     def test_day21_policy_keeps_all_five_route_failure_rows_and_pending_boundary(self):
         route_rows = {
-            line.split("|")[1].strip()
+            match.group(1)
             for line in self.failure_policy.splitlines()
-            if line.startswith("| RF-")
+            if (match := re.match(r"^\\|\\s*(RF-\\d{2})\\b", line))
         }
         self.assertEqual(
             route_rows,
