@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 import main
@@ -30,6 +31,140 @@ class TokenBucketLimiterTests(unittest.TestCase):
         response = client.get("/orders?limit=101", headers=headers)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"]["code"], "INVALID_REQUEST")
+
+    def test_subject_concurrency_gate_returns_429_when_full(self):
+        client = TestClient(main.app)
+        key = ("user-a", "read")
+        semaphore = main.threading.BoundedSemaphore(5)
+        for _ in range(5):
+            self.assertTrue(semaphore.acquire(blocking=False))
+        with main.SUBJECT_SEMAPHORE_LOCK:
+            main.SUBJECT_SEMAPHORES[key] = semaphore
+        try:
+            response = client.get("/orders", headers={
+                "Authorization": "Bearer lab-user-a-token",
+                "X-Policy-Version": "AP-1.0",
+            })
+        finally:
+            with main.SUBJECT_SEMAPHORE_LOCK:
+                main.SUBJECT_SEMAPHORES.pop(key, None)
+            for _ in range(5):
+                semaphore.release()
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
+        self.assertEqual(response.headers["Retry-After"], "1")
+
+    def test_patch_subject_concurrency_gate_uses_tighter_limit(self):
+        client = TestClient(main.app)
+        key = ("admin-1", "PATCH")
+        semaphore = main.threading.BoundedSemaphore(2)
+        for _ in range(2):
+            self.assertTrue(semaphore.acquire(blocking=False))
+        with main.SUBJECT_SEMAPHORE_LOCK:
+            main.SUBJECT_SEMAPHORES[key] = semaphore
+        try:
+            response = client.patch(
+                "/orders/order-1001",
+                headers={
+                    "Authorization": "Bearer lab-admin-token",
+                    "X-Policy-Version": "AP-1.0",
+                    "X-Request-Nonce": "nonce-12345678",
+                },
+                json={"status": "shipped"},
+            )
+        finally:
+            with main.SUBJECT_SEMAPHORE_LOCK:
+                main.SUBJECT_SEMAPHORES.pop(key, None)
+            for _ in range(2):
+                semaphore.release()
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
+
+    def test_streaming_body_limit_checks_actual_bytes(self):
+        async def run_test():
+            async def receive():
+                return {
+                    "type": "http.request",
+                    "body": b"x" * (main.MAX_JSON_BODY_BYTES + 1),
+                    "more_body": True,
+                }
+
+            sent = []
+
+            async def capture(message):
+                sent.append(message)
+
+            async def app(scope, receive, send):
+                message = await receive()
+                self.assertEqual(message["body"], b"")
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 200,
+                        "headers": [],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b"ok",
+                        "more_body": False,
+                    }
+                )
+
+            middleware = main.BoundedHTTPPayloadMiddleware(
+                app,
+                max_request_bytes=main.MAX_JSON_BODY_BYTES,
+                max_response_bytes=main.MAX_RESPONSE_BYTES,
+            )
+            await middleware(
+                {"type": "http", "method": "POST", "path": "/test"},
+                receive,
+                capture,
+            )
+            self.assertEqual(sent[0]["status"], 413)
+            self.assertIn(b"INVALID_REQUEST", sent[1]["body"])
+
+        asyncio.run(run_test())
+
+    def test_response_body_limit_replaces_oversized_response(self):
+        async def run_test():
+            async def receive():
+                return {"type": "http.request", "body": b"", "more_body": False}
+
+            sent = []
+
+            async def capture(message):
+                sent.append(message)
+
+            async def app(scope, receive, send):
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 200,
+                        "headers": [],
+                    }
+                )
+                await send({
+                    "type": "http.response.body",
+                    "body": b"x" * (main.MAX_RESPONSE_BYTES + 1),
+                    "more_body": False,
+                })
+
+            middleware = main.BoundedHTTPPayloadMiddleware(
+                app,
+                max_request_bytes=main.MAX_JSON_BODY_BYTES,
+                max_response_bytes=main.MAX_RESPONSE_BYTES,
+            )
+            await middleware(
+                {"type": "http", "method": "GET", "path": "/test"},
+                receive,
+                capture,
+            )
+            self.assertEqual(sent[0]["status"], 500)
+            self.assertIn(b"RESPONSE_TOO_LARGE", sent[1]["body"])
+
+        asyncio.run(run_test())
 
     def test_unauthenticated_source_limit_returns_429(self):
         client = TestClient(main.app)

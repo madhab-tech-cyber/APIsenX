@@ -130,9 +130,117 @@ SUBJECT_LIMITER = TokenBucketLimiter()
 ROUTE_COST_LIMITER = TokenBucketLimiter()
 SOURCE_LIMITER = TokenBucketLimiter(max_keys=4096)
 SERVICE_IN_FLIGHT = threading.BoundedSemaphore(10)
+SUBJECT_SEMAPHORE_LOCK = threading.Lock()
+SUBJECT_SEMAPHORES: dict[tuple[str, str], threading.BoundedSemaphore] = {}
+MAX_SUBJECT_SEMAPHORES = 4096
 MAX_RAW_PATH_BYTES = 2048
 MAX_PATH_SEGMENTS = 32
 MAX_JSON_BODY_BYTES = 16 * 1024
+MAX_PAGE_SIZE = 100
+MAX_RESPONSE_BYTES = 64 * 1024
+
+class BoundedHTTPPayloadMiddleware:
+    """Bound streamed HTTP request and response bodies without unbounded buffering."""
+
+    def __init__(self, app, max_request_bytes: int, max_response_bytes: int):
+        self.app = app
+        self.max_request_bytes = max_request_bytes
+        self.max_response_bytes = max_response_bytes
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request_bytes = 0
+        request_too_large = False
+        response_start = None
+        response_chunks = []
+        response_bytes = 0
+        response_too_large = False
+
+        async def bounded_receive():
+            nonlocal request_bytes, request_too_large
+            message = await receive()
+            if message.get("type") == "http.request":
+                body = message.get("body", b"")
+                request_bytes += len(body)
+                if request_bytes > self.max_request_bytes:
+                    request_too_large = True
+                    return {"type": "http.request", "body": b"", "more_body": False}
+            return message
+
+        async def buffered_send(message):
+            nonlocal response_start, response_bytes, response_too_large
+            if message.get("type") == "http.response.start":
+                response_start = message
+                return
+            if message.get("type") == "http.response.body":
+                chunk = message.get("body", b"")
+                response_bytes += len(chunk)
+                if response_bytes > self.max_response_bytes:
+                    response_too_large = True
+                    response_chunks.clear()
+                elif not response_too_large:
+                    response_chunks.append(chunk)
+                if message.get("more_body", False):
+                    return
+                if request_too_large:
+                    body = (
+                        b'{"error":{"code":"INVALID_REQUEST",'
+                        b'"message":"Request body exceeds configured limit"}}'
+                    )
+                    status = 413
+                    headers = [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode("ascii")),
+                    ]
+                elif response_too_large:
+                    body = (
+                        b'{"error":{"code":"RESPONSE_TOO_LARGE",'
+                        b'"message":"Response exceeds configured limit"}}'
+                    )
+                    status = 500
+                    headers = [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode("ascii")),
+                    ]
+                else:
+                    start = response_start or {
+                        "type": "http.response.start",
+                        "status": 200,
+                        "headers": [],
+                    }
+                    body = b"".join(response_chunks)
+                    headers = [
+                        (key, value)
+                        for key, value in start.get("headers", [])
+                        if key.lower() not in {b"content-length", b"transfer-encoding"}
+                    ]
+                    headers.append((b"content-length", str(len(body)).encode("ascii")))
+                    status = start["status"]
+                await send({
+                    "type": "http.response.start",
+                    "status": status,
+                    "headers": headers,
+                })
+                await send({
+                    "type": "http.response.body",
+                    "body": body,
+                    "more_body": False,
+                })
+                return
+            await send(message)
+
+        await self.app(scope, bounded_receive, buffered_send)
+
+
+app.add_middleware(
+    BoundedHTTPPayloadMiddleware,
+    max_request_bytes=MAX_JSON_BODY_BYTES,
+    max_response_bytes=MAX_RESPONSE_BYTES,
+)
+
 MAX_PAGE_SIZE = 100
 MAX_RESPONSE_BYTES = 64 * 1024
 
@@ -715,6 +823,39 @@ def check_access(
     return ORDERS[order_id]
 
 
+def subject_concurrency_gate(
+    request: Request,
+    actor: dict = Depends(get_principal),
+):
+    """Bound per-subject in-flight work with a capped process-local registry."""
+    limit = 2 if request.method.upper() == "PATCH" else 5
+    key = (actor["id"], "PATCH" if request.method.upper() == "PATCH" else "read")
+    with SUBJECT_SEMAPHORE_LOCK:
+        semaphore = SUBJECT_SEMAPHORES.get(key)
+        if semaphore is None:
+            if len(SUBJECT_SEMAPHORES) >= MAX_SUBJECT_SEMAPHORES:
+                raise HTTPException(
+                    status_code=503,
+                    detail=error_response(
+                        "SERVICE_UNAVAILABLE",
+                        "Concurrency capacity temporarily unavailable",
+                    ),
+                    headers={"Retry-After": "1"},
+                )
+            semaphore = threading.BoundedSemaphore(limit)
+            SUBJECT_SEMAPHORES[key] = semaphore
+    if not semaphore.acquire(blocking=False):
+        raise HTTPException(
+            status_code=429,
+            detail=error_response("RATE_LIMITED", "Request concurrency limit exceeded"),
+            headers={"Retry-After": "1"},
+        )
+    try:
+        yield
+    finally:
+        semaphore.release()
+
+
 # --------------------------------------------------
 # GET /orders
 # --------------------------------------------------
@@ -735,6 +876,7 @@ def list_orders(
     limit: int = Query(50, ge=1, le=MAX_PAGE_SIZE),
     offset: int = Query(0, ge=0),
     actor: dict = Depends(get_principal),
+    _gate: None = Depends(subject_concurrency_gate),
 ):
     enforce_subject_rate_limit(actor, "GET /orders")
     require_read_permission(actor, "orders:list")
@@ -783,6 +925,7 @@ def list_orders(
     },
 )
 def get_order(
+    _gate: None = Depends(subject_concurrency_gate),
     orderId: str = APIPath(
         min_length=1,
         max_length=64,
@@ -826,6 +969,7 @@ def get_order(
 )
 def update_order(
     update: OrderUpdate,
+    _gate: None = Depends(subject_concurrency_gate),
     nonce: str | None = Header(None, alias="X-Request-Nonce"),
     orderId: str = APIPath(
         min_length=1,
@@ -904,6 +1048,7 @@ def list_admin_orders(
     limit: int = Query(50, ge=1, le=MAX_PAGE_SIZE),
     offset: int = Query(0, ge=0),
     actor: dict = Depends(get_principal),
+    _gate: None = Depends(subject_concurrency_gate),
 ):
     enforce_subject_rate_limit(actor, "GET /admin/orders")
     # Check function-level permission even when inventory is empty.
@@ -961,6 +1106,7 @@ def list_support_orders(
     limit: int = Query(50, ge=1, le=MAX_PAGE_SIZE),
     offset: int = Query(0, ge=0),
     actor: dict = Depends(get_principal),
+    _gate: None = Depends(subject_concurrency_gate),
 ):
     enforce_subject_rate_limit(actor, "GET /support/orders")
     # Support receives only explicitly assigned orders and masked fields.

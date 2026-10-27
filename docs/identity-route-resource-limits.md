@@ -9,7 +9,7 @@
 This is an initial isolated-lab design profile requiring measured tuning and
 review before activation. The merged Day 19 Member 5 implementation adds a bounded
 process-local token-bucket prototype for aggregate service traffic and
-server-authenticated subject/route traffic. Merged PR #70 adds atomic per-route aggregate budgets and weighted service/subject cost budgets. Merged PR #71 adds bounded pre-authentication source and unauthenticated aggregate buckets. Merged PR #72 adds a process-local global concurrency gate and early raw-path/declared Content-Length checks. The current follow-up branch adds bounded pagination to list endpoints, pending CI. The implementation does not cover every LM-01–LM-20 requirement, distributed coordination, concurrency gates, pagination, response-size caps, or production protection. ENF-1.0, rule-specific authorization and Day 21 failure decisions
+server-authenticated subject/route traffic. Merged PR #70 adds atomic per-route aggregate budgets and weighted service/subject cost budgets. Merged PR #71 adds bounded pre-authentication source and unauthenticated aggregate buckets. Merged PR #72 adds a process-local global concurrency gate and early raw-path/declared Content-Length checks. PR #73 adds bounded pagination to list endpoints. The current follow-up branch adds streaming request-body enforcement (16 KiB) and serialized response-byte caps (64 KiB), pending CI. The implementation does not cover every LM-01–LM-20 requirement, distributed coordination, all per-subject/PATCH concurrency gates, or production protection. Pagination and streaming request/response byte caps are in follow-up branches pending CI. ENF-1.0, rule-specific authorization and Day 21 failure decisions
 still apply. Never expose static lab fixtures outside the approved local environment.
 
 Resolve identities server-side after authentication. Key authenticated buckets
@@ -48,9 +48,10 @@ partially admitted buckets. Request and cost budgets are separate.
 
 Cost weights: object read = 1, customer order list = 5, admin order list = 5,
 status update = 10, other/unknown operation = 10. These are policy weights,
-not CPU measurements; authorization is still evaluated separately. Lists must
-be paginated to <= 100 objects and responses <= 256 KiB before this bounded
-cost model can be accepted. Current unpaginated endpoints need implementation.
+not CPU measurements; authorization is still evaluated separately. Lists must be paginated to <= 100 objects and responses bounded by the
+configured byte cap before this cost model can be accepted. PR #73 implements
+pagination (default 50, max 100); the current follow-up implements a 64 KiB
+serialized response cap. Both require passing CI and review before acceptance.
 Increasing cardinality or payload size requires a new cost profile and rerun.
 
 For the MRVP-1.0 40/30/20/10 request mix at 100 offered RPS, the service cost
