@@ -128,7 +128,6 @@ SERVICE_LIMITER = TokenBucketLimiter()
 SUBJECT_LIMITER = TokenBucketLimiter()
 ROUTE_COST_LIMITER = TokenBucketLimiter()
 SOURCE_LIMITER = TokenBucketLimiter(max_keys=4096)
-UNAUTH_AGGREGATE_LIMITER = TokenBucketLimiter()
 
 
 def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
@@ -207,23 +206,14 @@ async def observe_request(request: Request, call_next):
     # used; forwarded headers are deliberately not trusted here.
     if not request.headers.get("authorization"):
         peer = request.client.host if request.client else "unknown"
-        source_allowed, source_retry, source_status = SOURCE_LIMITER.consume(
-            ("source", peer),
-            rate=10.0,
-            capacity=20.0,
+        preauth_allowed, preauth_retry, preauth_status = (
+            SOURCE_LIMITER.consume_many([
+                (("source", peer), 10.0, 20.0, 1.0),
+                (("unauthenticated",), 20.0, 40.0, 1.0),
+            ])
         )
-        unauth_allowed, unauth_retry, unauth_status = (
-            UNAUTH_AGGREGATE_LIMITER.consume(
-                ("unauthenticated",),
-                rate=20.0,
-                capacity=40.0,
-            )
-        )
-        if not source_allowed or not unauth_allowed:
-            response = rate_limit_error(
-                source_status if not source_allowed else unauth_status,
-                source_retry if not source_allowed else unauth_retry,
-            )
+        if not preauth_allowed:
+            response = rate_limit_error(preauth_status, preauth_retry)
             response.headers["X-Correlation-ID"] = correlation_id
             logger.info(
                 "observation correlation_id=%s method=%s "
