@@ -5,6 +5,40 @@ from fastapi.testclient import TestClient
 
 
 class TokenBucketLimiterTests(unittest.TestCase):
+    def test_multi_gate_rejection_does_not_partially_debit(self):
+        now = [100.0]
+        limiter = main.TokenBucketLimiter(clock=lambda: now[0])
+        limiter.buckets[("limited",)] = (0.0, now[0], now[0])
+        result = limiter.consume_many([
+            (("fresh",), 1.0, 2.0, 1.0),
+            (("limited",), 1.0, 1.0, 1.0),
+        ])
+        self.assertEqual(result[0], False)
+        self.assertNotIn(("fresh",), limiter.buckets)
+
+    def test_weighted_route_budget_rejects_without_order_mutation(self):
+        main.SERVICE_LIMITER.buckets.clear()
+        main.SUBJECT_LIMITER.buckets.clear()
+        main.ROUTE_COST_LIMITER.buckets.clear()
+        now = main.ROUTE_COST_LIMITER.clock()
+        main.ROUTE_COST_LIMITER.buckets[("route", "GET /orders")] = (
+            0.0, now, now
+        )
+        client = TestClient(main.app)
+        original_status = main.ORDERS["order-1001"]["status"]
+        try:
+            response = client.get("/orders", headers={
+                "Authorization": "Bearer lab-user-a-token",
+                "X-Policy-Version": "AP-1.0",
+            })
+        finally:
+            main.SERVICE_LIMITER.buckets.clear()
+            main.SUBJECT_LIMITER.buckets.clear()
+            main.ROUTE_COST_LIMITER.buckets.clear()
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
+        self.assertEqual(main.ORDERS["order-1001"]["status"], original_status)
+
     def test_burst_is_bounded_and_retry_after_is_positive(self):
         now = [100.0]
         limiter = main.TokenBucketLimiter(clock=lambda: now[0])
@@ -52,6 +86,7 @@ class TokenBucketLimiterTests(unittest.TestCase):
         original_status = main.ORDERS["order-1001"]["status"]
         main.SERVICE_LIMITER.buckets.clear()
         main.SUBJECT_LIMITER.buckets.clear()
+        main.ROUTE_COST_LIMITER.buckets.clear()
         now = main.SUBJECT_LIMITER.clock()
         main.SUBJECT_LIMITER.buckets[("subject", "user-a", "GET /orders")] = (
             0.0,
@@ -69,6 +104,7 @@ class TokenBucketLimiterTests(unittest.TestCase):
         finally:
             main.SERVICE_LIMITER.buckets.clear()
             main.SUBJECT_LIMITER.buckets.clear()
+            main.ROUTE_COST_LIMITER.buckets.clear()
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
         self.assertGreaterEqual(int(response.headers["Retry-After"]), 1)
