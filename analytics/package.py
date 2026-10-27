@@ -22,6 +22,7 @@ FILES = (
     "analytics/README.md",
     "analytics/__init__.py",
     "analytics/app.py",
+    "analytics/acceptance.py",
     "analytics/audit.py",
     "analytics/decisions.py",
     "analytics/demo.py",
@@ -47,6 +48,7 @@ FILES = (
     "docs/member4-days11-20-evidence.md",
     "docs/member4-days21-30-evidence.md",
     "docs/member4-review-checkpoints.json",
+    "docs/member4-oct27-acceptance-evidence.md",
     "tests/fixtures/detection_cases.json",
     "tests/test_analytics_normalization.py",
     "tests/test_analytics_ownership.py",
@@ -56,6 +58,8 @@ FILES = (
     "tests/test_analytics_management.py",
     "tests/test_analytics_hardening.py",
     "tests/test_analytics_package.py",
+    "tests/test_analytics_acceptance.py",
+    "tests/test_analytics_handoff.py",
     "scripts/check_analytics_secrets.py",
 )
 
