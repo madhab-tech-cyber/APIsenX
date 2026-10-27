@@ -1,9 +1,10 @@
 # Member 1 Days 21–30 Delivery Status
 
-> October 20 follow-up: [current closeout](member1-closeout-2026-10-20.md)
+> October 27 follow-up: [current closeout](member1-closeout-2026-10-27.md)
 > supersedes current-state claims below. M3 is merged, M5 handoffs/PR #28 approval
-> are credited, #14/#21/#23 are closed but human checkpoints remain pending,
-> and #33 tracks actual remaining owner actions. No calendar compliance inferred.
+> and later M4/M6 implementation/CI are credited. #14/#21/#23/#33 are closed but
+> human checkpoints remain pending; #61 tracks remaining M1 actions. No calendar
+> compliance inferred. The October 19 table below remains historical evidence.
 
 **Actual work date:** 2026-10-19. **Branch:** `member1/security-architecture`.
 

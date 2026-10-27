@@ -10,20 +10,24 @@ sequence are maintained in
 
 ## Implementation status
 
-As of 2026-10-20, main contains the lab mock API, D11-F01/privacy/observation
-fixes, contract checks, API/quality CI and the merged Rust collector library.
-The React fixture dashboard remains on its member branch. Neither library nor
-UI constitutes accepted live integration. M2 has
-design/header work, M4 remains a scaffold, and the live sensor/detector/storage/
-protected management pipeline is incomplete. See the pinned
-[current closeout](member1-closeout-2026-10-20.md); the older
+As of 2026-10-27, main contains the mock API's tenant/permission/share checks,
+lab token lifecycle/PATCH nonce controls, contract/quality CI, the Rust collector
+and Linux userspace loopback handoff, and Member 4's monitor-only ingestion,
+normalization, detectors, signed recommendations, pre-storage masking, volatile
+audit and backend-authenticated read APIs. M1 implements unavailable M4's work.
+The React fixture dashboard remains on its member branch but now has passing
+locked installation, lint, Vitest and TypeScript/production-build CI. M2 remains
+design/headers. No loadable Linux sensor or accepted shared live pipeline is
+established. See the pinned
+[current closeout](member1-closeout-2026-10-27.md); the older
 [final architecture and limitations](final-architecture-and-presentation.md)
 and [verification baseline](member1-oct19-verification.md) retain their dates.
 
-The responsibilities below describe the intended system, not implemented
-capabilities. In particular, multi-tenancy, shadow-route detection, active
-enforcement, durable audit, protected dashboard access and measured overhead
-must not be presented as operational. Full release remains gated.
+The responsibilities below describe the intended full system, not acceptance
+of every capability. Local shadow-route detection and protected lab read APIs
+are implemented; full endpoint-specific AP-1.0, live sensor findings, active
+enforcement, durable audit, integrated dashboard access and measured full-system
+overhead must not be presented as accepted operation. Full release remains gated.
 
 ## Components
 

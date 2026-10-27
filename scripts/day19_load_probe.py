@@ -55,7 +55,9 @@ def probe(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", required=True, help="Authorized local/test endpoint")
-    parser.add_argument("--token", required=True, help="Demo bearer token (not printed)")
+    parser.add_argument(
+        "--token", required=True, help="Demo bearer token (not printed)"
+    )
     parser.add_argument("--policy-version", default="AP-1.0")
     parser.add_argument("--requests", type=int, default=200)
     parser.add_argument("--concurrency", type=int, default=10)
@@ -75,8 +77,9 @@ def main() -> int:
             pool.submit(probe, args.url, args.token, args.policy_version, args.timeout)
             for _ in range(args.requests)
         ]
-        for future in concurrent.futures.as_completed(futures):
-            results.append(future.result())
+        results.extend(
+            future.result() for future in concurrent.futures.as_completed(futures)
+        )
     elapsed = time.perf_counter() - started
     latencies_ms = [latency * 1000 for _, latency, _, _ in results]
     statuses = Counter(str(status) for status, _, _, _ in results)
@@ -108,7 +111,9 @@ def main() -> int:
             "observed_values": dict(retry_after_values),
             "http_429_count": len(rate_limited),
             "http_429_with_positive_integer_count": len(valid_retry_after),
-            "http_429_missing_or_invalid_count": len(rate_limited) - len(valid_retry_after),
+            "http_429_missing_or_invalid_count": (
+                len(rate_limited) - len(valid_retry_after)
+            ),
         },
         "latency_ms": {
             "min": round(min(ordered), 2) if ordered else 0,
@@ -121,7 +126,8 @@ def main() -> int:
             "not a distributed/multi-worker test",
             "not a production capacity certification",
             "Retry-After validation here accepts positive integer seconds only",
-            "compare normal-load, overload, and recovery runs before drawing conclusions",
+            "compare normal-load, overload, and recovery runs "
+            "before drawing conclusions",
         ],
     }
     print(json.dumps(report, indent=2, sort_keys=True))

@@ -1,6 +1,6 @@
 # Main Protection: Approved Settings and Access Blocker
 
-**Refreshed:** 2026-10-20 (Asia/Calcutta). **Owner:** `madhab-tech-cyber`, supported by `jayitape`.
+**Refreshed:** 2026-10-27 (Asia/Calcutta). **Owner:** `madhab-tech-cyber`, supported by `jayitape`.
 
 The project owner explicitly approved protecting `main` during the Member 1
 corrective task. Authorization is received; implementation is BLOCKED, not done.
@@ -17,7 +17,11 @@ the proxy or silently use another credential.
 
 The GitHub plugin is already connected/enabled. ChatGPT plugin approval
 preferences are not GitHub OAuth Administration scopes and were not changed.
-The same Administration/CLI failure was rechecked on October 20.
+The same Administration/CLI failure was rechecked on October 27. The approved
+apply stopped at its initial CLI read (exit 2); no PUT/settings change occurred.
+Main reports `protected: false` and rulesets are empty. Active owner follow-up
+is the correction PR and [#61](https://github.com/madhab-tech-cyber/APIsenX/issues/61);
+#23/#33/#61 are now owner-closed historical trackers, not evidence of completion.
 
 ## Tested owner command (default is read-only)
 
