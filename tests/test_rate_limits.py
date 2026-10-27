@@ -1,14 +1,16 @@
 import unittest
-from fastapi.testclient import TestClient
 
 import main
+from fastapi.testclient import TestClient
 
 
 class TokenBucketLimiterTests(unittest.TestCase):
     def test_burst_is_bounded_and_retry_after_is_positive(self):
         now = [100.0]
         limiter = main.TokenBucketLimiter(clock=lambda: now[0])
-        self.assertEqual(limiter.consume(("subject", "user-a"), 1.0, 2.0), (True, 0, 200))
+        self.assertEqual(
+            limiter.consume(("subject", "user-a"), 1.0, 2.0), (True, 0, 200)
+        )
         self.assertEqual(limiter.consume(("subject", "user-a"), 1.0, 2.0), (True, 0, 200))
         allowed, retry_after, status = limiter.consume(("subject", "user-a"), 1.0, 2.0)
         self.assertFalse(allowed)
@@ -20,7 +22,9 @@ class TokenBucketLimiterTests(unittest.TestCase):
         limiter = main.TokenBucketLimiter(clock=lambda: now[0])
         limiter.consume(("subject", "user-a"), 1.0, 1.0)
         now[0] += 1.0
-        self.assertEqual(limiter.consume(("subject", "user-a"), 1.0, 1.0), (True, 0, 200))
+        self.assertEqual(
+            limiter.consume(("subject", "user-a"), 1.0, 1.0), (True, 0, 200)
+        )
 
     def test_live_bucket_is_not_evicted_to_grant_a_fresh_burst(self):
         now = [100.0]
@@ -32,10 +36,14 @@ class TokenBucketLimiterTests(unittest.TestCase):
 
     def test_idle_bucket_can_be_evicted_after_ttl(self):
         now = [100.0]
-        limiter = main.TokenBucketLimiter(max_keys=1, idle_ttl=60.0, clock=lambda: now[0])
+        limiter = main.TokenBucketLimiter(
+            max_keys=1, idle_ttl=60.0, clock=lambda: now[0]
+        )
         limiter.consume(("subject", "user-a"), 1.0, 1.0)
         now[0] += 60.0
-        self.assertEqual(limiter.consume(("subject", "user-b"), 1.0, 1.0), (True, 0, 200))
+        self.assertEqual(
+            limiter.consume(("subject", "user-b"), 1.0, 1.0), (True, 0, 200)
+        )
 
     def test_subject_limit_returns_429_without_mutating_order(self):
         client = TestClient(main.app)
