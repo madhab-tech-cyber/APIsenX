@@ -228,11 +228,6 @@ async def observe_request(request: Request, call_next):
         response.headers["X-Correlation-ID"] = correlation_id
         return response
 
-    # Bound concurrent in-flight work at the service boundary.
-    if not SERVICE_IN_FLIGHT.acquire(blocking=False):
-        response = rate_limit_error(429, 1)
-        response.headers["X-Correlation-ID"] = correlation_id
-        return response
 
     # Supplementary pre-authentication abuse limits. Only the direct peer is
     # used; forwarded headers are deliberately not trusted here.
@@ -271,6 +266,12 @@ async def observe_request(request: Request, call_next):
             request.method,
             limit_status,
         )
+        return response
+
+    # Bound concurrent in-flight work at the service boundary.
+    if not SERVICE_IN_FLIGHT.acquire(blocking=False):
+        response = rate_limit_error(429, 1)
+        response.headers["X-Correlation-ID"] = correlation_id
         return response
 
     try:
