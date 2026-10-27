@@ -223,7 +223,9 @@ async def observe_request(request: Request, call_next):
     ):
         response = JSONResponse(
             status_code=400,
-            content=error_response("INVALID_REQUEST", "Request exceeds configured size limits"),
+            content=error_response(
+                "INVALID_REQUEST", "Request exceeds configured size limits"
+            ),
         )
         response.headers["X-Correlation-ID"] = correlation_id
         return response
