@@ -4,7 +4,6 @@ import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "day19_load_probe.py"
 SPEC = importlib.util.spec_from_file_location("day19_load_probe", SCRIPT)
 load_probe = importlib.util.module_from_spec(SPEC)
