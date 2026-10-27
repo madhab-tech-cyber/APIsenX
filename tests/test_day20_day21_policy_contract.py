@@ -35,7 +35,7 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
         route_rows = {
             match.group(1)
             for line in self.failure_policy.splitlines()
-            if (match := re.match(r"^\\|\\s*(RF-\\d{2})\\b", line))
+            if (match := re.match(r"^\|\s*(RF-\d{2})\b", line))
         }
         self.assertEqual(
             route_rows,
