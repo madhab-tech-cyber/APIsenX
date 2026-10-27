@@ -10,7 +10,6 @@ class TokenBucketLimiterTests(unittest.TestCase):
         main.SUBJECT_LIMITER.buckets.clear()
         main.ROUTE_COST_LIMITER.buckets.clear()
         main.SOURCE_LIMITER.buckets.clear()
-        main.UNAUTH_AGGREGATE_LIMITER.buckets.clear()
 
     def test_unauthenticated_source_limit_returns_429(self):
         client = TestClient(main.app)
