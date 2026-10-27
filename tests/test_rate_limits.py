@@ -14,7 +14,6 @@ class TokenBucketLimiterTests(unittest.TestCase):
     def test_unauthenticated_source_limit_returns_429(self):
         client = TestClient(main.app)
         main.SOURCE_LIMITER.buckets.clear()
-        main.UNAUTH_AGGREGATE_LIMITER.buckets.clear()
         now = main.SOURCE_LIMITER.clock()
         main.SOURCE_LIMITER.buckets[("source", "testclient")] = (
             0.0, now, now
@@ -23,7 +22,6 @@ class TokenBucketLimiterTests(unittest.TestCase):
             response = client.get("/orders")
         finally:
             main.SOURCE_LIMITER.buckets.clear()
-            main.UNAUTH_AGGREGATE_LIMITER.buckets.clear()
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
         self.assertGreaterEqual(int(response.headers["Retry-After"]), 1)
