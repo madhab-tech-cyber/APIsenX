@@ -8,13 +8,13 @@
 - Added a lower subject limit for PATCH order updates.
 - Uses monotonic time for refill, generic 429/503 errors, positive `Retry-After`, a 4,096-key ceiling, and idle-only eviction after 60 seconds. Live buckets are not evicted to grant a fresh burst.
 - Added deterministic unit tests for burst exhaustion, refill, key-capacity behavior, idle eviction, and API responses.
-- Updated the OpenAPI contract and the LIMIT-LAB-1.0 notes to identify the prototype and its limitations.
+- Restored `docs/openapi.yaml` to the canonical `main` contract after a YAML indentation error caused analytics normalization and OpenAPI parsing to fail; limiter limitations remain documented separately in `docs/identity-route-resource-limits.md`.
 
 ## Validation status
 
 - Local test execution: **NOT RUN in this environment**.
 - Ruff: **NOT RUN in this environment**.
-- GitHub Actions on the pull request: **PENDING until a run is observed**.
+- GitHub Actions on the pull request: **rerun pending after the OpenAPI repair commit**.
 - Load/performance/recovery proof: **NOT PROVIDED**.
 
 ## Explicit limitations
