@@ -1,40 +1,61 @@
 # Team Handoffs & Interface Agreements
 
-**Role:** Member 2 (eBPF Traffic Engineer)  
-**Branch:** `member2/ebpf-capture`  
+**Role:** Member 2 (eBPF Traffic Engineer)<br>
+**Branch:** `member2/ebpf-capture`<br>
+**Updated Date:** 2026-10-27
 
-This document formalizes the operational and data contracts between Member 2 and other team members according to Section 1 of the Individual Responsibility Plan.
+This document formalizes the operational and data contracts between Member 2 and other team members according to Section 1 of the Individual Responsibility Plan and `integration-data-flow.md`.
 
 ---
 
-## 1. Member 1 (Project Lead / Policy Approval)
-- **Handoff:** BPF capability scope (`CAP_BPF` + `CAP_NET_ADMIN`), memory budgets (<32 MB), and enforcement safety boundaries.
-- **Contract:** All kernel hooks run unprivileged as user `apisentinel` without `CAP_SYS_ADMIN`. Monitored ports and enforcement actions require policy approval before activation.
+## 1. Member 1 (Project Lead & Security Architect)
+- **Handoff:** BPF capability scope (`CAP_BPF` + `CAP_NET_ADMIN`), memory budgets (<32 MB ceiling, ~11.8 MB actual), and monitor-only safety boundaries.
+- **Contract & Agreements:**
+  - All kernel hooks run unprivileged under service user `apisentinel` (UID 998); monolithic `CAP_SYS_ADMIN` is strictly forbidden.
+  - Operation is strictly monitor-only (`MODE_OBSERVE_ONLY = 0`); sensor exclusively returns `TC_ACT_OK` (0).
+  - Joint approval on [`docs/https-safe-observation-agreement.md`](https-safe-observation-agreement.md): TLS is fully preserved; cleartext egress from reverse proxies / internal ingress gateways serves as the HTTPS observation point. Zero extraction of credentials, authorization headers, cookies, query parameters, or bodies.
 
-## 2. Member 3 (Collector Lead)
-- **Handoff:** Ingest event stream from the 8 MB `api_sentinel_events` RingBuffer (`BPF_MAP_TYPE_RINGBUF`).
-- **Data Structure:** `struct api_event` (192 bytes, 64-bit aligned).
-- **Interface Contract:**
-  - Event consumer connects via unprivileged epoll on `/sys/fs/bpf/api_sentinel/api_sentinel_events`.
-  - Drops are tracked via `api_sentinel_stats[STAT_RINGBUF_DROPS]`.
+## 2. Member 3 (Rust Enforcement & Collector Lead)
+- **Formal Contract:** [`docs/producer-consumer-contract.md`](producer-consumer-contract.md) (Interface `IF-03`).
+- **Handoff:** Zero-copy ingest event stream from the 8 MB `api_sentinel_events` RingBuffer (`BPF_MAP_TYPE_RINGBUF`).
+- **Wire Data Structure:** `struct api_event` (192 bytes, 64-bit aligned).
+- **Interface Contract & Invariants:**
+  - **Schema Version:** Version 1 (`API_EVENT_SCHEMA_VERSION_V1 = 1`) packed in high byte of `flags` (bits 24..31). Collector rejects unknown versions.
+  - **Port & IP Endianness:** `flow.src_port`, `flow.dst_port`, `flow.src_ip`, and `flow.dst_ip` are emitted in **Network Byte Order (Big Endian)**. The collector MUST decode using `ntohs` / `u16::from_be` to prevent port corruption (e.g., port 80 decoding as 20480).
+  - **Timestamping:** Monotonic nanoseconds (`bpf_ktime_get_ns()`). Collector converts to UTC using system boot time offset.
+  - **Sequence & Drops:** Sequence counter `event_id` increments monotonically. Drops due to ring buffer backpressure are accounted via `api_sentinel_stats[STAT_RINGBUF_DROPS]`. The collector detects event loss via sequence gap (`event_id > last_id + 1`).
+  - **Unprivileged Polling:** Consumer connects via unprivileged epoll on `/sys/fs/bpf/api_sentinel/api_sentinel_events`.
+- **Remaining Member 3 Integration Dependencies:**
+  - Implement Rust user-space ring buffer listener subscribing to `/sys/fs/bpf/api_sentinel/api_sentinel_events` using Aya or libbpf-rs.
+  - Parse `struct api_event` wire struct into internal Rust domain events using endianness-safe accessors.
+  - Implement batching and forward normalized events to Member 4 over authenticated IF-04 transport.
 
-## 3. Member 4 (API Discovery & Schema Lead)
-- **Handoff:** Approved metadata fields for endpoint identification and shadow API mapping.
+## 3. Member 4 (Python Detection & Schema Lead)
+- **Handoff:** Approved, privacy-sanitized metadata fields for shadow API discovery, route clustering, and BOLA/BFLA detection.
 - **Data Contract:**
-  - `http_method`: Enum (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`).
-  - `route_marker`: Bounded null-terminated string (max 128 bytes).
-  - `flow`: IP 5-tuple (`src_ip`, `dst_ip`, `src_port`, `dst_port`, `protocol`).
+  - `http_method`: Enum (`1=GET`, `2=POST`, `3=PUT`, `4=DELETE`, `5=PATCH`, `6=HEAD`, `7=OPTIONS`).
+  - `route_marker`: Bounded null-terminated string (max 128 bytes, sanitized with query parameters `?token=...` stripped at probe level).
+  - `flow`: IP 5-tuple (`src_ip`, `dst_ip`, `src_port`, `dst_port`, `protocol`, `ip_version`).
+  - `process`: `pid`, `tgid`, `uid` owning the connection for BOLA authorization correlation.
   - `latency_us`: Monotonic delta in microseconds.
+- **Remaining Member 4 Integration Dependencies:**
+  - Consume normalized IF-04 batches from Member 3.
+  - Reconstruct full route inventory from `route_marker` and `http_method` and match against `openapi.yaml`.
+  - Alert on detected shadow routes or unauthorized UID/object access.
 
-## 4. Member 5 (Traffic & Integration Testing Lead)
-- **Handoff:** Traffic observation test harness.
-- **Contract:** Member 5 supplies synthetic HTTP CRUD requests against monitored ports (80, 8080). Member 2 provides probe attachment scripts and assertion suites to verify 100% route capture without packet loss.
+## 4. Member 5 (Mock API & Testing Lead)
+- **Handoff:** Traffic observation test harness and mock API integration.
+- **Contract & Agreements:**
+  - Joint sign-off on [`docs/https-safe-observation-agreement.md`](https-safe-observation-agreement.md).
+  - Member 5 supplies synthetic HTTP CRUD requests against monitored ports (80, 8080, 8000) generated by mock API test suites.
+  - Member 2 provides probe attachment scripts (`scripts/sensor_loader.py`) and assertion suites to verify 100% route capture without packet loss.
 
 ## 5. Member 6 (Observability & Health Metrics Lead)
 - **Handoff:** Telemetry counters via `api_sentinel_stats` (`BPF_MAP_TYPE_PERCPU_ARRAY`).
 - **Exported Metrics:**
-  - `STAT_TOTAL_PACKETS`
-  - `STAT_API_EVENTS_EMITTED`
-  - `STAT_RINGBUF_DROPS`
-  - `STAT_MALFORMED_PACKETS`
-  - `STAT_ENFORCEMENT_DROPS`
+  - `STAT_TOTAL_PACKETS` (Index 0)
+  - `STAT_API_EVENTS_EMITTED` (Index 1)
+  - `STAT_RINGBUF_DROPS` (Index 2)
+  - `STAT_MALFORMED_PACKETS` (Index 3)
+  - `STAT_ENFORCEMENT_DROPS` (Index 4)
+- **Contract:** Lockless zero-overhead polling of per-CPU stats array to export Prometheus metrics without lock contention.

@@ -160,6 +160,19 @@ class TestDay2MapsAndPrivileges(unittest.TestCase):
         self.assertEqual(TC_ACT_SHOT, 2, "TC_ACT_SHOT must be 2 (drop packet)")
         self.assertEqual(TC_ACT_PIPE, 3, "TC_ACT_PIPE must be 3 (continue pipeline)")
 
+    def test_schema_version_constants_and_flags(self):
+        """Verify schema version 1 macro and flags definitions in header."""
+        header_path = os.path.join(os.path.dirname(__file__), "..", "ebpf", "include", "api_sentinel_types.h")
+        with open(header_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        self.assertIn("#define API_EVENT_SCHEMA_VERSION_V1    1", content)
+        self.assertIn("#define API_EVENT_FLAG_ROUTE_TRUNCATED", content)
+        self.assertIn("#define API_EVENT_FLAG_IPV6", content)
+        self.assertIn("#define API_EVENT_FLAG_QUERY_STRIPPED", content)
+        self.assertIn("#define API_EVENT_FLAG_DROP_OCCURRED", content)
+        self.assertIn("#define API_EVENT_FLAG_MONITOR_ONLY", content)
+
 
 if __name__ == "__main__":
     unittest.main()

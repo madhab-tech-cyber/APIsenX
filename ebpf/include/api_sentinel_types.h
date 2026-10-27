@@ -48,6 +48,30 @@ enum api_stat_index {
 
 #define ROUTE_MARKER_MAX_LEN 128
 
+/* Schema Version Definitions */
+#define API_EVENT_SCHEMA_VERSION_V1    1
+#define API_EVENT_SCHEMA_VERSION_MASK  0xFF000000U
+#define API_EVENT_SCHEMA_VERSION_SHIFT 24
+
+/* Flag bit definitions for struct api_event.flags (lower 24 bits) */
+#define API_EVENT_FLAG_ROUTE_TRUNCATED (1U << 0) /* Route marker truncated at ROUTE_MARKER_MAX_LEN - 1 */
+#define API_EVENT_FLAG_IPV6            (1U << 1) /* Flow is IPv6 */
+#define API_EVENT_FLAG_QUERY_STRIPPED  (1U << 2) /* Query parameter values stripped from route */
+#define API_EVENT_FLAG_DROP_OCCURRED   (1U << 3) /* Preceding ring buffer drop occurred */
+#define API_EVENT_FLAG_MONITOR_ONLY    (1U << 4) /* Captured in monitor-only mode */
+
+/* Macro to pack schema version and flags into event flags */
+#define PACK_API_EVENT_FLAGS(version, flags) \
+    ((((__u32)(version) & 0xFFU) << API_EVENT_SCHEMA_VERSION_SHIFT) | ((__u32)(flags) & 0x00FFFFFFU))
+
+/* Macro to extract schema version from event flags */
+#define GET_API_EVENT_SCHEMA_VERSION(flags) \
+    (((__u32)(flags) & API_EVENT_SCHEMA_VERSION_MASK) >> API_EVENT_SCHEMA_VERSION_SHIFT)
+
+/* Macro to extract flag bits excluding schema version */
+#define GET_API_EVENT_FLAGS(flags) \
+    ((__u32)(flags) & 0x00FFFFFFU)
+
 /* Flow Key (24 Bytes, 64-bit aligned) */
 struct flow_key {
     __u32 src_ip;          /* Source IP (IPv4) */
