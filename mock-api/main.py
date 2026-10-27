@@ -53,7 +53,12 @@ logger = logging.getLogger("apisenx.audit")
 class TokenBucketLimiter:
     """Bounded process-local token buckets with monotonic refill and idle eviction."""
 
-    def __init__(self, max_keys: int = 4096, idle_ttl: float = 60.0, clock=time.monotonic):
+    def __init__(
+        self,
+        max_keys: int = 4096,
+        idle_ttl: float = 60.0,
+        clock=time.monotonic,
+    ):
         self.max_keys = max_keys
         self.idle_ttl = idle_ttl
         self.clock = clock
@@ -114,7 +119,12 @@ def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
     )
 
 
-def enforce_subject_rate_limit(actor: dict, route: str, rate: float = 80.0, burst: float = 160.0) -> None:
+def enforce_subject_rate_limit(
+    actor: dict,
+    route: str,
+    rate: float = 80.0,
+    burst: float = 160.0,
+) -> None:
     """Apply subject and canonical-route limits after server-side authentication."""
     allowed, retry_after, status_code = SUBJECT_LIMITER.consume(
         ("subject", actor["id"], route),
@@ -709,7 +719,12 @@ def update_order(
     ),
     actor: dict = Depends(get_principal),
 ):
-    enforce_subject_rate_limit(actor, "PATCH /orders/{orderId}", rate=20.0, burst=40.0)
+    enforce_subject_rate_limit(
+        actor,
+        "PATCH /orders/{orderId}",
+        rate=20.0,
+        burst=40.0,
+    )
     # Enforce role-specific function-level permissions.
     # Customer and support roles cannot update orders.
     manage_permission = {
