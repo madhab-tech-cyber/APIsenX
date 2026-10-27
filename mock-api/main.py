@@ -464,39 +464,6 @@ bearer_scheme = HTTPBearer(
 )
 
 
-def subject_concurrency_gate(
-    request: Request,
-    actor: dict = Depends(get_principal),
-):
-    """Bound per-subject in-flight work with a capped process-local registry."""
-    limit = 2 if request.method.upper() == "PATCH" else 5
-    key = (actor["id"], "PATCH" if request.method.upper() == "PATCH" else "read")
-    with SUBJECT_SEMAPHORE_LOCK:
-        semaphore = SUBJECT_SEMAPHORES.get(key)
-        if semaphore is None:
-            if len(SUBJECT_SEMAPHORES) >= MAX_SUBJECT_SEMAPHORES:
-                raise HTTPException(
-                    status_code=503,
-                    detail=error_response(
-                        "SERVICE_UNAVAILABLE",
-                        "Concurrency capacity temporarily unavailable",
-                    ),
-                    headers={"Retry-After": "1"},
-                )
-            semaphore = threading.BoundedSemaphore(limit)
-            SUBJECT_SEMAPHORES[key] = semaphore
-    if not semaphore.acquire(blocking=False):
-        raise HTTPException(
-            status_code=429,
-            detail=error_response("RATE_LIMITED", "Request concurrency limit exceeded"),
-            headers={"Retry-After": "1"},
-        )
-    try:
-        yield
-    finally:
-        semaphore.release()
-
-
 # --------------------------------------------------
 # Order fixtures
 # --------------------------------------------------
@@ -851,6 +818,39 @@ def check_access(
         )
 
     return ORDERS[order_id]
+
+
+def subject_concurrency_gate(
+    request: Request,
+    actor: dict = Depends(get_principal),
+):
+    """Bound per-subject in-flight work with a capped process-local registry."""
+    limit = 2 if request.method.upper() == "PATCH" else 5
+    key = (actor["id"], "PATCH" if request.method.upper() == "PATCH" else "read")
+    with SUBJECT_SEMAPHORE_LOCK:
+        semaphore = SUBJECT_SEMAPHORES.get(key)
+        if semaphore is None:
+            if len(SUBJECT_SEMAPHORES) >= MAX_SUBJECT_SEMAPHORES:
+                raise HTTPException(
+                    status_code=503,
+                    detail=error_response(
+                        "SERVICE_UNAVAILABLE",
+                        "Concurrency capacity temporarily unavailable",
+                    ),
+                    headers={"Retry-After": "1"},
+                )
+            semaphore = threading.BoundedSemaphore(limit)
+            SUBJECT_SEMAPHORES[key] = semaphore
+    if not semaphore.acquire(blocking=False):
+        raise HTTPException(
+            status_code=429,
+            detail=error_response("RATE_LIMITED", "Request concurrency limit exceeded"),
+            headers={"Retry-After": "1"},
+        )
+    try:
+        yield
+    finally:
+        semaphore.release()
 
 
 # --------------------------------------------------
