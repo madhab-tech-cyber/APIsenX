@@ -135,12 +135,6 @@ MAX_PATH_SEGMENTS = 32
 MAX_JSON_BODY_BYTES = 16 * 1024
 MAX_PAGE_SIZE = 100
 MAX_RESPONSE_BYTES = 64 * 1024
-app.add_middleware(
-    BoundedHTTPPayloadMiddleware,
-    max_request_bytes=MAX_JSON_BODY_BYTES,
-    max_response_bytes=MAX_RESPONSE_BYTES,
-)
-
 
 class BoundedHTTPPayloadMiddleware:
     """Bound streamed HTTP request and response bodies without unbounded buffering."""
@@ -233,6 +227,13 @@ class BoundedHTTPPayloadMiddleware:
             await send(message)
 
         await self.app(scope, bounded_receive, buffered_send)
+
+
+app.add_middleware(
+    BoundedHTTPPayloadMiddleware,
+    max_request_bytes=MAX_JSON_BODY_BYTES,
+    max_response_bytes=MAX_RESPONSE_BYTES,
+)
 
 MAX_PAGE_SIZE = 100
 MAX_RESPONSE_BYTES = 64 * 1024
