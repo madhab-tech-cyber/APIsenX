@@ -163,7 +163,8 @@ async def observe_request(request: Request, call_next):
         response = rate_limit_error(limit_status, retry_after)
         response.headers["X-Correlation-ID"] = correlation_id
         logger.info(
-            "observation correlation_id=%s method=%s route=unresolved status=%s outcome=rate_limited",
+            "observation correlation_id=%s method=%s route=unresolved "
+            "status=%s outcome=rate_limited",
             correlation_id,
             request.method,
             limit_status,
