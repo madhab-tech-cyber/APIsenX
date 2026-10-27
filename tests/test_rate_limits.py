@@ -105,7 +105,7 @@ class TokenBucketLimiterTests(unittest.TestCase):
             await middleware(
                 {"type": "http", "method": "POST", "path": "/test"},
                 receive,
-                lambda message: _capture(sent, message),
+                _capture,
             )
             self.assertEqual(sent[0]["status"], 413)
             self.assertIn(b"INVALID_REQUEST", sent[1]["body"])
