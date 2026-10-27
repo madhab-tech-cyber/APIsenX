@@ -42,11 +42,11 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
             {f"RF-{number:02d}" for number in range(1, 6)},
         )
         self.assertIn(
-            "current stdout logs do not implement this column",
+            "Policy applies to future durable audit integration; current stdout logs do not\nimplement this column.",
             self.failure_policy,
         )
         self.assertIn(
-            "Per-route implementation acceptance remains BLOCKED",
+            "Per-route implementation\nacceptance remains BLOCKED",
             self.failure_policy,
         )
         self.assertIn(
