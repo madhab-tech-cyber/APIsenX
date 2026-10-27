@@ -47,9 +47,9 @@ python scripts/day19_load_probe.py --url http://127.0.0.1:8000/orders --requests
 
 ## 5. Review and attach evidence
 
-For each report, review `status_counts`, `transport_error_classes`, `throughput_rps`, and `latency_ms` (min, median, p95, max). Record the exact commit SHA and whether the service was restarted between runs.
+For each report, review `status_counts`, `transport_error_classes`, `throughput_rps`, `latency_ms` (min, median, p95, max), and the `retry_after` section. The probe now records observed `Retry-After` values and counts 429 responses with a positive integer value. Record the exact commit SHA and whether the service was restarted between runs.
 
-- Check expected 429 responses include a positive `Retry-After` header using API regression tests or a focused request; the current probe report records status counts but does not record response headers.
+- Treat any `http_429_missing_or_invalid_count` above zero as a failed rate-limit evidence check requiring investigation. The probe records headers only for measurement; it does not change server behavior.
 - Confirm overload rejection does not mutate order state by comparing authorized fixture state before/after in the lab.
 - Do not interpret status 0/transport errors as an HTTP response.
 - Do not claim recovery until the recovery run is compared with the baseline.
