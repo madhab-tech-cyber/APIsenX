@@ -18,6 +18,7 @@ from fastapi import (
     HTTPException,
     Request,
     Security,
+    Query,
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
@@ -132,6 +133,8 @@ SERVICE_IN_FLIGHT = threading.BoundedSemaphore(10)
 MAX_RAW_PATH_BYTES = 2048
 MAX_PATH_SEGMENTS = 32
 MAX_JSON_BODY_BYTES = 16 * 1024
+MAX_PAGE_SIZE = 100
+MAX_RESPONSE_BYTES = 64 * 1024
 
 
 def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
@@ -729,6 +732,8 @@ def check_access(
     },
 )
 def list_orders(
+    limit: int = Query(50, ge=1, le=MAX_PAGE_SIZE),
+    offset: int = Query(0, ge=0),
     actor: dict = Depends(get_principal),
 ):
     enforce_subject_rate_limit(actor, "GET /orders")
@@ -756,7 +761,8 @@ def list_orders(
         "ALLOW",
     )
 
-    return {"orders": visible}
+    page = visible[offset : offset + limit]
+    return {"orders": page}
 
 
 # --------------------------------------------------
@@ -895,6 +901,8 @@ def update_order(
     },
 )
 def list_admin_orders(
+    limit: int = Query(50, ge=1, le=MAX_PAGE_SIZE),
+    offset: int = Query(0, ge=0),
     actor: dict = Depends(get_principal),
 ):
     enforce_subject_rate_limit(actor, "GET /admin/orders")
@@ -931,7 +939,8 @@ def list_admin_orders(
         "ALLOW",
     )
 
-    return {"orders": list(ORDERS.values())}
+    orders = list(ORDERS.values())
+    return {"orders": orders[offset : offset + limit]}
 
 
 # --------------------------------------------------
@@ -949,6 +958,8 @@ def list_admin_orders(
     },
 )
 def list_support_orders(
+    limit: int = Query(50, ge=1, le=MAX_PAGE_SIZE),
+    offset: int = Query(0, ge=0),
     actor: dict = Depends(get_principal),
 ):
     enforce_subject_rate_limit(actor, "GET /support/orders")
@@ -1000,7 +1011,7 @@ def list_support_orders(
         "ALLOW",
     )
 
-    return {"orders": visible}
+    return {"orders": visible[offset : offset + limit]}
 
 
 # --------------------------------------------------

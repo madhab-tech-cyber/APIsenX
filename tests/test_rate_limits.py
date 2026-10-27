@@ -11,6 +11,26 @@ class TokenBucketLimiterTests(unittest.TestCase):
         main.ROUTE_COST_LIMITER.buckets.clear()
         main.SOURCE_LIMITER.buckets.clear()
 
+    def test_orders_pagination_caps_page_size(self):
+        client = TestClient(main.app)
+        headers = {
+            "Authorization": "Bearer lab-user-a-token",
+            "X-Policy-Version": "AP-1.0",
+        }
+        response = client.get("/orders?limit=1&offset=0", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertLessEqual(len(response.json()["orders"]), 1)
+
+    def test_orders_pagination_rejects_limit_above_cap(self):
+        client = TestClient(main.app)
+        headers = {
+            "Authorization": "Bearer lab-user-a-token",
+            "X-Policy-Version": "AP-1.0",
+        }
+        response = client.get("/orders?limit=101", headers=headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"]["code"], "INVALID_REQUEST")
+
     def test_unauthenticated_source_limit_returns_429(self):
         client = TestClient(main.app)
         main.SOURCE_LIMITER.buckets.clear()
