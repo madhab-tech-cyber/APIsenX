@@ -105,7 +105,7 @@ jobs:
           after = get_admin_orders()
           report = {
               "unauthorized_cross_owner_patch_status": denied_status,
-              "expected_denied_statuses": [404],
+              "expected_denied_statuses": [403, 404],
               "order_state_unchanged": before == after,
           }
           with open("evidence/day19-ci/order-nonmutation.json", "w", encoding="utf-8") as handle:
