@@ -65,6 +65,54 @@ class TokenBucketLimiter:
         self.buckets: dict[tuple, tuple[float, float, float]] = {}
         self.lock = threading.Lock()
 
+    def consume_many(
+        self,
+        requests: list[tuple[tuple, float, float, float]],
+    ) -> tuple[bool, int, int]:
+        """Atomically debit all gates; rejection never partially consumes tokens."""
+        now = self.clock()
+        with self.lock:
+            expired = [
+                key
+                for key, (_, _, last_seen) in self.buckets.items()
+                if now - last_seen >= self.idle_ttl
+            ]
+            for key in expired:
+                self.buckets.pop(key, None)
+
+            staged = {}
+            retry_after = 1
+            status_code = 429
+            for key, rate, capacity, cost in requests:
+                if rate <= 0 or capacity <= 0 or cost <= 0:
+                    raise ValueError("rate, capacity and cost must be positive")
+                if key in staged:
+                    tokens, last_refill, _ = staged[key]
+                elif key in self.buckets:
+                    tokens, last_refill, _ = self.buckets[key]
+                else:
+                    tokens, last_refill = capacity, now
+                    if len(self.buckets) + len(
+                        set(staged) - self.buckets.keys()
+                    ) >= self.max_keys:
+                        return False, 1, 503
+
+                tokens = min(
+                    capacity,
+                    tokens + max(0.0, now - last_refill) * rate,
+                )
+                if tokens < cost:
+                    retry_after = max(
+                        retry_after,
+                        math.ceil((cost - tokens) / rate),
+                    )
+                    status_code = 429
+                    return False, max(1, retry_after), status_code
+                staged[key] = (tokens - cost, now, now)
+
+            self.buckets.update(staged)
+            return True, 0, 200
+
     def consume(
         self,
         key: tuple,
@@ -72,37 +120,13 @@ class TokenBucketLimiter:
         capacity: float,
         cost: float = 1.0,
     ) -> tuple[bool, int, int]:
-        """Return (allowed, retry_after_seconds, status_code); never evict live debt."""
-        now = self.clock()
-        with self.lock:
-            bucket = self.buckets.get(key)
-            if bucket is None:
-                expired = [
-                    existing_key
-                    for existing_key, (_, _, last_seen) in self.buckets.items()
-                    if now - last_seen >= self.idle_ttl
-                ]
-                for existing_key in expired:
-                    self.buckets.pop(existing_key, None)
-                if len(self.buckets) >= self.max_keys:
-                    return False, 1, 503
-                tokens = capacity
-                last_refill = now
-            else:
-                tokens, last_refill, _ = bucket
-                tokens = min(capacity, tokens + max(0.0, now - last_refill) * rate)
-
-            if tokens < cost:
-                retry_after = max(1, math.ceil((cost - tokens) / rate))
-                self.buckets[key] = (tokens, now, now)
-                return False, retry_after, 429
-
-            self.buckets[key] = (tokens - cost, now, now)
-            return True, 0, 200
+        """Consume one token bucket through the atomic multi-gate path."""
+        return self.consume_many([(key, rate, capacity, cost)])
 
 
 SERVICE_LIMITER = TokenBucketLimiter()
 SUBJECT_LIMITER = TokenBucketLimiter()
+ROUTE_COST_LIMITER = TokenBucketLimiter()
 
 
 def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
@@ -119,18 +143,41 @@ def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
     )
 
 
+ROUTE_BUDGETS = {
+    "GET /orders": (60.0, 120.0, 5.0),
+    "GET /orders/{orderId}": (80.0, 160.0, 1.0),
+    "GET /admin/orders": (60.0, 120.0, 5.0),
+    "GET /support/orders": (60.0, 120.0, 5.0),
+    "PATCH /orders/{orderId}": (20.0, 40.0, 10.0),
+}
+SERVICE_COST_RATE = 400.0
+SERVICE_COST_BURST = 800.0
+SUBJECT_COST_RATE = 300.0
+SUBJECT_COST_BURST = 600.0
+
+
 def enforce_subject_rate_limit(
     actor: dict,
     route: str,
     rate: float = 80.0,
     burst: float = 160.0,
 ) -> None:
-    """Apply subject and canonical-route limits after server-side authentication."""
-    allowed, retry_after, status_code = SUBJECT_LIMITER.consume(
-        ("subject", actor["id"], route),
-        rate=rate,
-        capacity=burst,
+    """Atomically apply subject, route aggregate and weighted-cost budgets."""
+    route_rate, route_burst, cost = ROUTE_BUDGETS.get(
+        route, (10.0, 20.0, 10.0)
     )
+    gates = [
+        (("subject", actor["id"], route), rate, burst, 1.0),
+        (("route", route), route_rate, route_burst, 1.0),
+        (("service-cost",), SERVICE_COST_RATE, SERVICE_COST_BURST, cost),
+        (
+            ("subject-cost", actor["id"]),
+            SUBJECT_COST_RATE,
+            SUBJECT_COST_BURST,
+            cost,
+        ),
+    ]
+    allowed, retry_after, status_code = ROUTE_COST_LIMITER.consume_many(gates)
     if not allowed:
         raise HTTPException(
             status_code=status_code,
