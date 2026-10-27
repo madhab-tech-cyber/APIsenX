@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 import main
@@ -30,6 +31,74 @@ class TokenBucketLimiterTests(unittest.TestCase):
         response = client.get("/orders?limit=101", headers=headers)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"]["code"], "INVALID_REQUEST")
+
+    def test_streaming_body_limit_checks_actual_bytes(self):
+        async def run_test():
+            async def receive():
+                return {
+                    "type": "http.request",
+                    "body": b"x" * (main.MAX_JSON_BODY_BYTES + 1),
+                    "more_body": True,
+                }
+
+            sent = []
+
+            async def app(scope, receive, send):
+                message = await receive()
+                self.assertEqual(message["body"], b"")
+                await send({"type": "http.response.start", "status": 200, "headers": []})
+                await send({"type": "http.response.body", "body": b"ok", "more_body": False})
+
+            middleware = main.BoundedHTTPPayloadMiddleware(
+                app,
+                max_request_bytes=main.MAX_JSON_BODY_BYTES,
+                max_response_bytes=main.MAX_RESPONSE_BYTES,
+            )
+            await middleware(
+                {"type": "http", "method": "POST", "path": "/test"},
+                receive,
+                lambda message: _capture(sent, message),
+            )
+            self.assertEqual(sent[0]["status"], 413)
+            self.assertIn(b"INVALID_REQUEST", sent[1]["body"])
+
+        async def _capture(sent, message):
+            sent.append(message)
+
+        asyncio.run(run_test())
+
+    def test_response_body_limit_replaces_oversized_response(self):
+        async def run_test():
+            async def receive():
+                return {"type": "http.request", "body": b"", "more_body": False}
+
+            sent = []
+
+            async def app(scope, receive, send):
+                await send({"type": "http.response.start", "status": 200, "headers": []})
+                await send({
+                    "type": "http.response.body",
+                    "body": b"x" * (main.MAX_RESPONSE_BYTES + 1),
+                    "more_body": False,
+                })
+
+            middleware = main.BoundedHTTPPayloadMiddleware(
+                app,
+                max_request_bytes=main.MAX_JSON_BODY_BYTES,
+                max_response_bytes=main.MAX_RESPONSE_BYTES,
+            )
+            await middleware(
+                {"type": "http", "method": "GET", "path": "/test"},
+                receive,
+                lambda message: _capture(sent, message),
+            )
+            self.assertEqual(sent[0]["status"], 500)
+            self.assertIn(b"RESPONSE_TOO_LARGE", sent[1]["body"])
+
+        async def _capture(sent, message):
+            sent.append(message)
+
+        asyncio.run(run_test())
 
     def test_unauthenticated_source_limit_returns_429(self):
         client = TestClient(main.app)
