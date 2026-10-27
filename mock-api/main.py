@@ -224,7 +224,11 @@ class BoundedHTTPPayloadMiddleware:
                     "status": status,
                     "headers": headers,
                 })
-                await send({"type": "http.response.body", "body": body, "more_body": False})
+                await send({
+                    "type": "http.response.body",
+                    "body": body,
+                    "more_body": False,
+                })
                 return
             await send(message)
 
