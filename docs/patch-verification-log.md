@@ -1,8 +1,9 @@
 # Day 27 Patch Verification Log
 
-> October 20 follow-up: [current closeout](member1-closeout-2026-10-20.md)
-> records M5's later privacy/permission/startup changes, real handoff comments
-> and the pinned PR #28 approval, separately from missing review of PR #31.
+> Historical October 19 patch log. [Current October 27 closeout](member1-closeout-2026-10-27.md)
+> credits later M3/M4/M5/M6 implementation/CI and real handoff comments while
+> retaining independent-review, human and integration gates. No old review is
+> propagated to a later revision.
 
 **Recorded:** 2026-10-19. **Owner:** M1. **Baseline:** main `c165964`.
 

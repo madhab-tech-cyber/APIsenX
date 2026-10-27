@@ -4,7 +4,11 @@
 **Baseline main:** `683a93a7f59938d6e22e8402ed617d1f8cb36101`.
 **Branch:** `member1/security-architecture`.
 
-This is the current Member 1 coordination record. It supersedes current-status
+> Historical October 20 snapshot. The [October 27 closeout](member1-closeout-2026-10-27.md)
+> supersedes current-state claims below, credits later M3/M4/M5/M6 work and
+> tracks remaining actual acceptance in Issue #61. Earlier observations stay dated.
+
+This was the October 20 Member 1 coordination record. It superseded current-status
 claims in older dated documents without rewriting historical observations.
 Day labels do not establish calendar attendance, human review or release.
 

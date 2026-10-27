@@ -1,5 +1,10 @@
 # Day 30 Demonstration Rehearsal and Handover
 
+> Historical rehearsal/handover snapshot. Use the [October 27 current closeout](member1-closeout-2026-10-27.md)
+> for later merged analytics, M3 loopback and M6 UI-test CI evidence, M1's
+> authorized M4 takeover and actual remaining actions in #61. The required
+> human integrated demonstration below is still pending, not replaced by tests.
+
 **Prepared/executed:** 2026-10-19. **Owner:** M1.
 
 **Status:** Local reference-API rehearsal and handover package prepared.

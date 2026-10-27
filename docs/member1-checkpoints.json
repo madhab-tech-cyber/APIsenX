@@ -1,12 +1,26 @@
 {
   "schema_version": 1,
-  "recorded_at": "2026-10-20T06:13:42Z",
-  "baseline": "683a93a7f59938d6e22e8402ed617d1f8cb36101",
+  "recorded_at": "2026-10-27T07:54:46Z",
+  "baseline": "5f10593a294c68a2729f2c4072c4c4ffa5814f19",
   "document_author": "madhab-tech-cyber",
-  "followup_issue": 33,
+  "followup_issue": 61,
+  "related_issues": [33, 51, 56, 57, 58, 82, 83],
   "tracker_observations": {
-    "observed_at": "2026-10-20T06:13:42Z",
-    "states": {"14": "closed", "21": "closed", "23": "closed", "33": "open"}
+    "observed_at": "2026-10-27T07:54:46Z",
+    "states": {
+      "14": "closed", "21": "closed", "23": "closed", "33": "closed",
+      "51": "closed", "56": "closed", "57": "closed", "58": "closed", "61": "closed",
+      "82": "open", "83": "open"
+    }
+  },
+  "protection_observation": {
+    "observed_at": "2026-10-27T07:54:46Z",
+    "main_protected": false,
+    "repository_rulesets": 0,
+    "settings_verified": false,
+    "administration_read": "HTTP 403 Resource not accessible by integration",
+    "approved_apply": "exit 2 at initial CLI read; no PUT reached",
+    "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/61"
   },
   "component_reviews": [
     {
@@ -26,6 +40,8 @@
     {
       "day": 14,
       "issue": 14,
+      "tracking_issues": [14, 56],
+      "candidate_revision": "085dd6d3722cc76cfdbdde3ca06312520f146f8b",
       "status": "pending",
       "meeting": null,
       "reviewer_comments": [],
@@ -35,6 +51,8 @@
     {
       "day": 15,
       "issue": 21,
+      "tracking_issues": [21, 57, 61],
+      "candidate_revision": "085dd6d3722cc76cfdbdde3ca06312520f146f8b",
       "status": "pending",
       "meeting": null,
       "reviewer_comments": [],
@@ -42,6 +60,10 @@
         {
           "by": "pappukumar96727-sketch",
           "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/21#issuecomment-6261814495"
+        },
+        {
+          "by": "pappukumar96727-sketch",
+          "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/57#issuecomment-6380620159"
         }
       ],
       "independent_signoffs": []
@@ -49,6 +71,8 @@
     {
       "day": 30,
       "issue": 23,
+      "tracking_issues": [23, 61],
+      "candidate_revision": "5f10593a294c68a2729f2c4072c4c4ffa5814f19",
       "status": "pending",
       "meeting": null,
       "reviewer_comments": [],

@@ -1,7 +1,7 @@
 # Day 28 Final Architecture, Limitations and Presentation
 
-> Historical October 19 narrative. [Current October 20 closeout](member1-closeout-2026-10-20.md)
-> records the now-merged M3 library and later M5 changes. No accepted live
+> Historical October 19 narrative. [Current October 27 closeout](member1-closeout-2026-10-27.md)
+> records later M3/M4/M5/M6 implementation and CI. No accepted shared live
 > pipeline, completed human demonstration or release is inferred.
 
 **Recorded:** 2026-10-19. **Owner:** M1. **Main baseline:** `c165964`.

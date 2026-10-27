@@ -39,6 +39,14 @@ jobs:
       - name: Run authorization, API, and OpenAPI tests
         run: python -m unittest discover -s tests -v
 
+      - name: Validate Member 1 bookkeeping without claiming acceptance
+        run: python scripts/check_member1_governance.py
+
+      - name: Lint Member 1 governance and protection tooling
+        run: >-
+          python -m ruff check scripts/check_member1_governance.py
+          scripts/manage_main_protection.py
+
       - name: Run Ruff lint checks
         run: python -m ruff check mock-api tests
 

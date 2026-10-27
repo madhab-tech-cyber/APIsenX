@@ -4,9 +4,9 @@
 
 **Date:** 2026-10-13
 
-**Current-status refresh:** 2026-10-20 (Asia/Calcutta); baseline main
-`683a93a7f59938d6e22e8402ed617d1f8cb36101`. See
-[current Member 1 closeout](member1-closeout-2026-10-20.md), the historical
+**Current-status refresh:** 2026-10-27 (Asia/Calcutta); baseline main
+`5f10593a294c68a2729f2c4072c4c4ffa5814f19`. See
+[current Member 1 closeout](member1-closeout-2026-10-27.md), the historical
 [Member 1 corrective evidence](member1-governance-correction.md) and the
 [checkpoint register](member1-checkpoints.json). Older dated reviews are history.
 
@@ -23,25 +23,28 @@ minimum information that may cross each component boundary. It is a design and
 handoff baseline, not evidence that the full pipeline is running.
 
 In merged main, the local mock API request path is implemented and tested.
-PR #20 repaired D11-F01; 57 API/authorization/contract methods and all nine inventory
-diagnostics pass. Independent closure review is still pending; the full
-tenant/sharing/support/version matrix remains incomplete:
+PR #20 repaired D11-F01 and later PRs added tenant/permission/share checks and
+token lifecycle/nonce regressions. Current tests are recorded separately from
+independent closure, which remains pending; full endpoint-specific AP-1.0
+acceptance is incomplete, especially the documented admin-inventory limitations:
 
 `lab client -> FastAPI authentication -> authorization policy -> synthetic JSON fixtures -> response and basic audit log`
 
-M2 capture remains design/headers. M3's library is merged by PR #32 at
-`006bd13`, with proposed v1.1 schemas, explicit null/ambiguous correlation and
-unavailable/reset loss states. Its owner reports 22 macOS tests; the successful
-PR job runs Python checks, not Rust/Linux integration. M6's React fixture UI is
-still unmerged. No live sensor/collector/detector/dashboard acceptance is
-established. M4 analytics remains a scaffold. Main has API/contract tests plus Ruff/dependency-audit CI with a
-verified main-targeting PR trigger. M6's locked install, lint, TypeScript/build
-and dependency audit pass locally on `39902b3`; no UI test command exists, and
-its limited repository CI does not execute these build checks. None of that
-establishes live findings or server-side dashboard authorization.
-Protected storage/management services and complete
-integration/security evidence remain absent. Interfaces below remain
-**unaccepted** until producer/consumer evidence and review are linked.
+M2 capture remains design/headers. M3's merged library now includes PR #50's
+local-only Bearer Rust/Python client; observed Linux CI runs locked Rust checks
+and real ack/retry/negative/privacy handoff tests. M4's merged Days 1–30 work
+supplies strict ingestion, normalization, shadow/BOLA/BFLA/flow evaluation,
+signed monitor-only recommendations, masking before volatile storage/audit and
+backend case/role-authenticated inventory/alert APIs. M1 is the authorized M4
+implementer, not an independent reviewer of that implementation.
+
+M6's unmerged fixture UI at `ec03bdf` now has observed `npm ci`, lint, four Vitest
+tests, TypeScript/production build and audit CI; the filename/structure job is
+separate. M4/M6 browser/contract integration and live findings are not accepted.
+Durable restricted persistence, shared identity/TLS, trusted live context and
+full runtime correctness/performance/rollback gates remain absent or unaccepted.
+The boundaries below credit local compatibility without approving the complete
+sensor/collector/detector/dashboard pipeline.
 
 ## 2. Target flows
 
@@ -72,12 +75,12 @@ still apply at every crossing.
 | IF-01 | Lab client -> mock API | HTTP method, documented route, bounded body and bearer credential under `openapi.yaml` | Credential is Secret in real use; current demo token is a Public lab fixture; request data is Internal or Restricted | Authenticate first, authorise server-side, validate size/type, return safe errors and never log credentials | M5 with independent review / local implementation and current operation/security contract checks pass; full AP-1.0 acceptance pending |
 | IF-02 | Mock API -> approved observation point | Allowlisted method, normalised route marker, response status, timing and correlation reference | Internal; Restricted when linked to identity, object or finding | Preserve TLS; exclude raw credentials, cookies, query values and bodies by default; loss must not bypass API authentication/authorisation | M5 candidate application hook and server-generated request UUID exist and pass API/privacy tests; M1/M2/M4 joint contract/attachment acceptance pending |
 | IF-03 | eBPF sensor -> collector | Versioned bounded kernel event: timestamp, process/cgroup reference, socket tuple or approved route marker, sequence and flags | Internal or Restricted | Verifier-safe bounded maps/events, type and length checks, sequence/drop counters; malformed events are rejected without crashing | M2 producer, M3 consumer / planned |
-| IF-04 | Collector -> analytics | Versioned batch of normalised events plus source, batch, correlation and health metadata | Restricted | Mutually authenticated encrypted transport, replay/freshness checks, maximum batch/event sizes, bounded queues, timeout and backpressure | M3 producer, M4 consumer / planned |
-| IF-05 | Analytics -> storage/audit | Masked telemetry summary, route inventory, policy version, finding and append-only audit event | Restricted; policy/contract material is Internal security-critical | Mask before write, separate least-privilege identities, encryption, idempotency, tamper evidence and approved retention/purge | M4 with M1/M6 review / storage not selected |
-| IF-06 | Management API -> dashboard | Masked inventory, findings, health and triage state; bounded administrative commands | Restricted | Server-side RBAC on every request, short sessions, CSRF protection, safe rendering, pagination and audit of every change | M4 producer, M6 consumer / planned |
-| IF-07 | Analytics -> collector enforcement adapter | Versioned policy/decision ID, target, action, reason, expiry and rollback reference | Internal security-critical; audit evidence is Restricted | Authenticated integrity, freshness, deterministic scope, monitor-only default, circuit breaker and tested rollback; reject unknown action/version | M4 producer, M3 consumer, M1 approval / planned |
+| IF-04 | Collector -> analytics | Versioned batch of normalised events plus source, batch, correlation and health metadata | Restricted | Mutually authenticated encrypted transport, replay/freshness checks, maximum batch/event sizes, bounded queues, timeout and backpressure | M3 producer, M4 consumer / local Bearer loopback implemented and observed in Linux CI; shared TLS/identity, live sensor provenance and full runtime acceptance pending |
+| IF-05 | Analytics -> storage/audit | Masked telemetry summary, route inventory, policy version, finding and append-only audit event | Restricted; policy/contract material is Internal security-critical | Mask before write, separate least-privilege identities, encryption, idempotency, tamper evidence and approved retention/purge | M4 implemented strict masking and bounded volatile stores/audit with expiry tests; durable restricted persistence and independent privacy acceptance pending |
+| IF-06 | Management API -> dashboard | Masked inventory, findings, health and triage state; bounded administrative commands | Restricted | Server-side RBAC on every request, short sessions, CSRF protection, safe rendering, pagination and audit of every change | M4 protected read-only backend implemented; M6 fixture UI tested separately; agreed browser/contract and live handoff pending, no administrative mutation API claimed |
+| IF-07 | Analytics -> collector enforcement adapter | Versioned policy/decision ID, target, action, reason, expiry and rollback reference | Internal security-critical; audit evidence is Restricted | Authenticated integrity, freshness, deterministic scope, monitor-only default, circuit breaker and tested rollback; reject unknown action/version | M4 LAB-REC-1 signed monitor-only prototype exists; not accepted IF-07, no compatible active M3 consumer/rollback approval |
 | IF-08 | Components -> health/operations view | Availability, latency, queue depth, drop count, schema failures and build/version labels | Internal; Restricted if linked to a finding or host identity | No credentials or raw payloads; bounded labels; health failure cannot authorise traffic or hide audit failure | M2-M6 producers, M6 consumer / planned |
-| IF-09 | Repository/dependency sources -> CI/release | Reviewed source, manifests, lock files, test/scan results, SBOM, provenance and artifact digest | Public/Internal; credentials and detailed findings are Secret/Restricted | Reviewed PRs, pinned dependencies, isolated credentials, deterministic tests, scans and provenance verification | M6 with M1 coordination / API main-PR CI passes; full-system locks/provenance/SBOM, dashboard/integration CI and independently verified protection remain pending |
+| IF-09 | Repository/dependency sources -> CI/release | Reviewed source, manifests, lock files, test/scan results, SBOM, provenance and artifact digest | Public/Internal; credentials and detailed findings are Secret/Restricted | Reviewed PRs, pinned dependencies, isolated credentials, deterministic tests, scans and provenance verification | API/analytics/loopback PR CI and M6 peer-branch UI CI observed passing; M4 deterministic source candidate exists; full-system locks/provenance/SBOM, integration approval and actual protection remain pending |
 
 ## 4. Common event requirements
 

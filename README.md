@@ -8,11 +8,12 @@ API-Sentinel is an authorised lab project for runtime API inventory, shadow API 
 
 Development and testing must use the team-owned mock API or another environment with written authorisation. Do not capture production traffic, test third-party systems, intercept real credentials, or store real personal information.
 
-See the [October 20 Member 1 closeout](docs/member1-closeout-2026-10-20.md) and
+See the [current Member 1 closeout](docs/member1-closeout-2026-10-27.md) and
 [final architecture/limitations](docs/final-architecture-and-presentation.md):
 the mock API authorization fix, contract checks and selected quality gates are
 merged. The Rust collector library is now merged through PR #32; the React
-fixture dashboard remains on its peer branch. On `member4/detection`,
+fixture dashboard remains on its peer branch, now with observed build/test CI.
+Merged Member 4
 [Days 1–10 analytics](docs/member4-days01-10-evidence.md) now supplies authenticated
 local ingestion, strict schemas, volatile masked storage, route discovery and
 fixture-backed ownership evaluation. Live sensor-to-analytics
@@ -50,7 +51,10 @@ the human-led integrated demonstration remain outstanding. See the
 dated evidence snapshots. The [current checkpoint register](docs/member1-checkpoints.json)
 credits the real M5 handoffs and PR #28 approval without completing the human
 checkpoints. Earlier Issues #14/#21/#23 are closed; remaining actual owner
-actions are tracked in [#33](https://github.com/madhab-tech-cyber/APIsenX/issues/33).
+actions remain documented in [#61](https://github.com/madhab-tech-cyber/APIsenX/issues/61)
+and the current correction PR. #56/#57/#61 are now owner-closed but still lack
+required human/admin acceptance evidence; closure does not satisfy those gates.
+Open #82/#83 track Day 19 human acceptance and the unapproved durable-audit design.
 
 ## Intended component responsibilities
 
@@ -59,7 +63,7 @@ is implemented, merged or accepted:
 
 - `ebpf/` - Intended Linux eBPF observation layer.
 - `collector/` - Intended Rust event collector, enforcement adapter, and performance measurement.
-- `analytics/` - Local monitor-only ingestion, route discovery, object/function evaluation and signed recommendations; durable audit, live context and dashboard read APIs remain pending.
+- `analytics/` - Local monitor-only ingestion, route discovery, object/function evaluation, signed recommendations and protected read APIs; durable audit, live context and dashboard integration remain pending.
 - `mock-api/` - Authorised e-commerce reference application and OpenAPI contract.
 - `dashboard/` - Intended React endpoint inventory, alerts, investigation, and health views; current peer-branch UI is fixture-based.
 - `tests/` - Security, contract, integration, performance, and failure tests; actual coverage depends on the executed test suite.
@@ -84,7 +88,7 @@ blocked by administrative access.** The required workflow is policy, not proof
 that branch protection is enabled. See [ownership and review controls](docs/ownership-and-review-controls.md)
 for the observed state and owner handoff.
 
-The October 20 readback still reports main unprotected and administration access
+The October 27 readback still reports main unprotected and administration access
 denied. The approved settings now have a tested owner utility:
 `python scripts/manage_main_protection.py --check` is read-only;
 `--apply` creates only the approved main rule and verifies readback when run

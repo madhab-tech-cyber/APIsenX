@@ -1,7 +1,8 @@
 # Verified Ownership and Review-Control Handoff
 
 **Owner:** Member 1. **Identity observed:** 2026-10-18 (Asia/Calcutta).
-**Control/CI status refreshed:** 2026-10-20 (Asia/Calcutta).
+**Control/CI status refreshed:** 2026-10-27 (Asia/Calcutta).
+Current evidence/limits: [Member 1 closeout](member1-closeout-2026-10-27.md).
 
 ## Identity evidence
 
@@ -10,14 +11,15 @@
 | M1 | `madhab-tech-cyber` | Author of PR #18 and Member 1 branch delivery; user-specified Git identity | admin |
 | M2 | `renu-stack` | Linked author/committer of `07f141022f31979c9464c2f853b982e03b4373a4` on assigned branch | write |
 | M3 | `aadi3006` | Linked author/committer of `9eb26e4cd4d0cc33b92c4103a13cc90724206c31` on assigned branch | write |
-| M4 | Pending | No attributable detection implementation commit in inspected scaffold branch | Not verified |
+| M4 implementation takeover | `madhab-tech-cyber` | User explicitly requested M1 take over unavailable M4; merged PRs #42/#49/#53 | Existing M1 account; original unavailable M4 identity remains unverified and is not needed to attribute the takeover |
 | M5 | `pappukumar96727-sketch` (Git display name Pappu kumar) | PR #19 author and workflow head commit `8f155631a5d8c878190db741143d06c28a26ef22` | write |
 | M6 | `jayitape` (Git display name Jay Itape) | Linked author/committer of `39902b358ef68911795546bf22ae5faf46fbe078` | write |
 
 Permission endpoints were read for each named identity. Attribution is evidence
 of the published Git role, not a claim of personal identity verification or
 acceptance of a new handoff. Full names for alias-only identities remain pending.
-M1 is explicitly the interim `/analytics/` review owner until M4 is confirmed.
+M1 is the `/analytics/` implementer under the authorized takeover. M3/M5/M6 are
+listed affected owners for independent review; M1 cannot self-approve M4 work.
 
 ## CODEOWNERS semantics
 
@@ -76,10 +78,11 @@ and demonstrate execution before requiring it.
 
 | Context observed | Current evidence | Required next evidence |
 |---|---|---|
-| `API Security and Quality Gates` | PR #24 run 39209714300 and M5 checks on b199da1 succeed: API/contract, Ruff and dependency audit; app github-actions ID 15368; main-targeting PR trigger exists | Verify this exact context on the corrective PR head before requiring it; save protection readback and real independent reviews |
-| `Repository security checks` | Member 6 push run 38860076271 succeeded: sensitive-file names and repository structure | Do not call this dashboard test coverage or a dedicated secret scan |
-| Dashboard validation | Local locked installation, lint, TypeScript/production build and npm audit pass on 39902b3; no test script; successful M6 CI has no dashboard build/test job | M6 preserves the working fixture UI, adds state/privacy tests and locked install/lint/typecheck/build/test CI; M4/M6 prove backend authorization |
-| Collector/sensor integration | M3 reports local Rust checks; M2 reports prerequisite/layout checks | M2/M3/M4 Linux producer/consumer, failure, loss and privacy evidence; reproducible CI where supported |
+| `API Security and Quality Gates` | PR #60 head d51e666 run 40072189001 SUCCESS: API/contract, Ruff and audit; GitHub Actions app ID 15368; main PR trigger exists | Verify corrective-head result, actual main protection/readback and independent reviews |
+| `Analytics Security and Quality Gates` | PR #60 head d51e666 run 40072188985 SUCCESS: regressions/demos, frozen source candidate, lint, Bandit, scoped secrets and dependency audit | Independent detector/label/privacy acceptance, trusted live context, durable audit and shared runtime evidence |
+| `Repository security checks` | M6 run 39431559242 SUCCESS: sensitive filenames and repository structure | This job is not dashboard tests or a dedicated secret scan |
+| `Dashboard quality and security checks` | Same M6 run, head ec03bdf: npm ci, lint, 4 Vitest tests, TypeScript/production build and npm audit SUCCESS | Fixture UI remains unmerged; verify loading/error/malformed/sensitive-data cases and actual authenticated M4 browser contract before acceptance |
+| `Rust/Python Loopback Contract` | PR #60 head d51e666 run 40072188960 SUCCESS: locked Rust tests/fmt/clippy and real Linux userspace ack/retry/negative/privacy handoff | M2/M3 live sensor envelope, provenance/correlation and shared identity/TLS acceptance; not sensor/enforcement proof |
 
 Use the current names only after testing trigger coverage. No invented future
 dashboard check name is declared mandatory yet. Code, schema, documentation,
@@ -98,6 +101,14 @@ are preserved. M5 responses are credited, but actual meetings, M6 responses and
 checkpoint sign-offs are not fabricated. [Issue #33](https://github.com/madhab-tech-cyber/APIsenX/issues/33)
 tracks remaining owner actions. The
 [checkpoint register](member1-checkpoints.json) keeps Days 14/15/30 pending.
+October 27: #33/#56/#57/#58/#61 are owner-closed without completing the human
+gates. Follow-up remains documented in
+[#61](https://github.com/madhab-tech-cyber/APIsenX/issues/61) and the correction PR;
+open #82/#83 track newer API-load human acceptance and durable-audit decisions.
+Main still reports unprotected/rulesets empty; Administration GET returns 403
+and the approved apply command stops at its first CLI read without a PUT.
+PR #34 has no submitted review. Unsupported checkboxes in #56/#57 were corrected
+without rewriting original comments or repeatedly reopening owner-closed issues.
 Issue state alone is not checkpoint completion. Real comments/responses and
 independent sign-offs must be supplied by their actual authors.
 PR approval cannot replace the missing human checkpoint. A review
