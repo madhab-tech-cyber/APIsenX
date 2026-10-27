@@ -5,6 +5,11 @@ from fastapi.testclient import TestClient
 
 
 class TokenBucketLimiterTests(unittest.TestCase):
+    def setUp(self):
+        main.SERVICE_LIMITER.buckets.clear()
+        main.SUBJECT_LIMITER.buckets.clear()
+        main.ROUTE_COST_LIMITER.buckets.clear()
+
     def test_multi_gate_rejection_does_not_partially_debit(self):
         now = [100.0]
         limiter = main.TokenBucketLimiter(clock=lambda: now[0])
@@ -87,8 +92,8 @@ class TokenBucketLimiterTests(unittest.TestCase):
         main.SERVICE_LIMITER.buckets.clear()
         main.SUBJECT_LIMITER.buckets.clear()
         main.ROUTE_COST_LIMITER.buckets.clear()
-        now = main.SUBJECT_LIMITER.clock()
-        main.SUBJECT_LIMITER.buckets[("subject", "user-a", "GET /orders")] = (
+        now = main.ROUTE_COST_LIMITER.clock()
+        main.ROUTE_COST_LIMITER.buckets[("subject", "user-a", "GET /orders")] = (
             0.0,
             now,
             now,
