@@ -37,6 +37,7 @@ jobs:
       - name: Verify frozen source candidate and build without publishing
         run: |
           python -m analytics.package --check
+          python -m analytics.acceptance
           python -m analytics.package --output "$RUNNER_TEMP/analytics-lab-candidate.zip"
       - name: Lint analytics, tests and secret-check helper
         run: >-

@@ -123,3 +123,12 @@ source/config change; explicit reinitialization is required. This does not
 activate any rule. Human reviews/final presentation, durable audit, shared
 transport/identity and production release remain pending.
 
+# Current acceptance evidence (27 October 2026)
+
+[Acceptance and receiver-to-read regressions](../docs/member4-oct27-acceptance-evidence.md)
+refresh the Day 30 engineering handoff against current main. Run
+`python -m analytics.acceptance` for bookkeeping only; add `--require-accepted`
+to get exit 2 while actual human/integration evidence remains pending.
+This never enables enforcement or authorizes a release. Durable storage remains
+an unapproved proposal; original owner closures do not substitute for sign-offs.
+
