@@ -14,6 +14,7 @@ class ProbeHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/limited":
             self.send_response(429)
+            self.send_header("Retry-After", "2")
             self.end_headers()
             self.wfile.write(b'{"error":"limited"}')
             return
@@ -50,9 +51,10 @@ class Day19LoadProbeTests(unittest.TestCase):
         self.assertEqual(result[0], 200)
         self.assertGreaterEqual(result[1], 0)
         self.assertEqual(result[2], "")
+        self.assertEqual(result[3], "")
         self.assertNotIn("test-secret-token", repr(result))
 
-    def test_probe_records_rate_limit_response(self):
+    def test_probe_records_rate_limit_and_retry_after(self):
         result = load_probe.probe(
             f"{self.base_url}/limited",
             "test-secret-token",
@@ -62,6 +64,8 @@ class Day19LoadProbeTests(unittest.TestCase):
         self.assertEqual(result[0], 429)
         self.assertGreaterEqual(result[1], 0)
         self.assertEqual(result[2], "http_error")
+        self.assertEqual(result[3], "2")
+        self.assertGreaterEqual(int(result[3]), 1)
 
     def test_probe_records_connection_failure_without_sensitive_detail(self):
         result = load_probe.probe(
@@ -72,6 +76,7 @@ class Day19LoadProbeTests(unittest.TestCase):
         )
         self.assertEqual(result[0], 0)
         self.assertNotEqual(result[2], "")
+        self.assertEqual(result[3], "")
         self.assertNotIn("test-secret-token", repr(result))
 
 
