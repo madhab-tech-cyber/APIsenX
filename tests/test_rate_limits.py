@@ -11,7 +11,9 @@ class TokenBucketLimiterTests(unittest.TestCase):
         self.assertEqual(
             limiter.consume(("subject", "user-a"), 1.0, 2.0), (True, 0, 200)
         )
-        self.assertEqual(limiter.consume(("subject", "user-a"), 1.0, 2.0), (True, 0, 200))
+        self.assertEqual(
+            limiter.consume(("subject", "user-a"), 1.0, 2.0), (True, 0, 200)
+        )
         allowed, retry_after, status = limiter.consume(("subject", "user-a"), 1.0, 2.0)
         self.assertFalse(allowed)
         self.assertEqual(status, 429)
