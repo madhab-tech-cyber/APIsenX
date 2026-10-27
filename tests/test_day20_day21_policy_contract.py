@@ -14,6 +14,9 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
         cls.failure_policy = (
             ROOT / "docs" / "route-failure-policy.md"
         ).read_text(encoding="utf-8")
+        cls.normalized_failure_policy = " ".join(
+            cls.failure_policy.split()
+        )
 
     def test_day20_retention_policy_keeps_all_eight_classes_and_blockers_explicit(self):
         retention_rows = {
@@ -42,16 +45,16 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
             {f"RF-{number:02d}" for number in range(1, 6)},
         )
         self.assertIn(
-            "current stdout logs do not\\nimplement this column.",
-            self.failure_policy,
+            "current stdout logs do not implement this column.",
+            self.normalized_failure_policy,
         )
         self.assertIn(
             "Per-route implementation acceptance remains BLOCKED",
-            self.failure_policy.replace("\n", " "),
+            self.normalized_failure_policy,
         )
         self.assertIn(
             "An audit outage must not prevent emergency disablement.",
-            self.failure_policy,
+            self.normalized_failure_policy,
         )
 
 
