@@ -9,7 +9,7 @@
 This is an initial isolated-lab design profile requiring measured tuning and
 review before activation. The merged Day 19 Member 5 implementation adds a bounded
 process-local token-bucket prototype for aggregate service traffic and
-server-authenticated subject/route traffic. Merged PR #70 adds atomic per-route aggregate budgets and weighted service/subject cost budgets. Merged PR #71 adds bounded pre-authentication source and unauthenticated aggregate buckets. The current follow-up branch adds a process-local global concurrency gate and early raw-path/declared Content-Length checks, pending CI. The implementation does not cover every LM-01–LM-20 requirement, distributed coordination, concurrency gates, pagination, response-size caps, or production protection. ENF-1.0, rule-specific authorization and Day 21 failure decisions
+server-authenticated subject/route traffic. Merged PR #70 adds atomic per-route aggregate budgets and weighted service/subject cost budgets. Merged PR #71 adds bounded pre-authentication source and unauthenticated aggregate buckets. Merged PR #72 adds a process-local global concurrency gate and early raw-path/declared Content-Length checks. The current follow-up branch adds bounded pagination to list endpoints, pending CI. The implementation does not cover every LM-01–LM-20 requirement, distributed coordination, concurrency gates, pagination, response-size caps, or production protection. ENF-1.0, rule-specific authorization and Day 21 failure decisions
 still apply. Never expose static lab fixtures outside the approved local environment.
 
 Resolve identities server-side after authentication. Key authenticated buckets
