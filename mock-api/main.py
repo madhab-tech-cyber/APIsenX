@@ -1,4 +1,5 @@
 import logging  # noqa: I001
+import math
 import os
 import re
 import sys
@@ -49,6 +50,100 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("apisenx.audit")
 
 
+class TokenBucketLimiter:
+    """Bounded process-local token buckets with monotonic refill and idle eviction."""
+
+    def __init__(
+        self,
+        max_keys: int = 4096,
+        idle_ttl: float = 60.0,
+        clock=time.monotonic,
+    ):
+        self.max_keys = max_keys
+        self.idle_ttl = idle_ttl
+        self.clock = clock
+        self.buckets: dict[tuple, tuple[float, float, float]] = {}
+        self.lock = threading.Lock()
+
+    def consume(
+        self,
+        key: tuple,
+        rate: float,
+        capacity: float,
+        cost: float = 1.0,
+    ) -> tuple[bool, int, int]:
+        """Return (allowed, retry_after_seconds, status_code); never evict live debt."""
+        now = self.clock()
+        with self.lock:
+            bucket = self.buckets.get(key)
+            if bucket is None:
+                expired = [
+                    existing_key
+                    for existing_key, (_, _, last_seen) in self.buckets.items()
+                    if now - last_seen >= self.idle_ttl
+                ]
+                for existing_key in expired:
+                    self.buckets.pop(existing_key, None)
+                if len(self.buckets) >= self.max_keys:
+                    return False, 1, 503
+                tokens = capacity
+                last_refill = now
+            else:
+                tokens, last_refill, _ = bucket
+                tokens = min(capacity, tokens + max(0.0, now - last_refill) * rate)
+
+            if tokens < cost:
+                retry_after = max(1, math.ceil((cost - tokens) / rate))
+                self.buckets[key] = (tokens, now, now)
+                return False, retry_after, 429
+
+            self.buckets[key] = (tokens - cost, now, now)
+            return True, 0, 200
+
+
+SERVICE_LIMITER = TokenBucketLimiter()
+SUBJECT_LIMITER = TokenBucketLimiter()
+
+
+def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
+    code = "RATE_LIMITED" if status_code == 429 else "SERVICE_UNAVAILABLE"
+    message = (
+        "Request rate limit exceeded"
+        if status_code == 429
+        else "Rate-limit capacity temporarily unavailable"
+    )
+    return JSONResponse(
+        status_code=status_code,
+        content=error_response(code, message),
+        headers={"Retry-After": str(max(1, retry_after))},
+    )
+
+
+def enforce_subject_rate_limit(
+    actor: dict,
+    route: str,
+    rate: float = 80.0,
+    burst: float = 160.0,
+) -> None:
+    """Apply subject and canonical-route limits after server-side authentication."""
+    allowed, retry_after, status_code = SUBJECT_LIMITER.consume(
+        ("subject", actor["id"], route),
+        rate=rate,
+        capacity=burst,
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=status_code,
+            detail=error_response(
+                "RATE_LIMITED" if status_code == 429 else "SERVICE_UNAVAILABLE",
+                "Request rate limit exceeded"
+                if status_code == 429
+                else "Rate-limit capacity temporarily unavailable",
+            ),
+            headers={"Retry-After": str(max(1, retry_after))},
+        )
+
+
 # --------------------------------------------------
 # Request observation middleware
 # --------------------------------------------------
@@ -58,6 +153,23 @@ async def observe_request(request: Request, call_next):
     """Log allowlisted request metadata without logging payloads or query values."""
     correlation_id = str(uuid.uuid4())
     started = time.perf_counter()
+
+    allowed, retry_after, limit_status = SERVICE_LIMITER.consume(
+        ("service",),
+        rate=100.0,
+        capacity=200.0,
+    )
+    if not allowed:
+        response = rate_limit_error(limit_status, retry_after)
+        response.headers["X-Correlation-ID"] = correlation_id
+        logger.info(
+            "observation correlation_id=%s method=%s route=unresolved "
+            "status=%s outcome=rate_limited",
+            correlation_id,
+            request.method,
+            limit_status,
+        )
+        return response
 
     try:
         response = await call_next(request)
@@ -183,6 +295,8 @@ class ErrorDetail(BaseModel):
         "FORBIDDEN",
         "NOT_FOUND",
         "INVALID_REQUEST",
+        "RATE_LIMITED",
+        "SERVICE_UNAVAILABLE",
     ]
     message: str
 
@@ -502,11 +616,14 @@ def check_access(
         400: {"model": ErrorResponse},
         401: {"model": ErrorResponse},
         403: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
     },
 )
 def list_orders(
     actor: dict = Depends(get_principal),
 ):
+    enforce_subject_rate_limit(actor, "GET /orders")
     require_read_permission(actor, "orders:list")
 
     visible = []
@@ -547,6 +664,8 @@ def list_orders(
         401: {"model": ErrorResponse},
         403: {"model": ErrorResponse},
         404: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
     },
 )
 def get_order(
@@ -557,6 +676,7 @@ def get_order(
     ),
     actor: dict = Depends(get_principal),
 ):
+    enforce_subject_rate_limit(actor, "GET /orders/{orderId}")
     require_read_permission(actor, "orders:read")
 
     order = check_access(
@@ -600,6 +720,12 @@ def update_order(
     ),
     actor: dict = Depends(get_principal),
 ):
+    enforce_subject_rate_limit(
+        actor,
+        "PATCH /orders/{orderId}",
+        rate=20.0,
+        burst=40.0,
+    )
     # Enforce role-specific function-level permissions.
     # Customer and support roles cannot update orders.
     manage_permission = {
@@ -663,6 +789,7 @@ def update_order(
 def list_admin_orders(
     actor: dict = Depends(get_principal),
 ):
+    enforce_subject_rate_limit(actor, "GET /admin/orders")
     # Check function-level permission even when inventory is empty.
     require_permission(
         actor,
@@ -716,6 +843,7 @@ def list_admin_orders(
 def list_support_orders(
     actor: dict = Depends(get_principal),
 ):
+    enforce_subject_rate_limit(actor, "GET /support/orders")
     # Support receives only explicitly assigned orders and masked fields.
     if (
         actor.get("role") != "support"
