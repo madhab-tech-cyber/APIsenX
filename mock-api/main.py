@@ -128,6 +128,10 @@ SERVICE_LIMITER = TokenBucketLimiter()
 SUBJECT_LIMITER = TokenBucketLimiter()
 ROUTE_COST_LIMITER = TokenBucketLimiter()
 SOURCE_LIMITER = TokenBucketLimiter(max_keys=4096)
+SERVICE_IN_FLIGHT = threading.BoundedSemaphore(10)
+MAX_RAW_PATH_BYTES = 2048
+MAX_PATH_SEGMENTS = 32
+MAX_JSON_BODY_BYTES = 16 * 1024
 
 
 def rate_limit_error(status_code: int, retry_after: int) -> JSONResponse:
@@ -202,6 +206,31 @@ async def observe_request(request: Request, call_next):
     correlation_id = str(uuid.uuid4())
     started = time.perf_counter()
 
+    # Reject oversized request metadata before routing or body parsing.
+    raw_path = request.scope.get("raw_path", request.url.path.encode("utf-8"))
+    path_segments = [segment for segment in request.url.path.split("/") if segment]
+    content_length = request.headers.get("content-length")
+    if (
+        len(raw_path) > MAX_RAW_PATH_BYTES
+        or len(path_segments) > MAX_PATH_SEGMENTS
+        or (
+            content_length is not None
+            and (
+                not content_length.isdigit()
+                or int(content_length) > MAX_JSON_BODY_BYTES
+            )
+        )
+    ):
+        response = JSONResponse(
+            status_code=400,
+            content=error_response(
+                "INVALID_REQUEST", "Request exceeds configured size limits"
+            ),
+        )
+        response.headers["X-Correlation-ID"] = correlation_id
+        return response
+
+
     # Supplementary pre-authentication abuse limits. Only the direct peer is
     # used; forwarded headers are deliberately not trusted here.
     if not request.headers.get("authorization"):
@@ -241,20 +270,29 @@ async def observe_request(request: Request, call_next):
         )
         return response
 
-    try:
-        response = await call_next(request)
-    except Exception:
-        route = request.scope.get("route")
-        route_template = getattr(route, "path", "unmatched")
+    # Bound concurrent in-flight work at the service boundary.
+    if not SERVICE_IN_FLIGHT.acquire(blocking=False):
+        response = rate_limit_error(429, 1)
+        response.headers["X-Correlation-ID"] = correlation_id
+        return response
 
-        logger.error(
-            "observation correlation_id=%s method=%s route=%s status=500 "
-            "outcome=unhandled_exception",
-            correlation_id,
-            request.method,
-            route_template,
-        )
-        raise
+    try:
+        try:
+            response = await call_next(request)
+        except Exception:
+            route = request.scope.get("route")
+            route_template = getattr(route, "path", "unmatched")
+
+            logger.error(
+                "observation correlation_id=%s method=%s route=%s status=500 "
+                "outcome=unhandled_exception",
+                correlation_id,
+                request.method,
+                route_template,
+            )
+            raise
+    finally:
+        SERVICE_IN_FLIGHT.release()
 
     route = request.scope.get("route")
     route_template = getattr(route, "path", "unmatched")
