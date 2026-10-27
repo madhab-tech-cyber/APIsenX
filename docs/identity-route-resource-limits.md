@@ -9,11 +9,7 @@
 This is an initial isolated-lab design profile requiring measured tuning and
 review before activation. The merged Day 19 Member 5 implementation adds a bounded
 process-local token-bucket prototype for aggregate service traffic and
-server-authenticated subject/route traffic. The open follow-up PR #70 adds
-atomic per-route aggregate budgets and weighted service/subject cost budgets. It does not implement every LM-01–LM-20
-requirement, distributed coordination, cost weighting, pagination, response-size
-caps, or production protection. It is not active on main unless merged and
-validated. ENF-1.0, rule-specific authorization and Day 21 failure decisions
+server-authenticated subject/route traffic. Merged PR #70 adds atomic per-route aggregate budgets and weighted service/subject cost budgets. A subsequent follow-up branch adds bounded pre-authentication source and unauthenticated aggregate buckets, pending CI. The implementation does not cover every LM-01–LM-20 requirement, distributed coordination, concurrency gates, pagination, response-size caps, or production protection. ENF-1.0, rule-specific authorization and Day 21 failure decisions
 still apply. Never expose static lab fixtures outside the approved local environment.
 
 Resolve identities server-side after authentication. Key authenticated buckets
@@ -118,4 +114,4 @@ The working branch `day19/member5-bounded-rate-limits` introduces:
 - Monotonic-time refill, positive `Retry-After`, a 4,096-key ceiling, 60-second idle eviction, and fail-closed 503 when all buckets remain live.
 - Generic rate-limit errors and OpenAPI response documentation for 429/503.
 
-This is partial implementation evidence only. PR #70 adds atomic in-process per-route request budgets and weighted service/subject cost budgets; those changes are not merged or CI-verified yet. Unauthenticated supplementary buckets, concurrency gates, pagination/response-byte caps, load tests, multi-worker/distributed behavior, and route-specific outage policy remain incomplete. No performance or capacity claim is accepted until CI and measured load/recovery evidence are reviewed. Keep monitor-only and zero active enforcement.
+This is partial implementation evidence only. PR #70's atomic in-process per-route request budgets and weighted service/subject cost budgets are merged; its Mock API Security Tests #86 and Analytics Security Tests #43 passed. The unauthenticated source and aggregate buckets are in a follow-up branch pending CI. Concurrency gates, pagination/response-byte caps, load tests, multi-worker/distributed behavior, and route-specific outage policy remain incomplete. No performance or capacity claim is accepted until CI and measured load/recovery evidence are reviewed. Keep monitor-only and zero active enforcement.
