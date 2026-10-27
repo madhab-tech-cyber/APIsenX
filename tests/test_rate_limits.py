@@ -32,6 +32,54 @@ class TokenBucketLimiterTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"]["code"], "INVALID_REQUEST")
 
+    def test_subject_concurrency_gate_returns_429_when_full(self):
+        client = TestClient(main.app)
+        key = ("user-a", "read")
+        semaphore = main.threading.BoundedSemaphore(5)
+        for _ in range(5):
+            self.assertTrue(semaphore.acquire(blocking=False))
+        with main.SUBJECT_SEMAPHORE_LOCK:
+            main.SUBJECT_SEMAPHORES[key] = semaphore
+        try:
+            response = client.get("/orders", headers={
+                "Authorization": "Bearer lab-user-a-token",
+                "X-Policy-Version": "AP-1.0",
+            })
+        finally:
+            with main.SUBJECT_SEMAPHORE_LOCK:
+                main.SUBJECT_SEMAPHORES.pop(key, None)
+            for _ in range(5):
+                semaphore.release()
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
+        self.assertEqual(response.headers["Retry-After"], "1")
+
+    def test_patch_subject_concurrency_gate_uses_tighter_limit(self):
+        client = TestClient(main.app)
+        key = ("admin-1", "PATCH")
+        semaphore = main.threading.BoundedSemaphore(2)
+        for _ in range(2):
+            self.assertTrue(semaphore.acquire(blocking=False))
+        with main.SUBJECT_SEMAPHORE_LOCK:
+            main.SUBJECT_SEMAPHORES[key] = semaphore
+        try:
+            response = client.patch(
+                "/orders/order-1001",
+                headers={
+                    "Authorization": "Bearer lab-admin-token",
+                    "X-Policy-Version": "AP-1.0",
+                    "X-Request-Nonce": "nonce-12345678",
+                },
+                json={"status": "shipped"},
+            )
+        finally:
+            with main.SUBJECT_SEMAPHORE_LOCK:
+                main.SUBJECT_SEMAPHORES.pop(key, None)
+            for _ in range(2):
+                semaphore.release()
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
+
     def test_streaming_body_limit_checks_actual_bytes(self):
         async def run_test():
             async def receive():
