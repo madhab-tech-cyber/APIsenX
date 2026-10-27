@@ -7,9 +7,13 @@
 ## 1. Scope and accounting keys
 
 This is an initial isolated-lab design profile requiring measured tuning and
-review before activation. It defines requirements, not currently running rate
-limits. ENF-1.0, rule-specific authorization and Day 21 failure decisions still
-apply. Never expose static lab fixtures outside the approved local environment.
+review before activation. The Day 19 Member 5 working branch adds a bounded
+process-local token-bucket prototype for aggregate service traffic and
+server-authenticated subject/route traffic. It does not implement every LM-01–LM-20
+requirement, distributed coordination, cost weighting, pagination, response-size
+caps, or production protection. It is not active on main unless merged and
+validated. ENF-1.0, rule-specific authorization and Day 21 failure decisions
+still apply. Never expose static lab fixtures outside the approved local environment.
 
 Resolve identities server-side after authentication. Key authenticated buckets
 by `(environment, service, server tenant scope, opaque subject, canonical
@@ -103,3 +107,14 @@ separate overload workload that proves bounds and recovery. Report fairness,
 tail latency, achieved throughput, drops and counters without high-cardinality
 identity/path metric labels. M1 reviews a versioned profile before any tuning
 or BR-04 activation. R-010 remains High/Open until evidence passes.
+
+
+## Day 19 implementation candidate — Member 5
+
+The working branch `day19/member5-bounded-rate-limits` introduces:
+- A process-wide token bucket (100 requests/s, burst 200) applied before route dispatch.
+- Authenticated subject/canonical-route buckets (80 requests/s, burst 160), with PATCH limited to 20 requests/s, burst 40.
+- Monotonic-time refill, positive `Retry-After`, a 4,096-key ceiling, 60-second idle eviction, and fail-closed 503 when all buckets remain live.
+- Generic rate-limit errors and OpenAPI response documentation for 429/503.
+
+This is partial implementation evidence only. Per-route service budgets, unauthenticated supplementary buckets, weighted-cost budgets, concurrency gates, pagination/response-byte caps, load tests, multi-worker/distributed behavior, and route-specific outage policy remain incomplete. No performance or capacity claim is accepted until CI and measured load/recovery evidence are reviewed. Keep monitor-only and zero active enforcement.
