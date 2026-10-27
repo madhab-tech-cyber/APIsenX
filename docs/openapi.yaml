@@ -45,10 +45,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-'429':
-          $ref: '#/components/responses/RateLimited'
-        '503':
-          $ref: '#/components/responses/CapacityUnavailable'
   /orders:
     get:
       tags:
@@ -87,10 +83,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-'429':
-          $ref: '#/components/responses/RateLimited'
-        '503':
-          $ref: '#/components/responses/CapacityUnavailable'
 
   /orders/{orderId}:
     parameters:
@@ -125,10 +117,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-'429':
-          $ref: '#/components/responses/RateLimited'
-        '503':
-          $ref: '#/components/responses/CapacityUnavailable'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -183,10 +171,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-'429':
-          $ref: '#/components/responses/RateLimited'
-        '503':
-          $ref: '#/components/responses/CapacityUnavailable'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -233,10 +217,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-'429':
-          $ref: '#/components/responses/RateLimited'
-        '503':
-          $ref: '#/components/responses/CapacityUnavailable'
 
 components:
   securitySchemes:
@@ -370,8 +350,6 @@ components:
                 - FORBIDDEN
                 - NOT_FOUND
                 - INVALID_REQUEST
-                - RATE_LIMITED
-                - SERVICE_UNAVAILABLE
             message:
               type: string
 
@@ -399,32 +377,6 @@ components:
 
     NotFound:
       description: Requested resource does not exist or is not disclosed
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-
-    RateLimited:
-      description: Request rate or burst budget is exhausted
-      headers:
-        Retry-After:
-          description: Minimum seconds before retrying
-          schema:
-            type: integer
-            minimum: 1
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-
-    CapacityUnavailable:
-      description: Bounded limiter state is full and no idle bucket can be evicted
-      headers:
-        Retry-After:
-          description: Minimum seconds before retrying
-          schema:
-            type: integer
-            minimum: 1
       content:
         application/json:
           schema:
