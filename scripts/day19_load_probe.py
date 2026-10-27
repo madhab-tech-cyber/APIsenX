@@ -21,7 +21,9 @@ from collections import Counter
 from datetime import datetime, timezone
 
 
-def probe(url: str, token: str, policy_version: str, timeout: float) -> tuple[int, float, str]:
+def probe(
+    url: str, token: str, policy_version: str, timeout: float
+) -> tuple[int, float, str, str]:
     request = urllib.request.Request(
         url,
         headers={
@@ -32,19 +34,22 @@ def probe(url: str, token: str, policy_version: str, timeout: float) -> tuple[in
         method="GET",
     )
     started = time.perf_counter()
+    retry_after = ""
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             response.read(1024 * 1024)
             status = response.status
+            retry_after = response.headers.get("Retry-After", "")
             error = ""
     except urllib.error.HTTPError as exc:
         status = exc.code
+        retry_after = exc.headers.get("Retry-After", "")
         exc.read(4096)
         error = "http_error"
-    except Exception as exc:  # recorded by class only; never include headers/tokens
+    except Exception as exc:  # record class only; never include headers/tokens
         status = 0
         error = type(exc).__name__
-    return status, time.perf_counter() - started, error
+    return status, time.perf_counter() - started, error, retry_after
 
 
 def main() -> int:
@@ -73,9 +78,15 @@ def main() -> int:
         for future in concurrent.futures.as_completed(futures):
             results.append(future.result())
     elapsed = time.perf_counter() - started
-    latencies_ms = [latency * 1000 for _, latency, _ in results]
-    statuses = Counter(str(status) for status, _, _ in results)
-    errors = Counter(error for _, _, error in results if error)
+    latencies_ms = [latency * 1000 for _, latency, _, _ in results]
+    statuses = Counter(str(status) for status, _, _, _ in results)
+    errors = Counter(error for _, _, error, _ in results if error)
+    retry_after_values = Counter(value for _, _, _, value in results if value)
+    rate_limited = [row for row in results if row[0] == 429]
+    valid_retry_after = [
+        row for row in rate_limited
+        if row[3].isdigit() and int(row[3]) >= 1
+    ]
     ordered = sorted(latencies_ms)
 
     def percentile(p: float) -> float:
@@ -93,6 +104,12 @@ def main() -> int:
         "throughput_rps": round(len(results) / elapsed, 2) if elapsed else 0,
         "status_counts": dict(statuses),
         "transport_error_classes": dict(errors),
+        "retry_after": {
+            "observed_values": dict(retry_after_values),
+            "http_429_count": len(rate_limited),
+            "http_429_with_positive_integer_count": len(valid_retry_after),
+            "http_429_missing_or_invalid_count": len(rate_limited) - len(valid_retry_after),
+        },
         "latency_ms": {
             "min": round(min(ordered), 2) if ordered else 0,
             "median": round(statistics.median(ordered), 2) if ordered else 0,
@@ -103,6 +120,7 @@ def main() -> int:
             "single client process and one target endpoint",
             "not a distributed/multi-worker test",
             "not a production capacity certification",
+            "Retry-After validation here accepts positive integer seconds only",
             "compare normal-load, overload, and recovery runs before drawing conclusions",
         ],
     }
