@@ -26,6 +26,29 @@ class TokenBucketLimiterTests(unittest.TestCase):
         self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
         self.assertGreaterEqual(int(response.headers["Retry-After"]), 1)
 
+    def test_oversized_content_length_rejected_before_dispatch(self):
+        client = TestClient(main.app)
+        response = client.post(
+            "/orders",
+            headers={"Content-Length": str(main.MAX_JSON_BODY_BYTES + 1)},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"]["code"], "INVALID_REQUEST")
+
+    def test_service_concurrency_gate_returns_429_when_full(self):
+        client = TestClient(main.app)
+        acquired = 0
+        try:
+            for _ in range(10):
+                self.assertTrue(main.SERVICE_IN_FLIGHT.acquire(blocking=False))
+                acquired += 1
+            response = client.get("/health")
+            self.assertEqual(response.status_code, 429)
+            self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
+        finally:
+            for _ in range(acquired):
+                main.SERVICE_IN_FLIGHT.release()
+
     def test_multi_gate_rejection_does_not_partially_debit(self):
         now = [100.0]
         limiter = main.TokenBucketLimiter(clock=lambda: now[0])
