@@ -91,6 +91,9 @@ class TokenBucketLimiterTests(unittest.TestCase):
 
             sent = []
 
+            async def capture(message):
+                sent.append(message)
+
             async def app(scope, receive, send):
                 message = await receive()
                 self.assertEqual(message["body"], b"")
@@ -105,13 +108,10 @@ class TokenBucketLimiterTests(unittest.TestCase):
             await middleware(
                 {"type": "http", "method": "POST", "path": "/test"},
                 receive,
-                _capture,
+                capture,
             )
             self.assertEqual(sent[0]["status"], 413)
             self.assertIn(b"INVALID_REQUEST", sent[1]["body"])
-
-        async def _capture(sent, message):
-            sent.append(message)
 
         asyncio.run(run_test())
 
@@ -121,6 +121,9 @@ class TokenBucketLimiterTests(unittest.TestCase):
                 return {"type": "http.request", "body": b"", "more_body": False}
 
             sent = []
+
+            async def capture(message):
+                sent.append(message)
 
             async def app(scope, receive, send):
                 await send({"type": "http.response.start", "status": 200, "headers": []})
@@ -138,13 +141,10 @@ class TokenBucketLimiterTests(unittest.TestCase):
             await middleware(
                 {"type": "http", "method": "GET", "path": "/test"},
                 receive,
-                lambda message: _capture(sent, message),
+                capture,
             )
             self.assertEqual(sent[0]["status"], 500)
             self.assertIn(b"RESPONSE_TOO_LARGE", sent[1]["body"])
-
-        async def _capture(sent, message):
-            sent.append(message)
 
         asyncio.run(run_test())
 
