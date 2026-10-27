@@ -181,8 +181,7 @@ class BoundedHTTPPayloadMiddleware:
                 if response_bytes > self.max_response_bytes:
                     response_too_large = True
                     response_chunks.clear()
-                    return
-                if not response_too_large:
+                elif not response_too_large:
                     response_chunks.append(chunk)
                 if message.get("more_body", False):
                     return
