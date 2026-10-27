@@ -9,6 +9,25 @@ class TokenBucketLimiterTests(unittest.TestCase):
         main.SERVICE_LIMITER.buckets.clear()
         main.SUBJECT_LIMITER.buckets.clear()
         main.ROUTE_COST_LIMITER.buckets.clear()
+        main.SOURCE_LIMITER.buckets.clear()
+        main.UNAUTH_AGGREGATE_LIMITER.buckets.clear()
+
+    def test_unauthenticated_source_limit_returns_429(self):
+        client = TestClient(main.app)
+        main.SOURCE_LIMITER.buckets.clear()
+        main.UNAUTH_AGGREGATE_LIMITER.buckets.clear()
+        now = main.SOURCE_LIMITER.clock()
+        main.SOURCE_LIMITER.buckets[("source", "testclient")] = (
+            0.0, now, now
+        )
+        try:
+            response = client.get("/orders")
+        finally:
+            main.SOURCE_LIMITER.buckets.clear()
+            main.UNAUTH_AGGREGATE_LIMITER.buckets.clear()
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
+        self.assertGreaterEqual(int(response.headers["Retry-After"]), 1)
 
     def test_multi_gate_rejection_does_not_partially_debit(self):
         now = [100.0]
