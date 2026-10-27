@@ -97,16 +97,20 @@ class TokenBucketLimiterTests(unittest.TestCase):
             async def app(scope, receive, send):
                 message = await receive()
                 self.assertEqual(message["body"], b"")
-                await send({
-                    "type": "http.response.start",
-                    "status": 200,
-                    "headers": [],
-                })
-                await send({
-                    "type": "http.response.body",
-                    "body": b"ok",
-                    "more_body": False,
-                })
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 200,
+                        "headers": [],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b"ok",
+                        "more_body": False,
+                    }
+                )
 
             middleware = main.BoundedHTTPPayloadMiddleware(
                 app,
