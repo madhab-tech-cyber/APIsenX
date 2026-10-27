@@ -138,7 +138,13 @@ class TokenBucketLimiterTests(unittest.TestCase):
                 sent.append(message)
 
             async def app(scope, receive, send):
-                await send({"type": "http.response.start", "status": 200, "headers": []})
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 200,
+                        "headers": [],
+                    }
+                )
                 await send({
                     "type": "http.response.body",
                     "body": b"x" * (main.MAX_RESPONSE_BYTES + 1),
