@@ -53,7 +53,9 @@ class Day22Day23PolicyContractTests(unittest.TestCase):
 
         policy = self.enforcement_policy.lower()
         self.assertIn("current mode is monitor-only", policy)
-        self.assertIn("a failed or missing gate keeps the proposal monitor-only", policy)
+        self.assertIn(
+            "a failed or missing gate keeps the proposal monitor-only", policy
+        )
 
     def test_day22_keeps_material_residual_risks_high(self):
         risks = table_rows(self.risk_register, r"^\|\s*(R-\d{3})\s*\|")
@@ -79,15 +81,22 @@ class Day22Day23PolicyContractTests(unittest.TestCase):
 
         self.assertIn("exclude at first boundary", handling["MK-01"])
         self.assertIn("never hash and retain a credential", handling["MK-01"])
-        self.assertIn("exclude from logs, metrics, persistence and dashboard", handling["MK-02"])
+        self.assertIn(
+            "exclude from logs, metrics, persistence and dashboard",
+            handling["MK-02"],
+        )
         self.assertIn("approved canonical template", handling["MK-03"])
         self.assertIn("no concrete path values", handling["MK-03"])
         self.assertIn("domain-separated keyed token", handling["MK-04"])
         self.assertIn("never plain unsalted hash", handling["MK-05"])
         self.assertIn("exclude by default", handling["MK-06"])
         self.assertIn("versioned allowlisted enums", handling["MK-07"])
-        self.assertIn("never token/body/path-derived raw identifiers", handling["MK-08"])
-        self.assertIn("unmeasured value is unavailable, not healthy/zero", handling["MK-09"])
+        self.assertIn(
+            "never token/body/path-derived raw identifiers", handling["MK-08"]
+        )
+        self.assertIn(
+            "unmeasured value is unavailable, not healthy/zero", handling["MK-09"]
+        )
         self.assertIn("no raw object serialization fallback", handling["MK-10"])
 
     def test_day23_requires_domain_separation_and_no_cross_tenant_fallback(self):
@@ -106,10 +115,16 @@ class Day22Day23PolicyContractTests(unittest.TestCase):
         classification = " ".join(self.classification_policy.split()).lower()
         audit = " ".join(self.audit_policy.split()).lower()
 
-        self.assertIn("runtime masking, leak tests and independent affected-owner review remain pending", policy)
+        self.assertIn(
+            "runtime masking, leak tests and independent affected-owner review remain pending",
+            policy,
+        )
         self.assertIn("no forbidden marker may appear in any forbidden output", policy)
         self.assertIn("including stderr and tracebacks", policy)
-        self.assertIn("documentation is not proof that masking, access control or retention is implemented", classification)
+        self.assertIn(
+            "documentation is not proof that masking, access control or retention is implemented",
+            classification,
+        )
         self.assertIn("until leak tests pass, persistence stays blocked", audit)
 
 
