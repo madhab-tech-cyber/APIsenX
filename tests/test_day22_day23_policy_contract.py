@@ -60,7 +60,9 @@ class Day22Day23PolicyContractTests(unittest.TestCase):
         )
 
     def test_day22_keeps_material_residual_risks_high(self):
-        risks = table_rows(self.risk_register, r"^\|\s*(R-\d{3})\s*\|")
+        active_risk_section = self.risk_register.split("## Active risks", 1)[1]
+        active_risk_section = active_risk_section.split("\n## ", 1)[0]
+        risks = table_rows(active_risk_section, r"^\|\s*(R-\d{3})\s*\|")
         for risk_id in ("R-002", "R-003", "R-008", "R-010", "R-013"):
             with self.subTest(risk=risk_id):
                 self.assertIn(risk_id, risks)
