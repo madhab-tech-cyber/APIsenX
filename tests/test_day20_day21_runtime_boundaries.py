@@ -3,8 +3,8 @@
 import logging
 import secrets
 import unittest
-from unittest.mock import patch
 from datetime import datetime, timezone
+from unittest.mock import patch
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
