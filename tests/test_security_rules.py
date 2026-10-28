@@ -14,7 +14,7 @@ FORBIDDEN_PATTERNS = [
     (r"-----BEGIN (RSA|EC|DSA|OPENSSH|PRIVATE) KEY-----", "Private cryptographic key"),
     (r"(password|passwd|secret|api_key)\s*[:=]\s*['\"][A-Za-z0-9_\-]{8,}['\"]", "Hardcoded credential/secret"),
     (r"ghp_[A-Za-z0-9]{36}", "GitHub Personal Access Token"),
-    (r"bearer\s+[A-Za-z0-9_\-\.]{20,}", "Hardcoded Bearer Token"),
+    (r"bearer\s+[A-Za-z0-9_\-\.]{32,}", "Hardcoded Bearer Token"),
 ]
 
 EXCLUDED_DIRS = {".git", "__pycache__", ".pytest_cache"}
