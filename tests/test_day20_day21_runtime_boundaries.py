@@ -10,6 +10,7 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from analytics.app import Settings, create_app
+from analytics.store import StoreError
 
 
 class Day20Day21RuntimeBoundaryTests(unittest.TestCase):
@@ -76,7 +77,7 @@ class Day20Day21RuntimeBoundaryTests(unittest.TestCase):
         with patch.object(
             self.app.state.store,
             "append",
-            side_effect=RuntimeError(marker),
+            side_effect=StoreError("STORE_UNAVAILABLE"),
         ):
             response = self.client.post(
                 "/v1/events", headers=self.headers, json=self.event
