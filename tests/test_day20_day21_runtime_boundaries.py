@@ -3,6 +3,7 @@
 import logging
 import secrets
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -72,7 +73,7 @@ class Day20Day21RuntimeBoundaryTests(unittest.TestCase):
 
     def test_storage_failure_response_does_not_expose_secret_or_path(self):
         marker = "SYNTHETIC_LEAK_MARKER"
-        with unittest.mock.patch.object(
+        with patch.object(
             self.app.state.store,
             "append",
             side_effect=RuntimeError(marker),
