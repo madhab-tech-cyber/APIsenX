@@ -53,7 +53,7 @@ class TestSecurityAndCompliance(unittest.TestCase):
         self.assertEqual(
             len(violations),
             0,
-            f"Security rule violation! Sensitive data detected in repository:\n" + "\n".join(violations),
+            "Security rule violation! Sensitive data detected in repository:\n" + "\n".join(violations),
         )
 
     def test_no_pcap_files_tracked(self):
