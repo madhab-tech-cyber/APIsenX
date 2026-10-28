@@ -51,8 +51,10 @@ class Day22Day23PolicyContractTests(unittest.TestCase):
         self.assertIn("no active drop/rate-limit rule", review)
         self.assertIn("no high risk is accepted for release", review)
 
-        policy = self.enforcement_policy.lower()
-        self.assertIn("current mode is monitor-only", policy)
+        policy = " ".join(self.enforcement_policy.split()).lower()
+        self.assertIn(
+            "monitor-only; collector/adapter and decision transport are absent", policy
+        )
         self.assertIn(
             "a failed or missing gate keeps the proposal monitor-only", policy
         )
