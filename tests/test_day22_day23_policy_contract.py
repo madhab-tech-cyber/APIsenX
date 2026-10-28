@@ -116,13 +116,15 @@ class Day22Day23PolicyContractTests(unittest.TestCase):
         audit = " ".join(self.audit_policy.split()).lower()
 
         self.assertIn(
-            "runtime masking, leak tests and independent affected-owner review remain pending",
+            "runtime masking, leak tests and independent affected-owner review "
+            "remain pending",
             policy,
         )
         self.assertIn("no forbidden marker may appear in any forbidden output", policy)
         self.assertIn("including stderr and tracebacks", policy)
         self.assertIn(
-            "documentation is not proof that masking, access control or retention is implemented",
+            "documentation is not proof that masking, access control or retention "
+            "is implemented",
             classification,
         )
         self.assertIn("until leak tests pass, persistence stays blocked", audit)
