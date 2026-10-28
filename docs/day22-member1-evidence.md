@@ -23,6 +23,13 @@ High residual-risk rows, and the ten MASK-LAB-1.0 field decisions. These are
 documentation regression checks only; they do not exercise an active adapter,
 prove enforcement correctness, or constitute owner/independent approval.
 
-Exact-head CI is pending. No local test execution is claimed. Runtime decision
-transport, held-out correctness/latency, circuit-breaker/rollback and human
-review remain blocked.
+CI at code/test head `de7543d5555d2df7f715c046ad79e2949dba00dd` passed: Mock API
+Security Tests #144 and Analytics Security Tests #102 both passed the full
+295-test suite, including all six new policy-contract tests. Ruff passed; the
+analytics package/acceptance, static/secret/dependency checks and bounded Day 19
+CI stages also passed. This is automated validation only; no local test run or
+human approval is claimed. Confirm green checks on the current PR head before
+merge.
+
+Runtime decision transport, held-out correctness/latency, circuit-breaker/rollback
+and human review remain blocked.
