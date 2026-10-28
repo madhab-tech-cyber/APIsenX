@@ -13,3 +13,16 @@ Design is approved for implementation; no runtime masking certification is
 issued. M2/M3/M4/M6 negative output evidence and independent review remain
 BLOCKED/PENDING. [Common checks](member1-oct19-verification.md): 53 application
 tests, compilation and nine admin diagnostics PASS; those are not leak tests.
+
+
+## October 28 policy-contract follow-up
+
+Added `tests/test_day22_day23_policy_contract.py` to guard all ten MK-01–MK-10
+field decisions, first-boundary exclusion, domain/tenant-separated HMAC rules,
+unknown-field handling and the explicit leak-test/persistence acceptance block.
+These checks inspect the policy contract; they do not prove runtime masking,
+absence of leaks across logs/tracebacks/retries/exports/UI, or independent
+affected-owner review.
+
+Exact-head CI is pending. No local test execution is claimed. Cross-component
+negative leak evidence and runtime storage/dashboard acceptance remain blocked.
