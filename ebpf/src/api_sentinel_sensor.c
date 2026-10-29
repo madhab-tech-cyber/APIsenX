@@ -179,7 +179,7 @@ struct {
     __uint(type, BPF_MAP_TYPE_ARRAY);
     __uint(max_entries, 1);
     __type(key, __u32);
-    __type(value, __u32);
+    __type(value, __u64);
 } api_sentinel_event_sequence SEC(".maps");
 
 /* Helper to atomically increment per-CPU stat counter */
@@ -197,13 +197,15 @@ static __attribute__((always_inline)) void increment_stat(__u32 index)
  * fails, the resulting gap and STAT_RINGBUF_DROPS both record the loss. The
  * 32-bit wire field is a modulo counter; consumers must not infer request IDs.
  */
-static __attribute__((always_inline)) __u32 next_event_id(void)
+static __attribute__((always_inline)) int next_event_id(__u32 *event_id)
 {
     __u32 key = 0;
-    __u32 *sequence = bpf_map_lookup_elem(&api_sentinel_event_sequence, &key);
+    __u64 *sequence = bpf_map_lookup_elem(&api_sentinel_event_sequence, &key);
     if (!sequence)
         return 0;
-    return __sync_fetch_and_add(sequence, 1) + 1;
+    /* Wire IDs use the low 32 bits; zero is valid at modulo wraparound. */
+    *event_id = (__u32)(__sync_fetch_and_add(sequence, 1) + 1);
+    return 1;
 }
 
 /* Helper to parse HTTP method tokens safely within packet bounds */
@@ -374,8 +376,8 @@ int api_sentinel_tc_ingress(struct __sk_buff *skb)
         return TC_ACT_OK;
 
     /* Allocate the shared sequence before reserve so failed reserves leave a gap. */
-    __u32 event_id = next_event_id();
-    if (!event_id) {
+    __u32 event_id = 0;
+    if (!next_event_id(&event_id)) {
         increment_stat(STAT_MALFORMED_PACKETS);
         return TC_ACT_OK;
     }
@@ -502,8 +504,8 @@ int api_sentinel_tc_egress(struct __sk_buff *skb)
         }
 
         if (code > 0) {
-            __u32 event_id = next_event_id();
-            if (!event_id) {
+            __u32 event_id = 0;
+            if (!next_event_id(&event_id)) {
                 increment_stat(STAT_MALFORMED_PACKETS);
                 return TC_ACT_OK;
             }
