@@ -4,7 +4,7 @@
     "analytics/README.md": "da043ec252b21b1fab9136c94565116addaa8cb31df753b16342a9e265e8ac26",
     "analytics/__init__.py": "155929c60d4059597b78fd7d4ae5f711ab5b56e9b2ac09ac4ad6637afc3389bf",
     "analytics/acceptance.py": "d243d09a5a0c2d4812227a4b33a7fd6805c65068e1fcba6e5cc359afd92ae5b8",
-    "analytics/app.py": "105d83c09d48521f5e4f32fc9f67dbd13af1a40a9b5e2eac02cbd34684bdbea6",
+    "analytics/app.py": "47e4a479841c11697b4b36132b69666c514dc05ef061886f83bafeec28308df2",
     "analytics/audit.py": "d4a500d960614293f2b2236f0a9130b2dfab5067e258de4173823c222946272b",
     "analytics/decisions.py": "246fb9333033e1a6cc9c48f5a1f37bccfc1781f1f5606d727f401eb313703e0e",
     "analytics/demo.py": "b9336c9a16b760a63fce387921f0c943a52e95988f627e1a6d7ed41b506925e8",
@@ -29,7 +29,7 @@
     "docs/member4-oct27-acceptance-evidence.md": "89026494f4cdf28cc2fc34fd3645c1f4ecd8a282a3c446d28fd10788b944acb5",
     "docs/member4-recommendation-contract.md": "8fec8ce7d5a99a48728330eb1a3e77d9ff76887e57ac88b334bd4fc188f15337",
     "docs/member4-release-checklist.md": "19c02640cfb237e7789f4d42efe87f943facf11324649be436dcd4f4692efb98",
-    "docs/member4-review-checkpoints.json": "0a35f696927e1e1b070b403ffeb8055f544031455b2fdb10fb6ae4e6d21fb232",
+    "docs/member4-review-checkpoints.json": "17773b23c4419c32d99b31f604fd4a65cf20d552400f95b66109f319968a780b",
     "docs/member4-rule-catalog.md": "cc1b6cd645f19a0ae88d5107cb0a9d4ee09e4f5df472708cf5dd3c9d3cc36f87",
     "docs/openapi.yaml": "86c520374c7147ede7a35e5fc1c21255184d7f76acf64f98d914f48fc50f803a",
     "mock_data/orders.json": "82f842c9ca21d8b6f9114eeea605b4648941df67871236fb768b2ac99eba2937",
@@ -55,5 +55,5 @@
   "package_version": "0.1.0-lab-candidate",
   "release_approved": false,
   "rule_version": "DET-1.2",
-  "rules_digest": "d5a6b0df0ac52fc868c836148161371e7554446f243955f8bdd9f4d002fe2176"
+  "rules_digest": "25e4093fe57732b06396e0cc165d855e7a845db7328af41b7796ed0bf7bb0961"
 }
