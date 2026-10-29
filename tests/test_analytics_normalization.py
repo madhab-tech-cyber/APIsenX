@@ -240,6 +240,15 @@ class RouteAcceptanceTests(unittest.TestCase):
             self.n.normalize("GET", "/support/orders").classification, "documented"
         )
 
+    def test_contract_version_is_line_ending_independent(self):
+        """Windows and Unix checkouts must produce the same contract fingerprint."""
+        content = CONTRACT.read_bytes()
+        windows_content = content.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+        bare_cr_content = content.replace(b"\r\n", b"\n").replace(b"\n", b"\r")
+        expected = normalizer(content).contract_version
+        self.assertEqual(normalizer(windows_content).contract_version, expected)
+        self.assertEqual(normalizer(bare_cr_content).contract_version, expected)
+
     def test_runtime_key_and_contract_version_required(self):
         with self.assertRaises(ValueError):
             normalizer(key=b"short")

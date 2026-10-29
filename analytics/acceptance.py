@@ -37,7 +37,7 @@ def reference(value):
     require(
         url.scheme == "https"
         and url.netloc == "github.com"
-        and url.path.startswith("/madhab-tech-cyber/APIsenX/"),
+        and url.path.startswith("/madhab-tech-cyber/APISenX/"),
         "evidence must reference this repository over HTTPS",
     )
 
@@ -83,7 +83,7 @@ def candidate_sha(record):
     value = record["candidate_commit"]
     reference(value)
     match = re.fullmatch(
-        r"https://github\.com/madhab-tech-cyber/APIsenX/commit/([0-9a-f]{40})",
+        r"https://github\.com/madhab-tech-cyber/APISenX/commit/([0-9a-f]{40})",
         value,
     )
     require(match is not None, "full candidate commit reference required")
