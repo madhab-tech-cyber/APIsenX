@@ -1,4 +1,4 @@
-
+﻿
 import json
 from pathlib import Path
 from typing import Any
@@ -23,14 +23,21 @@ def load_orders() -> dict[str, dict[str, Any]]:
     return {order["id"]: order for order in data["orders"]}
 
 
+def load_sharing_grants() -> list[dict[str, Any]]:
+    return load_json("sharing_grants.json").get("grants", [])
+
+
 def authorize(
     actor_id: str,
     action: str,
     order_id: str,
     users: dict[str, dict[str, Any]],
     orders: dict[str, dict[str, Any]],
+    policy_version: str = "AP-1.0",
 ) -> tuple[bool, str]:
-    """Evaluate the Day 1 local authorization policy."""
+    """Evaluate authorization with version and tenant checks before access rules."""
+    if policy_version != "AP-1.0":
+        return False, "policy_version_unsupported"
     actor = users.get(actor_id)
 
     if actor is None:
@@ -46,19 +53,117 @@ def authorize(
     if order is None:
         return False, "order_not_found"
 
-    role = actor.get("role")
+    # Fail closed when authoritative tenant context is missing or invalid.
+    actor_tenant = actor.get("tenant_id")
+    resource_tenant = order.get("tenant_id")
 
+    if (
+        not isinstance(actor_tenant, str)
+        or not actor_tenant.strip()
+        or not isinstance(resource_tenant, str)
+        or not resource_tenant.strip()
+    ):
+        return False, "tenant_context_missing_or_invalid"
+
+    # Tenant isolation takes precedence over role permissions and ownership.
+    if actor_tenant != resource_tenant:
+        return False, "tenant_mismatch"
+
+    role = actor.get("role")
+    role_permissions = load_json("users.json").get("roles", {})
+    permissions = role_permissions.get(role, [])
+
+    if not isinstance(permissions, list):
+        return False, "invalid_role_policy"
+
+    # Enforce function-level permissions independently of API route checks.
     if action == "orders:manage":
         if role == "admin":
-            return True, "admin_management_allowed"
+            if "orders:manage:any" in permissions:
+                return True, "admin_management_allowed"
+            return False, "missing_orders_manage_permission"
+        if role == "tenant_admin":
+            if "orders:manage:tenant" in permissions:
+                return True, "tenant_admin_management_allowed"
+            return False, "missing_tenant_manage_permission"
         return False, "admin_role_required"
 
     if action == "orders:read":
         if role == "admin":
+            if "orders:read:any" not in permissions:
+                return False, "missing_orders_read_any_permission"
+
             return True, "admin_read_allowed"
 
-        if role == "customer" and order.get("owner_id") == actor_id:
-            return True, "owner_read_allowed"
+        if role == "tenant_admin":
+            if "orders:read:tenant" in permissions:
+                return True, "tenant_admin_read_allowed"
+            return False, "missing_tenant_read_permission"
+
+        if role == "customer":
+            if "orders:read:own" not in permissions:
+                return False, "missing_orders_read_own_permission"
+            if order.get("owner_id") == actor_id:
+                return True, "owner_read_allowed"
+            from datetime import datetime, timezone
+
+            now = datetime.now(timezone.utc)
+
+            for grant in load_sharing_grants():
+                if not isinstance(grant, dict):
+                    continue
+
+                # Required grant schema fields must be non-empty strings.
+                required_text_fields = (
+                    "grant_id",
+                    "resource_type",
+                    "issuer",
+                    "policy_version",
+                    "tenant_id",
+                    "resource_id",
+                    "grantee_subject",
+                )
+                if any(
+                    not isinstance(grant.get(field), str)
+                    or not grant[field].strip()
+                    for field in required_text_fields
+                ):
+                    continue
+
+                try:
+                    expires_at = datetime.fromisoformat(grant.get("expires_at", ""))
+
+                    starts_at_raw = grant.get("starts_at")
+                    starts_at = (
+                        datetime.fromisoformat(starts_at_raw)
+                        if starts_at_raw is not None
+                        else None
+                    )
+                except (TypeError, ValueError):
+                    continue
+
+                # Naive timestamps are ambiguous and therefore fail closed.
+                if (
+                    expires_at.tzinfo is None
+                    or (starts_at is not None and starts_at.tzinfo is None)
+                ):
+                    continue
+                actions = grant.get("actions")
+                if not isinstance(actions, list) or not all(
+                    isinstance(item, str) for item in actions
+                ):
+                    continue
+                if (
+                    grant.get("grantee_subject") == actor_id
+                    and grant.get("resource_id") == order_id
+                    and grant.get("tenant_id") == actor_tenant == resource_tenant
+                    and "orders:read" in actions
+                    and grant.get("revoked") is False
+                    and grant.get("policy_version") == policy_version
+                    and (starts_at is None or starts_at <= now)
+                    and expires_at > now
+                ):
+                    return True, "shared_read_allowed"
 
         return False, "order_ownership_required"
 
@@ -69,7 +174,7 @@ def main() -> None:
     users = load_users()
     orders = load_orders()
 
-    print("API-Sentinel Day 1 Authorization Demo")
+    print("API-Sentinel Authorization Demo")
     print("-------------------------------------")
 
     for actor, action, order_id in [

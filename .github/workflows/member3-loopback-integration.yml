@@ -1,0 +1,45 @@
+name: Member 3 Loopback Integration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'collector/**'
+      - 'analytics/**'
+      - 'scripts/check_member3_loopback.py'
+      - '.github/workflows/member3-loopback-integration.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'collector/**'
+      - 'analytics/**'
+      - 'scripts/check_member3_loopback.py'
+      - '.github/workflows/member3-loopback-integration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-python-loopback:
+    name: Rust/Python Loopback Contract
+    # Pin the runner to avoid an unplanned ubuntu-latest image migration.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install pinned Python project dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Check locked Rust library
+        run: |
+          rustup component add rustfmt clippy
+          cargo test --locked --all-targets --manifest-path collector/Cargo.toml
+          cargo fmt --check --manifest-path collector/Cargo.toml
+          cargo clippy --locked --all-targets --manifest-path collector/Cargo.toml -- -D warnings
+      - name: Check real loopback Rust/Python batch handoff
+        run: python scripts/check_member3_loopback.py

@@ -10,11 +10,24 @@ sequence are maintained in
 
 ## Implementation status
 
-As of 2026-10-13, the local mock API authentication, authorization, synthetic
-fixture and basic audit-log path is implemented and tested. The eBPF sensor,
-collector, analytics service, storage, management API, dashboard and CI/security
-pipeline remain planned or placeholder components. Architecture and interface
-text for those components is not implementation evidence.
+As of 2026-10-27, main contains the mock API's tenant/permission/share checks,
+lab token lifecycle/PATCH nonce controls, contract/quality CI, the Rust collector
+and Linux userspace loopback handoff, and Member 4's monitor-only ingestion,
+normalization, detectors, signed recommendations, pre-storage masking, volatile
+audit and backend-authenticated read APIs. M1 implements unavailable M4's work.
+The React fixture dashboard remains on its member branch but now has passing
+locked installation, lint, Vitest and TypeScript/production-build CI. M2 remains
+design/headers. No loadable Linux sensor or accepted shared live pipeline is
+established. See the pinned
+[current closeout](member1-closeout-2026-10-27.md); the older
+[final architecture and limitations](final-architecture-and-presentation.md)
+and [verification baseline](member1-oct19-verification.md) retain their dates.
+
+The responsibilities below describe the intended full system, not acceptance
+of every capability. Local shadow-route detection and protected lab read APIs
+are implemented; full endpoint-specific AP-1.0, live sensor findings, active
+enforcement, durable audit, integrated dashboard access and measured full-system
+overhead must not be presented as accepted operation. Full release remains gated.
 
 ## Components
 
@@ -44,7 +57,7 @@ text for those components is not implementation evidence.
      - Manages secure, authenticated transport of normalised telemetry to the analytics service.
      - Hosts the local enforcement adapter for executing approved policy decisions (allow, alert, rate-limit, drop) with sub-millisecond overhead.
      - Emits health, dropped-event, and performance metrics.
-   - Safety Controls: Defaults to monitor-only and fail-open mode during foundation phases; includes circuit breaker and rollback capabilities.
+   - Safety Controls: Design defaults to monitor-only, with optional monitoring failure never bypassing application authorization. Per-route failures follow [FAIL-LAB-1.0](route-failure-policy.md); circuit breaker and rollback still require runtime evidence.
 
 4. **Python Analytics and Detection Engine**
    - Role: Central analysis, policy evaluation, route discovery, and audit service.

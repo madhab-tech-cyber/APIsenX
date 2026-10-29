@@ -1,17 +1,14 @@
-﻿
+
 openapi: 3.1.0
 
 info:
   title: APIsenX Mock API
   version: 1.0.0
-  description: >
-    API contract for the authorized APIsenX security lab.
-    Authorization is enforced by the API using the authenticated
-    principal, role, resource ownership, sharing grants, and policy.
+  description: APIsenX mock API contract for the authorized lab.
 
 servers:
   - url: http://localhost:8000
-    description: Local authorized lab (update to match the implementation)
+    description: Local authorized lab
 
 tags:
   - name: Orders
@@ -21,17 +18,51 @@ security:
   - bearerAuth: []
 
 paths:
+  /support/orders:
+    get:
+      tags:
+        - Orders
+      summary: List assigned support orders with masked fields only
+      operationId: listSupportOrders
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
+      responses:
+        '200':
+          description: Assigned, masked support orders
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [orders]
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportOrder'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /orders:
     get:
       tags:
         - Orders
       summary: List orders accessible to the authenticated principal
       operationId: listOrders
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
       description: >
-        Customers receive only their own authorized orders.
-        Administrators may read all orders when their policy permits.
-        The server must derive identity from the validated token,
-        not from a client-supplied owner ID.
+        Customers require orders:read:own and may read same-tenant active
+        read shares. Tenant admins require orders:read:tenant and are scoped
+        to their server-resolved tenant. Lab administrators require
+        orders:read:any. Requests must send X-Policy-Version: AP-1.0.
+        Unknown or missing policy versions are rejected. Tenant identifiers
+        are internal authorization context and are omitted from responses.
+        Sharing grants are server-resolved, same-tenant, read-only and
+        denied when revoked, expired or version-mismatched. Invalid tenant
+        context is denied; tenant identifiers remain internal.
       responses:
         '200':
           description: Authorized order list
@@ -46,6 +77,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -54,17 +87,23 @@ paths:
   /orders/{orderId}:
     parameters:
       - $ref: '#/components/parameters/OrderId'
-
     get:
       tags:
         - Orders
       summary: Read an order
       operationId: getOrder
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
       description: >
-        Allow the owner to read their order. An administrator may read
-        any order when authorized. Deny cross-owner access unless an
-        applicable explicit sharing grant permits it. Do not treat a
-        different object ID alone as proof of an attack.
+        Customers require orders:read:own and may read an owned order or an
+        order covered by a valid same-tenant, read-only server-resolved sharing grant.
+        Lab administrators require orders:read:any; tenant admins require
+        orders:read:tenant and are scoped to their server-resolved tenant.
+        Requests must provide X-Policy-Version: AP-1.0. Missing or unknown
+        policy versions are rejected. Revoked, expired, wrong-tenant,
+        wrong-resource, or wrong-version grants are denied. Missing,
+        cross-owner, cross-tenant, and invalid-context objects share a generic
+        404 reply. Tenant identifiers are not exposed in the public response.
       responses:
         '200':
           description: Authorized order details
@@ -72,6 +111,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -85,11 +126,30 @@ paths:
       summary: Update an order
       operationId: updateOrder
       description: >
-        Requires the orders:manage:any permission.
-        Ordinary customers must be denied. The server must authorize
-        the authenticated principal before updating the order and
-        must record an audit event. Clients cannot change the order
-        owner, identifier, total, or currency through this operation.
+        Requires orders:manage:any for platform administrators or
+        orders:manage:tenant for tenant administrators, plus object-level
+        authorization and a matching X-Policy-Version: AP-1.0 header.
+        Tenant checks precede ownership and permission decisions. Customers
+        and support principals cannot mutate orders. Missing, cross-owner,
+        cross-tenant, and invalid-context objects share a generic 404 reply;
+        function-level permission denials use a generic 403. The server
+        records a privacy-conscious audit event. Clients cannot change the
+        order owner, identifier, total, or currency. Updates are process-local
+        and reset when the API process restarts. Cross-tenant access is denied.
+        Each PATCH also requires a unique X-Request-Nonce header containing
+        8-128 safe characters. Reuse within five minutes is rejected using
+        process-local replay detection; this is not cryptographic request signing.
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
+        - name: X-Request-Nonce
+          in: header
+          required: true
+          description: Unique nonce for this state-changing request; reuse within five minutes is rejected.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+            pattern: '^[A-Za-z0-9._~-]{8,128}$'
       requestBody:
         required: true
         content:
@@ -106,11 +166,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Order'
         '400':
-          description: Invalid update request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -122,15 +178,28 @@ paths:
     get:
       tags:
         - Administration
-      summary: List all orders for authorized administrators
+      summary: List orders for authorized lab administrators
       operationId: listAdminOrders
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
       description: >
-        Requires the orders:read:any permission. Ordinary customers
-        must be denied and the denial should produce an appropriate
-        security audit event.
+        Requires the server-side orders:read:any function permission.
+        The permission check occurs before inventory iteration,
+        including when the inventory is empty. Object ownership cannot
+        grant this function permission. The mock fixtures use one shared
+        lab tenant. The current implementation checks tenant identifiers
+        where present and denies invalid or inconsistent tenant context
+        in the applicable fixture-based checks. Missing, blank, invalid,
+        or mismatched tenant context is denied where the current fixture-
+        based checks apply. This does not establish scoped tenant
+        administration or cross-tenant operations. This lab-wide
+        administrative behavior must not be used to authorize
+        cross-tenant operations. The complete AP-1.0 tenant-context
+        model and policy-version negotiation are not implemented.
+        Denials produce a security audit event.
       responses:
         '200':
-          description: All orders visible to the administrator
+          description: Orders visible to the authorized lab administrator
           content:
             application/json:
               schema:
@@ -142,6 +211,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -152,9 +223,17 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
 
   parameters:
+    PolicyVersion:
+      name: X-Policy-Version
+      in: header
+      required: true
+      description: Authorization policy contract version; only AP-1.0 is accepted.
+      schema:
+        type: string
+        enum: [AP-1.0]
+      example: AP-1.0
     OrderId:
       name: orderId
       in: path
@@ -193,6 +272,9 @@ components:
 
     Order:
       type: object
+      description: >
+        Public order representation. Tenant identifiers are internal
+        authorization context and are intentionally omitted from responses.
       required:
         - id
         - owner_id
@@ -222,6 +304,17 @@ components:
           type: string
           pattern: '^[A-Z]{3}$'
           example: INR
+
+    SupportOrder:
+      type: object
+      required: [id, status]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [processing, shipped, delivered]
+      additionalProperties: false
 
     OrderUpdate:
       type: object
@@ -261,6 +354,13 @@ components:
               type: string
 
   responses:
+    InvalidRequest:
+      description: Invalid request or path parameter
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
     Unauthorized:
       description: Missing or invalid authentication credentials
       content:
@@ -269,7 +369,7 @@ components:
             $ref: '#/components/schemas/Error'
 
     Forbidden:
-      description: Authenticated principal lacks permission
+      description: Authenticated principal lacks permission or tenant access
       content:
         application/json:
           schema:
