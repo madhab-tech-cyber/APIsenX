@@ -6,31 +6,79 @@
   "candidate_commit": "https://github.com/madhab-tech-cyber/APIsenX/commit/d56b49e31b77489ecc2133cb81a13319de4d1b2f",
   "candidate_rules_digest": "sha256:25e4093fe57732b06396e0cc165d855e7a845db7328af41b7796ed0bf7bb0961",
   "rule_version": "DET-1.2",
-  "contract_version": "sha256:86c520374c7147ede7a35e5fc1c21255184d7f76acf64f98d914f48fc50f803a",
+  "contract_version": "sha256:ff22ee3b390d8707bf89b499fc2dc75151b1aaf5ad8ba847d3f6f1363fc7cdc8",
   "engineering_status": "implemented_pending_independent_acceptance",
   "release_approved": false,
   "calendar_days_claimed": false,
   "mode": "monitor_only",
   "active_rules": 0,
   "followup_issue": 48,
-  "related_issues": [41, 48, 56, 57, 61, 82, 83],
+  "related_issues": [
+    41,
+    48,
+    56,
+    57,
+    61,
+    82,
+    83
+  ],
   "tracker_state_is_not_acceptance": true,
-  "prior_delivery": {"pr": 42, "merged_by_owner": true, "submitted_reviews": 0, "comments": 0},
-  "latest_delivery": {"pr": 53, "merged_by_owner": true, "submitted_reviews": 0, "comments": 0},
-  "acceptance_gates": {
-    "independent_accuracy": {"status": "pending", "evidence": [], "independent_reviews": []},
-    "trusted_context": {"status": "pending", "evidence": [], "independent_reviews": []},
-    "shared_transport": {"status": "pending", "evidence": [], "independent_reviews": []},
-    "durable_audit": {"status": "pending", "evidence": [], "independent_reviews": []},
-    "dashboard_handoff": {"status": "pending", "evidence": [], "independent_reviews": []},
-    "performance_route_failure_rollback": {"status": "pending", "evidence": [], "independent_reviews": []},
-    "independent_final_review": {"status": "pending", "evidence": [], "independent_reviews": []}
+  "prior_delivery": {
+    "pr": 42,
+    "merged_by_owner": true,
+    "submitted_reviews": 0,
+    "comments": 0
   },
-  "coordination_comments": [{
-    "by": "pappukumar96727-sketch",
-    "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/48#issuecomment-6335628520",
-    "kind": "request_for_evidence_not_approval"
-  }],
+  "latest_delivery": {
+    "pr": 53,
+    "merged_by_owner": true,
+    "submitted_reviews": 0,
+    "comments": 0
+  },
+  "acceptance_gates": {
+    "independent_accuracy": {
+      "status": "pending",
+      "evidence": [],
+      "independent_reviews": []
+    },
+    "trusted_context": {
+      "status": "pending",
+      "evidence": [],
+      "independent_reviews": []
+    },
+    "shared_transport": {
+      "status": "pending",
+      "evidence": [],
+      "independent_reviews": []
+    },
+    "durable_audit": {
+      "status": "pending",
+      "evidence": [],
+      "independent_reviews": []
+    },
+    "dashboard_handoff": {
+      "status": "pending",
+      "evidence": [],
+      "independent_reviews": []
+    },
+    "performance_route_failure_rollback": {
+      "status": "pending",
+      "evidence": [],
+      "independent_reviews": []
+    },
+    "independent_final_review": {
+      "status": "pending",
+      "evidence": [],
+      "independent_reviews": []
+    }
+  },
+  "coordination_comments": [
+    {
+      "by": "pappukumar96727-sketch",
+      "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/48#issuecomment-6335628520",
+      "kind": "request_for_evidence_not_approval"
+    }
+  ],
   "day14": {
     "status": "pending_human_demonstration",
     "automated_artifact": "analytics/review_demo.py",
@@ -47,9 +95,18 @@
     "owner_dispositions": [],
     "independent_signoffs": []
   },
-  "day22": {"status": "pending_independent_regression_review", "independent_signoffs": []},
-  "day28": {"status": "pending_independent_rule_schema_review", "independent_signoffs": []},
-  "day29": {"status": "source_candidate_only", "release_approved": false},
+  "day22": {
+    "status": "pending_independent_regression_review",
+    "independent_signoffs": []
+  },
+  "day28": {
+    "status": "pending_independent_rule_schema_review",
+    "independent_signoffs": []
+  },
+  "day29": {
+    "status": "source_candidate_only",
+    "release_approved": false
+  },
   "day30": {
     "status": "pending_human_final_demonstration",
     "automated_artifact": "analytics/final_demo.py",
