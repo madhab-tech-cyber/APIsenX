@@ -1,6 +1,6 @@
 # Day 20–21 cross-component acceptance status
 
-**Baseline:** `main` at the Day 19 load-probe/failure-policy follow-up merge.
+**Baseline:** `main` at `d2ce9ae92eb079af0c07c4c3c9dc12bc8dbe1b0e` (2026-10-28 UTC), after PRs #90 and #91.
 **Purpose:** Carry forward the next two scheduled acceptance areas without
 confusing a policy document or a volatile prototype with completed runtime
 controls.
@@ -57,6 +57,25 @@ volatile store is unavailable.
 The new policy-contract tests only guard the presence of the documented route
 rows and blockers. They are **documentation regression tests**, not proof that
 the runtime follows the matrix and not independent approval.
+
+## 2026-10-29 scoped follow-up — candidate, not acceptance
+
+- The analytics append boundary now returns HTTP 409 only for the known
+  `EVENT_ID_CONFLICT` condition. Other `StoreError` reasons are mapped to the
+  fixed `STORE_UNAVAILABLE` response so adapter-supplied details are not echoed
+  into responses or application logs.
+- Runtime regressions use synthetic internal-error markers to check the event
+  and batch failure paths. The batch test checks that a failed append leaves no
+  partial rows and that a retry succeeds after the simulated outage is removed.
+- The policy-contract test now pins the expected operation and authorization,
+  optional-overlay, and audit-failure behavior for each RF-01 through RF-05 row.
+
+This is a bounded hardening change for the existing volatile analytics store.
+It does not implement durable storage, retention/deletion receipts, a real
+enforcement adapter/circuit breaker, or integrated mock-API route-failure
+acceptance. The local execution environment could not resolve GitHub for a
+clone, so no local test run is claimed; use the candidate PR's exact-head CI
+results for automated validation. Day 20 and Day 21 acceptance remain BLOCKED.
 
 ## Verification and safety boundary
 
