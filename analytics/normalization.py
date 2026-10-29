@@ -73,9 +73,10 @@ class RouteNormalizer:
             raise ValueError("A runtime HMAC key and bounded version are required")
         self._key = key
         self.key_version = key_version
-        # Canonicalize text line endings so the same OpenAPI contract hashes identically on Windows and Unix.
+        # Normalize line endings for consistent Windows and Unix contract hashes.
         canonical_content = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
-        self.contract_version = "sha256:" + hashlib.sha256(canonical_content).hexdigest()
+        contract_hash = hashlib.sha256(canonical_content).hexdigest()
+        self.contract_version = "sha256:" + contract_hash
         try:
             loader = UniqueLoader(canonical_content.decode("utf-8-sig"))
             try:
