@@ -14,11 +14,7 @@ from starlette.requests import Request
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
 
-<<<<<<< HEAD
-from main import app  # noqa: E402
-=======
-import main
->>>>>>> origin/main
+import main  # noqa: E402
 
 app = main.app
 client = TestClient(app)
