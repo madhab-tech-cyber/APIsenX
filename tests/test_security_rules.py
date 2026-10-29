@@ -17,7 +17,7 @@ FORBIDDEN_PATTERNS = [
     (r"bearer\s+[A-Za-z0-9_\-\.]{32,}", "Hardcoded Bearer Token"),
 ]
 
-EXCLUDED_DIRS = {".git", "__pycache__", ".pytest_cache"}
+EXCLUDED_DIRS = {".git", "__pycache__", ".pytest_cache", ".venv", "venv"}
 EXCLUDED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".pdf", ".lock"}
 
 
