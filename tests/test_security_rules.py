@@ -56,6 +56,26 @@ class TestSecurityAndCompliance(unittest.TestCase):
             "Security rule violation! Sensitive data detected in repository:\n" + "\n".join(violations),
         )
 
+    def test_sensor_records_are_fully_initialized_and_sequenced(self):
+        """Both producer paths must zero records and use the shared sequence."""
+        sensor_path = os.path.join(REPO_ROOT, "ebpf", "src", "api_sentinel_sensor.c")
+        with open(sensor_path, "r", encoding="utf-8") as f:
+            source = f.read()
+
+        self.assertIn("api_sentinel_event_sequence SEC(\".maps\")", source)
+        self.assertIn("__sync_fetch_and_add(sequence, 1) + 1", source)
+        self.assertEqual(source.count("__builtin_memset(event, 0, sizeof(*event));"), 2)
+        self.assertEqual(source.count("event->event_id = event_id;"), 2)
+
+        ingress = source.split("int api_sentinel_tc_ingress", 1)[1].split(
+            "int api_sentinel_tc_egress", 1
+        )[0]
+        egress = source.split("int api_sentinel_tc_egress", 1)[1]
+        for producer in (ingress, egress):
+            self.assertIn("next_event_id()", producer)
+            self.assertIn("__builtin_memset(event, 0, sizeof(*event));", producer)
+            self.assertIn("bpf_ringbuf_submit(event, 0);", producer)
+
     def test_no_pcap_files_tracked(self):
         """Rule 2: Ensure raw packet captures (*.pcap, *.pcapng) are not tracked."""
         pcap_files = []
