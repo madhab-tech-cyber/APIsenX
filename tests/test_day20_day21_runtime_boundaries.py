@@ -116,7 +116,7 @@ class Day20Day21RuntimeBoundaryTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json(), {"detail": "STORE_UNAVAILABLE"})
-        combined = response.text + "\\n" + "\\n".join(captured.output)
+        combined = response.text + "\n" + "\n".join(captured.output)
         for excluded in (
             marker,
             internal_detail,
@@ -141,10 +141,15 @@ class Day20Day21RuntimeBoundaryTests(unittest.TestCase):
 
         self.assertEqual(failed.status_code, 503)
         self.assertEqual(failed.json(), {"detail": "STORE_UNAVAILABLE"})
-        self.assertNotIn(internal_detail, failed.text + "\\n" + "\\n".join(captured.output))
+        self.assertNotIn(
+            internal_detail,
+            failed.text + "\n" + "\n".join(captured.output),
+        )
         self.assertEqual(self.app.state.store.snapshot(self.now), [])
 
-        recovered = self.client.post("/v1/batches", headers=self.headers, json=batch)
+        recovered = self.client.post(
+            "/v1/batches", headers=self.headers, json=batch
+        )
         self.assertEqual(recovered.status_code, 200)
         self.assertEqual(recovered.json()["batch_id"], batch["batch_id"])
         self.assertEqual(
