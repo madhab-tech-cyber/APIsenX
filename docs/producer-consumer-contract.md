@@ -46,7 +46,7 @@ This contract establishes the exact wire-level interface between the in-kernel e
 |  | - Verifies schema_version == 1; rejects incompatible versions             |  |
 |  | - Performs explicit Endianness Conversion: ntohs(port), ntohl(ip)         |  |
 |  | - Maps monotonic timestamp_ns to UTC using host boot_time                 |  |
-|  | - Detects drops via sequence gap: event_id != last_id + 1                 |  |
+|  | - Uses sequence gaps as diagnostic evidence; drop counter is authoritative |  |
 |  | - Forwards normalized IF-04 batches to Member 4 Analytics                 |  |
 |  +---------------------------------------------------------------------------+  |
 +---------------------------------------------------------------------------------+
@@ -80,7 +80,7 @@ In distributed and systems programming, a common failure mode is assuming that a
 | Offset (Bytes) | Field Name | C Type | Rust FFI Type | Size | Endianness | Description |
 |:---:|---|---|---|:---:|---|---|
 | **0** | `timestamp_ns` | `__u64` | `u64` | 8 | Host Endian | Monotonic nanoseconds since system boot (`bpf_ktime_get_ns()`). |
-| **8** | `event_id` | `__u32` | `u32` | 4 | Host Endian | Monotonic per-sensor sequence number for gap/loss detection. |
+| **8** | `event_id` | `__u32` | `u32` | 4 | Host Endian | Shared atomic 32-bit modulo sequence; diagnostic gap signal, not a request ID. |
 | **12** | `pid` | `__u32` | `u32` | 4 | Host Endian | Process ID from socket correlation (0 if unassociated). |
 | **16** | `tgid` | `__u32` | `u32` | 4 | Host Endian | Thread Group ID. |
 | **20** | `uid` | `__u32` | `u32` | 4 | Host Endian | User ID owning the socket. |
@@ -128,19 +128,17 @@ The 32-bit `flags` field (at offset 60) encodes both the schema version and even
 
 ## 5. Sequence, Loss, and Drop Semantics
 
-1. **Monotonic Sequence (`event_id`):**
-   - The sensor increments `event_id` sequentially for every emitted event.
-   - The collector tracks `last_event_id`.
-   - If `current_event_id > last_event_id + 1`, a sequence gap occurred:
-     $$\text{dropped\_events} = \text{current\_event\_id} - (\text{last\_event\_id} + 1)$$
-2. **Atomic RingBuffer Drop Accounting:**
-   - When the 8 MB ring buffer is full, `bpf_ringbuf_reserve()` returns `NULL`.
-   - The probe immediately increments the per-CPU counter `api_sentinel_stats[STAT_RINGBUF_DROPS]`.
-   - The sensor NEVER blocks, loops, or panics in kernel space; it returns `TC_ACT_OK` to preserve network throughput.
-3. **Recovery:**
-   - Once the user-space collector drains events, the ring buffer frees capacity.
-   - The sensor resumes event delivery on the next packet.
-   - The collector detects the sequence gap, records drop telemetry, and alerts downstream Member 4 analytics.
+1. **Shared sequence (`event_id`):**
+   - Ingress and egress allocate IDs from the same array-map counter using an atomic increment.
+   - IDs are allocated before ring-buffer reservation. A failed reservation therefore consumes an ID and can produce a gap.
+   - The wire field is 32-bit; comparisons must account for modulo wraparound. ID zero is valid.
+   - The sequence is diagnostic ordering metadata only. It is not a request ID and cannot establish request-level correlation.
+2. **Ring-buffer drops:**
+   - A failed reservation increments the per-CPU `api_sentinel_stats[STAT_RINGBUF_DROPS]` counter.
+   - Consumers must treat the sampled drop counter as the authoritative aggregate loss signal. Sequence gaps alone cannot distinguish ring-buffer loss from collector loss, restart, or observation gaps.
+3. **Collector handling:**
+   - Preserve sequence values as diagnostic metadata, handle 32-bit wraparound, and report counter availability/reset conditions separately.
+   - Do not claim exact loss attribution from a sequence gap alone.
 
 ---
 
