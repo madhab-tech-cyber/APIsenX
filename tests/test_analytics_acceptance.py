@@ -18,7 +18,7 @@ class AcceptanceTests(unittest.TestCase):
             "revision": candidate_sha(self.record),
             "rules_digest": self.record["candidate_rules_digest"],
             "submitted_at": "2026-10-27T08:00:00Z",
-            "reference": "https://github.com/madhab-tech-cyber/APIsenX/issues/48#synthetic",
+            "reference": "https://github.com/madhab-tech-cyber/APISenX/issues/48#synthetic",
         }
 
     def verified_gate(self):
