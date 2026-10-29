@@ -67,7 +67,9 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
                     cell.strip() for cell in line.strip().strip("|").split("|")
                 ]
 
-        self.assertEqual(set(rows), {f"RF-{number:02d}" for number in range(1, 6)})
+        self.assertEqual(
+            set(rows), {f"RF-{number:02d}" for number in range(1, 6)}
+        )
         self.assertIn("GET /orders", rows["RF-01"][0])
         self.assertIn("Fail closed", rows["RF-01"][1])
         self.assertIn("Owner read may continue", rows["RF-01"][3])
@@ -84,7 +86,9 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
         self.assertIn("GET /admin/orders", rows["RF-04"][0])
         self.assertIn("Fail closed", rows["RF-04"][1])
         self.assertIn("Keep API function permission gate", rows["RF-04"][2])
-        self.assertIn("generic 503 before privileged data delivery", rows["RF-04"][3])
+        self.assertIn(
+            "generic 503 before privileged data delivery", rows["RF-04"][3]
+        )
 
         self.assertIn("Unknown route/method or invalid path", rows["RF-05"][0])
         self.assertIn("Router/validation rejects", rows["RF-05"][1])
@@ -95,7 +99,10 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
             "Fail-open applies only to optional Sentinel observation/enforcement overlays",
             normalized,
         )
-        self.assertIn("Missing or untrusted identity/policy context denies the API action", normalized)
+        self.assertIn(
+            "Missing or untrusted identity/policy context denies the API action",
+            normalized,
+        )
         self.assertIn("An audit outage must not prevent emergency disablement.", normalized)
         self.assertIn("Per-route implementation acceptance remains BLOCKED", normalized)
 
