@@ -43,6 +43,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     record[8..12].copy_from_slice(&1_u32.to_ne_bytes());
     record[48] = 1; // GET
     record[49] = 0; // ingress
+    record[37] = 4; // IPv4
+    record[60..64].copy_from_slice(&((1_u32 << 24) | (1 << 4)).to_ne_bytes());
     record[64..81].copy_from_slice(b"/orders/{orderId}");
     let now = Instant::now();
     collector
