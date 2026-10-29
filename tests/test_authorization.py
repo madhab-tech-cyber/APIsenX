@@ -7,7 +7,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from authorization import authorize, load_json, load_orders, load_users
+from authorization import authorize, load_json, load_orders, load_users  # noqa: E402
 
 
 class AuthorizationTests(unittest.TestCase):

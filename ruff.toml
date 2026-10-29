@@ -1,0 +1,12 @@
+line-length = 88
+
+[lint]
+select = ["E4", "E7", "E9", "F", "E501", "PERF401"]
+
+[lint.per-file-ignores]
+"tests/test_day1_prerequisites.py" = ["E501", "F401"]
+"tests/test_day2_maps_and_privs.py" = ["E501", "F401"]
+"tests/test_producer_consumer_contract.py" = ["E501", "F401"]
+"tests/test_security_rules.py" = ["E501", "PERF401"]
+"tests/test_openapi_contract.py" = ["E402"]
+"tests/test_working_sensor_runtime.py" = ["E501", "F401", "F841"]
