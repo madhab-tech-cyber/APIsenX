@@ -72,7 +72,7 @@ class TestSecurityAndCompliance(unittest.TestCase):
         )[0]
         egress = source.split("int api_sentinel_tc_egress", 1)[1]
         for producer in (ingress, egress):
-            self.assertIn("next_event_id()", producer)
+            self.assertIn("next_event_id(&event_id)", producer)
             self.assertIn("__builtin_memset(event, 0, sizeof(*event));", producer)
             self.assertIn("bpf_ringbuf_submit(event, 0);", producer)
 
