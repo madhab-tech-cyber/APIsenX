@@ -186,6 +186,32 @@ class TestProducerConsumerContract(unittest.TestCase):
         self.assertEqual(d5["dropped_in_gap"], 2, "Must detect gap of 2 dropped events")
         self.assertEqual(self.validator.total_drops, 2)
 
+    def test_sequence_wraparound_is_handled_modulo_32_bits(self):
+        """The 32-bit wire sequence may wrap; wrap itself is not a loss."""
+        def make_event(seq_id):
+            event = ApiEvent()
+            event.event_id = seq_id
+            event.flags = (1 << 24) | FLAG_MONITOR_ONLY
+            event.flow.ip_version = 4
+            event.route_marker = b"/api/v1/status"
+            return bytes(event)
+
+        self.validator.decode_raw_event(make_event(0xFFFFFFFE))
+        self.assertEqual(
+            self.validator.decode_raw_event(make_event(0xFFFFFFFF))["dropped_in_gap"], 0
+        )
+        self.assertEqual(
+            self.validator.decode_raw_event(make_event(0))["dropped_in_gap"], 0
+        )
+        self.assertEqual(self.validator.total_drops, 0)
+
+        # One missing ID across wrap is reported as one diagnostic gap.
+        self.validator = IngestContractValidator()
+        self.validator.decode_raw_event(make_event(0xFFFFFFFE))
+        decoded = self.validator.decode_raw_event(make_event(0))
+        self.assertEqual(decoded["dropped_in_gap"], 1)
+        self.assertEqual(self.validator.total_drops, 1)
+
     def test_rejection_of_incompatible_schema_version(self):
         """Contract requirement: Reject events with schema version != 1."""
         event = ApiEvent()

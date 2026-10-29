@@ -174,6 +174,14 @@ struct {
     __type(value, struct capture_config);
 } api_sentinel_config SEC(".maps");
 
+/* Map 5: Shared atomic event sequence across ingress and egress CPUs. */
+struct {
+    __uint(type, BPF_MAP_TYPE_ARRAY);
+    __uint(max_entries, 1);
+    __type(key, __u32);
+    __type(value, __u64);
+} api_sentinel_event_sequence SEC(".maps");
+
 /* Helper to atomically increment per-CPU stat counter */
 static __attribute__((always_inline)) void increment_stat(__u32 index)
 {
@@ -182,6 +190,22 @@ static __attribute__((always_inline)) void increment_stat(__u32 index)
     if (val) {
         *val += 1;
     }
+}
+
+/*
+ * Allocate a shared sequence before ring-buffer reservation. If reservation
+ * fails, the resulting gap and STAT_RINGBUF_DROPS both record the loss. The
+ * 32-bit wire field is a modulo counter; consumers must not infer request IDs.
+ */
+static __attribute__((always_inline)) int next_event_id(__u32 *event_id)
+{
+    __u32 key = 0;
+    __u64 *sequence = bpf_map_lookup_elem(&api_sentinel_event_sequence, &key);
+    if (!sequence)
+        return 0;
+    /* Wire IDs use the low 32 bits; zero is valid at modulo wraparound. */
+    *event_id = (__u32)(__sync_fetch_and_add(sequence, 1) + 1);
+    return 1;
 }
 
 /* Helper to parse HTTP method tokens safely within packet bounds */
@@ -351,6 +375,13 @@ int api_sentinel_tc_ingress(struct __sk_buff *skb)
     if ((void *)uri_start >= data_end)
         return TC_ACT_OK;
 
+    /* Allocate the shared sequence before reserve so failed reserves leave a gap. */
+    __u32 event_id = 0;
+    if (!next_event_id(&event_id)) {
+        increment_stat(STAT_MALFORMED_PACKETS);
+        return TC_ACT_OK;
+    }
+
     /* 7. Zero-Copy Reserve Event in BPF RingBuffer */
     struct api_event *event = bpf_ringbuf_reserve(&api_sentinel_events, sizeof(struct api_event), 0);
     if (!event) {
@@ -359,7 +390,9 @@ int api_sentinel_tc_ingress(struct __sk_buff *skb)
         return TC_ACT_OK;
     }
 
-    /* Initialize event */
+    /* Clear every byte, including flow padding and unused route bytes. */
+    __builtin_memset(event, 0, sizeof(*event));
+    event->event_id = event_id;
     event->timestamp_ns = bpf_ktime_get_ns();
     event->pid = 0;
     event->tgid = 0;
@@ -471,8 +504,16 @@ int api_sentinel_tc_egress(struct __sk_buff *skb)
         }
 
         if (code > 0) {
+            __u32 event_id = 0;
+            if (!next_event_id(&event_id)) {
+                increment_stat(STAT_MALFORMED_PACKETS);
+                return TC_ACT_OK;
+            }
             struct api_event *event = bpf_ringbuf_reserve(&api_sentinel_events, sizeof(struct api_event), 0);
             if (event) {
+                /* Prevent stale kernel bytes from entering the ring-buffer record. */
+                __builtin_memset(event, 0, sizeof(*event));
+                event->event_id = event_id;
                 event->timestamp_ns = bpf_ktime_get_ns();
                 event->flow.src_ip = iph->saddr;
                 event->flow.dst_ip = iph->daddr;

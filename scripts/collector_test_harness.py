@@ -107,11 +107,13 @@ class IngestContractValidator:
         if "?" in route_marker:
             raise ValueError(f"Privacy boundary failure: unstripped query parameter detected in route: {route_marker}")
 
-        # Sequence gap / loss check
+        # Sequence gaps are diagnostic only; aggregate kernel drop counters are authoritative.
+        # Use modulo-2^32 arithmetic and ignore ambiguous backward/restart jumps.
         dropped_in_gap = 0
         if self.last_seq is not None:
-            if event_id > self.last_seq + 1:
-                dropped_in_gap = event_id - (self.last_seq + 1)
+            gap = (event_id - self.last_seq - 1) & 0xFFFFFFFF
+            if gap < 0x80000000:
+                dropped_in_gap = gap
                 self.total_drops += dropped_in_gap
         self.last_seq = event_id
         self.total_received += 1

@@ -110,7 +110,7 @@ struct capture_config {
 struct api_event {
     /* Header (24 Bytes) */
     __u64 timestamp_ns;      /* Kernel monotonic timestamp */
-    __u32 event_id;          /* Sequential event counter */
+    __u32 event_id;          /* Low 32 bits of shared atomic sequence; zero is valid */
     __u32 pid;               /* Process ID */
     __u32 tgid;              /* Thread Group ID */
     __u32 uid;               /* User ID */
