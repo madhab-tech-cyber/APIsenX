@@ -305,8 +305,11 @@ def create_app(settings=None, clock=None, resolver=None):
         try:
             store.append(items, now)
         except StoreError as failure:
-            status = 409 if failure.reason == "EVENT_ID_CONFLICT" else 503
-            return error(status, failure.reason)
+            if failure.reason == "EVENT_ID_CONFLICT":
+                return error(409, "EVENT_ID_CONFLICT")
+            # StoreError may come from a storage adapter. Never expose its
+            # free-form reason through an HTTP response or application log.
+            return error(503, "STORE_UNAVAILABLE")
         return None
 
     @app.post("/v1/events")
