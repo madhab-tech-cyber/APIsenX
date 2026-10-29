@@ -6,7 +6,7 @@
   "candidate_commit": "https://github.com/madhab-tech-cyber/APIsenX/commit/d56b49e31b77489ecc2133cb81a13319de4d1b2f",
   "candidate_rules_digest": "sha256:25e4093fe57732b06396e0cc165d855e7a845db7328af41b7796ed0bf7bb0961",
   "rule_version": "DET-1.2",
-  "contract_version": "sha256:ff22ee3b390d8707bf89b499fc2dc75151b1aaf5ad8ba847d3f6f1363fc7cdc8",
+  "contract_version": "sha256:86c520374c7147ede7a35e5fc1c21255184d7f76acf64f98d914f48fc50f803a",
   "engineering_status": "implemented_pending_independent_acceptance",
   "release_approved": false,
   "calendar_days_claimed": false,
