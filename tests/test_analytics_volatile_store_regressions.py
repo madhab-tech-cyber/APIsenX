@@ -26,7 +26,12 @@ def summary(route="/orders"):
 class VolatileStoreRegressionTests(unittest.TestCase):
     def setUp(self):
         self.now = datetime(2026, 10, 29, 12, 0, tzinfo=timezone.utc)
-        self.store = MemoryStore(b"k" * 32, capacity=3, retention_seconds=60, routes={"/orders"})
+        self.store = MemoryStore(
+            b"k" * 32,
+            capacity=3,
+            retention_seconds=60,
+            routes={"/orders"},
+        )
 
     def append(self, event_id, item=None, digest=None, store=None, now=None):
         target = store or self.store
@@ -53,7 +58,10 @@ class VolatileStoreRegressionTests(unittest.TestCase):
                 ],
                 self.now,
             )
-        self.assertEqual([r["event_id"] for r in self.store.snapshot(self.now)], ["existing"])
+        self.assertEqual(
+            [r["event_id"] for r in self.store.snapshot(self.now)],
+            ["existing"],
+        )
 
     def test_identical_duplicate_is_idempotent(self):
         self.append("same", digest="a" * 64)
