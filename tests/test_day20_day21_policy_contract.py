@@ -96,7 +96,8 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
 
         normalized = self.normalized_failure_policy
         self.assertIn(
-            "Fail-open applies only to optional Sentinel observation/enforcement overlays",
+            "Fail-open applies only to optional Sentinel "
+            "observation/enforcement overlays",
             normalized,
         )
         self.assertIn(
