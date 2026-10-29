@@ -14,6 +14,8 @@ fn record() -> [u8; EVENT_BYTES] {
     bytes[0..8].copy_from_slice(&42_u64.to_ne_bytes());
     bytes[8..12].copy_from_slice(&7_u32.to_ne_bytes());
     bytes[48] = 1; // GET
+    bytes[37] = 4;
+    bytes[60..64].copy_from_slice(&((1_u32 << 24) | (1 << 4)).to_ne_bytes());
     bytes[64..81].copy_from_slice(b"/orders/{orderId}");
     bytes
 }

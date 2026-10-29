@@ -101,7 +101,9 @@ impl<T: AnalyticsTransport> Collector<T> {
         }
         let mut event = NormalizedEvent::new(EventInput {
             source_id: self.config.source_id.clone(),
-            sequence: decoded.sequence,
+            // PR #92 currently leaves event_id uninitialized. Do not forward
+            // those raw bytes as a purported sequence until the producer is fixed.
+            sequence: 0,
             monotonic_ns: decoded.monotonic_ns,
             direction: decoded.direction,
             method: decoded.method,
@@ -109,15 +111,16 @@ impl<T: AnalyticsTransport> Collector<T> {
             route_template: decoded.route_template,
             observed_at,
         });
-        event.correlation_quality = if decoded.flow_hash == 0 {
-            self.metrics.correlation_unsupported =
-                self.metrics.correlation_unsupported.saturating_add(1);
-            CorrelationQuality::Unsupported
-        } else {
-            self.metrics.correlation_ambiguous =
-                self.metrics.correlation_ambiguous.saturating_add(1);
-            CorrelationQuality::Ambiguous
-        };
+        event.correlation_quality =
+            if decoded.direction == crate::event::Direction::Egress || decoded.flow_hash == 0 {
+                self.metrics.correlation_unsupported =
+                    self.metrics.correlation_unsupported.saturating_add(1);
+                CorrelationQuality::Unsupported
+            } else {
+                self.metrics.correlation_ambiguous =
+                    self.metrics.correlation_ambiguous.saturating_add(1);
+                CorrelationQuality::Ambiguous
+            };
         let event_id = event.event_id;
         if self.pending.is_empty() {
             self.first_pending_at = Some(now);
@@ -226,7 +229,9 @@ mod tests {
         bytes[40..48].copy_from_slice(&flow_hash.to_ne_bytes());
         bytes[48] = 1;
         bytes[49] = direction;
+        bytes[37] = 4;
         bytes[50..52].copy_from_slice(&status.to_ne_bytes());
+        bytes[60..64].copy_from_slice(&((1_u32 << 24) | (1 << 4)).to_ne_bytes());
         bytes[64..81].copy_from_slice(b"/orders/{orderId}");
         bytes
     }
@@ -285,11 +290,20 @@ mod tests {
             .pending
             .iter()
             .all(|event| event.correlation_id.is_none()));
+        assert_eq!(
+            collector.pending[0].correlation_quality,
+            CorrelationQuality::Ambiguous
+        );
+        assert_eq!(
+            collector.pending[1].correlation_quality,
+            CorrelationQuality::Unsupported
+        );
+        assert_eq!(collector.metrics().correlation_ambiguous, 1);
+        assert_eq!(collector.metrics().correlation_unsupported, 1);
         assert!(collector
             .pending
             .iter()
-            .all(|event| event.correlation_quality == CorrelationQuality::Ambiguous));
-        assert_eq!(collector.metrics().correlation_ambiguous, 2);
+            .all(|event| event.sensor_sequence == 0));
     }
 
     #[test]

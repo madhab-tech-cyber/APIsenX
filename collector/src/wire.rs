@@ -1,5 +1,5 @@
-//! Checked decoding of Member 2's proposed native-endian 192-byte C record.
-//! This parser does not claim the Linux ring-buffer map is available yet.
+//! Checked decoding of Member 2's proposed 192-byte Linux C record.
+//! No live ring-buffer attachment or producer acceptance is implied.
 
 use std::collections::HashSet;
 
@@ -8,6 +8,14 @@ use crate::event::{Direction, Method};
 pub const EVENT_BYTES: usize = 192;
 const ROUTE_START: usize = 64;
 const ROUTE_END: usize = 192;
+const WIRE_VERSION: u32 = 1;
+const FLAG_ROUTE_TRUNCATED: u32 = 1;
+const FLAG_IPV6: u32 = 1 << 1;
+const FLAG_QUERY_STRIPPED: u32 = 1 << 2;
+const FLAG_DROP_OCCURRED: u32 = 1 << 3;
+const FLAG_MONITOR_ONLY: u32 = 1 << 4;
+const KNOWN_FLAGS: u32 =
+    FLAG_ROUTE_TRUNCATED | FLAG_IPV6 | FLAG_QUERY_STRIPPED | FLAG_DROP_OCCURRED | FLAG_MONITOR_ONLY;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DecodeError {
@@ -16,6 +24,8 @@ pub enum DecodeError {
     Direction,
     Status,
     Flags,
+    Version,
+    TruncatedRoute,
     RouteTermination,
     RouteEncoding,
 }
@@ -68,9 +78,18 @@ pub fn decode(
         _ => return Err(DecodeError::Status),
     };
     let flags = u32::from_ne_bytes(record[60..64].try_into().unwrap());
-    if flags != 0 {
-        // Member 2 has not assigned flag bits yet. Never guess their meaning.
+    if flags >> 24 != WIRE_VERSION {
+        return Err(DecodeError::Version);
+    }
+    if flags & !((WIRE_VERSION << 24) | KNOWN_FLAGS) != 0
+        || flags & FLAG_MONITOR_ONLY == 0
+        || (record[37] != 4 && record[37] != 6)
+        || (flags & FLAG_IPV6 != 0) != (record[37] == 6)
+    {
         return Err(DecodeError::Flags);
+    }
+    if flags & FLAG_ROUTE_TRUNCATED != 0 {
+        return Err(DecodeError::TruncatedRoute);
     }
     let route_bytes = &record[ROUTE_START..ROUTE_END];
     let terminator = route_bytes
@@ -79,7 +98,8 @@ pub fn decode(
         .ok_or(DecodeError::RouteTermination)?;
     let route =
         std::str::from_utf8(&route_bytes[..terminator]).map_err(|_| DecodeError::RouteEncoding)?;
-    if !route.is_ascii()
+    if (!route.is_empty() && !route.starts_with('/'))
+        || !route.is_ascii()
         || route
             .bytes()
             .any(|byte| byte.is_ascii_control() || byte == b'?' || byte == b'#')
@@ -108,6 +128,8 @@ mod tests {
         record[8..12].copy_from_slice(&7_u32.to_ne_bytes());
         record[48] = 1;
         record[49] = 0;
+        record[37] = 4;
+        record[60..64].copy_from_slice(&((WIRE_VERSION << 24) | FLAG_MONITOR_ONLY).to_ne_bytes());
         record[64..81].copy_from_slice(b"/orders/{orderId}");
         record
     }
@@ -154,16 +176,60 @@ mod tests {
     #[test]
     fn rejects_unknown_flags_and_status() {
         let mut record = valid_record();
-        record[60] = 1;
+        record[60..64].copy_from_slice(&0_u32.to_ne_bytes());
         assert!(matches!(
             decode(&record, &routes()),
-            Err(DecodeError::Flags)
+            Err(DecodeError::Version)
         ));
         record = valid_record();
         record[50..52].copy_from_slice(&200_u16.to_ne_bytes());
         assert!(matches!(
             decode(&record, &routes()),
             Err(DecodeError::Status)
+        ));
+    }
+
+    #[test]
+    fn accepts_versioned_query_stripped_record_but_never_forwards_concrete_path() {
+        let mut record = valid_record();
+        record[60..64].copy_from_slice(
+            &((WIRE_VERSION << 24) | FLAG_MONITOR_ONLY | FLAG_QUERY_STRIPPED).to_ne_bytes(),
+        );
+        record[64..].fill(0);
+        record[64..75].copy_from_slice(b"/orders/123");
+        assert!(decode(&record, &routes()).unwrap().route_template.is_none());
+    }
+
+    #[test]
+    fn rejects_unknown_flags_and_truncated_route() {
+        let mut record = valid_record();
+        record[60..64]
+            .copy_from_slice(&((WIRE_VERSION << 24) | FLAG_MONITOR_ONLY | (1 << 5)).to_ne_bytes());
+        assert!(matches!(
+            decode(&record, &routes()),
+            Err(DecodeError::Flags)
+        ));
+        record[60..64].copy_from_slice(
+            &((WIRE_VERSION << 24) | FLAG_MONITOR_ONLY | FLAG_ROUTE_TRUNCATED).to_ne_bytes(),
+        );
+        assert!(matches!(
+            decode(&record, &routes()),
+            Err(DecodeError::TruncatedRoute)
+        ));
+    }
+
+    #[test]
+    fn rejects_ip_version_and_flag_mismatch() {
+        let mut record = valid_record();
+        record[37] = 0;
+        assert!(matches!(
+            decode(&record, &routes()),
+            Err(DecodeError::Flags)
+        ));
+        record[37] = 6;
+        assert!(matches!(
+            decode(&record, &routes()),
+            Err(DecodeError::Flags)
         ));
     }
 }

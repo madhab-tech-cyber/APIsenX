@@ -2,7 +2,7 @@
 
 Owner: Member 3. This crate implements the user-space collector in ordered daily milestones. It defaults to observation only; active blocking is not implemented or approved.
 
-The current source of truth for proposed interfaces is `docs/collector-interface.md` and `docs/event-and-decision-contract.md`. This is a tested library, not a deployed daemon. It can decode a proposed 192-byte sensor record, create privacy-minimized events, batch them through bounded queues, retry an authenticated HTTPS/mTLS analytics request, expose aggregate counters and parse decisions for dry-run validation. Flow hashes are explicitly marked ambiguous and never assigned request correlation IDs. Sensor loss is reported as unavailable until a real sensor counter is sampled. It never applies a deny or rate-limit action to traffic.
+The current source of truth for proposed interfaces is `docs/collector-interface.md` and `docs/event-and-decision-contract.md`. This is a tested library, not a deployed daemon. It can decode a proposed 192-byte sensor record, create privacy-minimized events, batch them through bounded queues, retry an authenticated HTTPS/mTLS analytics request, expose aggregate counters and parse decisions for dry-run validation. The decoder now checks Member 2 PR #92's version-1 flag layout, monitor-only bit and route truncation; this is candidate compatibility, not accepted live integration. Flow hashes are explicitly marked ambiguous and never assigned request correlation IDs. Sensor loss is reported as unavailable until a real sensor counter is sampled. It never applies a deny or rate-limit action to traffic.
 
 From the repository root:
 
