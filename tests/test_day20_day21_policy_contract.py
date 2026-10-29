@@ -61,7 +61,7 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
     def test_day21_route_rows_pin_operation_specific_failure_behavior(self):
         rows = {}
         for line in self.failure_policy.splitlines():
-            match = re.match(r"^\\|\\s*(RF-\\d{2})\\b", line)
+            match = re.match(r"^\|\s*(RF-\d{2})\b", line)
             if match:
                 rows[match.group(1)] = [
                     cell.strip() for cell in line.strip().strip("|").split("|")
@@ -103,7 +103,10 @@ class Day20Day21PolicyContractTests(unittest.TestCase):
             "Missing or untrusted identity/policy context denies the API action",
             normalized,
         )
-        self.assertIn("An audit outage must not prevent emergency disablement.", normalized)
+        self.assertIn(
+            "An audit outage must not prevent emergency disablement.",
+            normalized,
+        )
         self.assertIn("Per-route implementation acceptance remains BLOCKED", normalized)
 
 
