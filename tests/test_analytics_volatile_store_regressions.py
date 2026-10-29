@@ -14,8 +14,6 @@ CONTRACT = "sha256:" + "a" * 64
 
 def summary(route="/orders"):
     return {
-        "schema_name": "normalized_summary",
-        "schema_version": "1.0",
         "method": "GET",
         "route": route,
         "classification": "documented",
