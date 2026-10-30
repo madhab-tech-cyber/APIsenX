@@ -169,7 +169,9 @@ class Day21AnalyticsFailureBoundaryTests(unittest.TestCase):
             "requested_at": self.now.isoformat(),
         }
 
-    def observation_for(self, event_id, method="GET", target="/orders", actor="admin-1"):
+    def observation_for(
+        self, event_id, method="GET", target="/orders", actor="admin-1"
+    ):
         resource = "order-1001" if target.endswith("order-1001") else None
         return Observation(
             event_id, self.now, method, target, actor, resource, 200
