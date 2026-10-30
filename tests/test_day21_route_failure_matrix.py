@@ -83,7 +83,7 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
                     )
 
                 self.assertEqual(response.status_code, 503)
-                self.assertEqual(response.json(), {"detail": "STORE_UNAVAILABLE"})
+                self.assertEqual(response.json(), {"detail": "INGESTION_UNAVAILABLE"})
                 self.assertNotIn("SYNTHETIC_AUDIT_FAILURE", response.text)
                 self.assertNotIn("signature", response.text)
                 self.assertEqual(app.state.decisions.audit.store.snapshot(self.now), [])
