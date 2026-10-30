@@ -302,7 +302,7 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
                     clock=lambda: self.now,
                     resolver=lambda event_id, item=observation: Observation(
                         event_id, item.observed_at, item.method, item.target,
-                        item.actor, item.resource, item.status_code,
+                        item.actor_id, item.object_id, item.status_code,
                     ),
                 )
                 with patch.object(
@@ -342,7 +342,7 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
 
     def test_stale_policy_never_creates_a_signed_recommendation(self):
         observation = self.make_observation(
-            "GET", "/orders", "user-a", None
+            "GET", "/orders", "admin-1", None
         )
         app = create_app(
             self.settings,
