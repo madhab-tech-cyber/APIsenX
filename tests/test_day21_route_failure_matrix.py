@@ -301,7 +301,7 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
                     self.settings,
                     clock=lambda: self.now,
                     resolver=lambda event_id, item=observation: Observation(
-                        event_id, item.observed_at, item.method, item.target,
+                        event_id, item.observed_at, item.method, item.request_target,
                         item.actor_id, item.object_id, item.status_code,
                     ),
                 )
@@ -349,7 +349,7 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
             clock=lambda: self.now,
             resolver=lambda event_id: Observation(
                 event_id, observation.observed_at, observation.method,
-                observation.target, observation.actor, observation.resource,
+                observation.request_target, observation.actor_id, observation.object_id,
                 observation.status_code,
             ),
         )
