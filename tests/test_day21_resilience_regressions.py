@@ -129,7 +129,7 @@ class Day21APIAuthorityIsolationTests(unittest.TestCase):
         # No Sentinel client/adapter is wired into mock-api/main.py. A synthetic
         # analytics outage therefore cannot grant access or bypass API auth.
         response = self.client.get(
-            "/orders/order-1001",
+            "/admin/orders",
             headers={
                 "Authorization": "Bearer lab-user-b-token",
                 "X-Policy-Version": "AP-1.0",
