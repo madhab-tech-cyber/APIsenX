@@ -4,6 +4,7 @@ These tests intentionally do not claim a production API-to-Sentinel adapter:
 the mock API and analytics service are separate processes today.
 """
 
+import asyncio
 import secrets
 import unittest
 from datetime import datetime, timezone
@@ -11,6 +12,7 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from analytics.app import Settings, create_app
 from analytics.store import MemoryStore, StoreError
 
 import sys
@@ -148,3 +150,54 @@ class Day21APIAuthorityIsolationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+
+class Day21AnalyticsTimeoutTests(unittest.TestCase):
+    def test_slow_request_body_is_timed_out_without_processing(self):
+        settings = Settings(
+            secrets.token_urlsafe(32),
+            "synthetic_source",
+            secrets.token_bytes(32),
+            decision_token=secrets.token_urlsafe(32),
+            decision_key=secrets.token_bytes(32),
+        )
+        app = create_app(settings)
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0", "spec_version": "2.3"},
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/v1/recommendations",
+            "raw_path": b"/v1/recommendations",
+            "query_string": b"",
+            "headers": [
+                (b"authorization", ("Bearer " + settings.decision_token).encode()),
+                (b"content-type", b"application/json"),
+            ],
+            "client": ("testclient", 50000),
+            "server": ("testserver", 80),
+            "root_path": "",
+        }
+        messages = []
+
+        async def receive():
+            await asyncio.sleep(1.1)
+            return {"type": "http.request", "body": b"{}", "more_body": False}
+
+        async def send(message):
+            messages.append(message)
+
+        async def invoke():
+            await app(scope, receive, send)
+
+        asyncio.run(invoke())
+        response_start = next(
+            item for item in messages if item["type"] == "http.response.start"
+        )
+        response_body = next(
+            item for item in messages if item["type"] == "http.response.body"
+        )
+        self.assertEqual(response_start["status"], 408)
+        self.assertIn(b"BODY_TIMEOUT", response_body["body"])
