@@ -227,7 +227,11 @@ class Day21AnalyticsFailureBoundaryTests(unittest.TestCase):
         app = create_app(
             self.settings,
             clock=lambda: self.now,
-            resolver=lambda event_id: self.observation_for(event_id, actor="admin-1"),
+            resolver=lambda event_id: self.observation_for(
+                event_id,
+                target="/orders/order-1001",
+                actor="user-a",
+            ),
         )
         client = TestClient(app)
         payload = self.payload()
