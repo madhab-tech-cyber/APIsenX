@@ -9,8 +9,8 @@ authorization boundary.
 import secrets
 import unittest
 from datetime import datetime, timezone
-from uuid import uuid4
 from unittest.mock import patch
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
@@ -68,7 +68,10 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
                 app = create_app(
                     self.settings,
                     clock=lambda: self.now,
-                    resolver=lambda event_id, item=observation: Observation(\n                        event_id, item.observed_at, item.method, item.target,\n                        item.actor, item.resource, item.status_code,\n                    ),
+                    resolver=lambda event_id, item=observation: Observation(
+                        event_id, item.observed_at, item.method, item.target,
+                        item.actor, item.resource, item.status_code,
+                    ),
                 )
                 with patch.object(
                     app.state.decisions.audit,
@@ -112,7 +115,11 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         app = create_app(
             self.settings,
             clock=lambda: self.now,
-            resolver=lambda event_id: Observation(\n                event_id, observation.observed_at, observation.method,\n                observation.target, observation.actor, observation.resource,\n                observation.status_code,\n            ),
+            resolver=lambda event_id: Observation(
+                event_id, observation.observed_at, observation.method,
+                observation.target, observation.actor, observation.resource,
+                observation.status_code,
+            ),
         )
         app.state.decisions.policy_expires_at = self.now
         response = TestClient(app).post(
