@@ -5,6 +5,7 @@ unknown-route diagnostic boundary. They do not claim optional-overlay,
 durable-audit, or integrated sensor/collector failure acceptance.
 """
 
+import logging
 import sys
 import unittest
 from copy import deepcopy
@@ -106,12 +107,20 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         query_marker = "SYNTHETIC_QUERY_VALUE_MARKER"
         before = deepcopy(main.ORDERS)
 
-        with self.assertLogs("apisenx.audit", level="INFO") as captured:
-            unknown = self.client.get(
-                f"/unmapped/{path_marker}?secret={query_marker}",
-                headers=USER_A,
-            )
-            wrong_method = self.client.delete("/orders", headers=USER_A)
+        # httpx's INFO request logger includes the full URL, so suppress it
+        # while checking the application logger's privacy-safe diagnostics.
+        httpx_logger = logging.getLogger("httpx")
+        previous_httpx_level = httpx_logger.level
+        httpx_logger.setLevel(logging.WARNING)
+        try:
+            with self.assertLogs("apisenx.audit", level="INFO") as captured:
+                unknown = self.client.get(
+                    f"/unmapped/{path_marker}?secret={query_marker}",
+                    headers=USER_A,
+                )
+                wrong_method = self.client.delete("/orders", headers=USER_A)
+        finally:
+            httpx_logger.setLevel(previous_httpx_level)
 
         self.assertEqual(unknown.status_code, 404)
         self.assertEqual(wrong_method.status_code, 405)
