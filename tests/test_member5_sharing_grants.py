@@ -36,7 +36,7 @@ class SharingGrantAuthorizationTests(unittest.TestCase):
         grant.update(overrides)
         return grant
 
-    def authorize_with_grant(self, grant, policy_version="AP-1.0"):
+    def authorize_with_grant(\n        self, grant, policy_version="AP-1.0", action="orders:read"\n    ):
         with patch(
             "authorization.load_sharing_grants",
             return_value=[grant],
