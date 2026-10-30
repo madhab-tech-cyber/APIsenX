@@ -393,7 +393,15 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
         app = create_app(
             self.settings,
             clock=lambda: self.now,
-            resolver=lambda _event_id: observation,
+            resolver=lambda event_id: Observation(
+                event_id,
+                observation.observed_at,
+                observation.method,
+                observation.request_target,
+                observation.actor_id,
+                observation.object_id,
+                observation.status_code,
+            ),
         )
         client = TestClient(app)
         payload = self.request_payload()
