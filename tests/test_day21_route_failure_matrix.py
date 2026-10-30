@@ -10,6 +10,7 @@ import secrets
 import unittest
 from datetime import datetime, timezone
 from uuid import uuid4
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -70,7 +71,7 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
                     clock=lambda: self.now,
                     resolver=lambda _event_id, item=observation: item,
                 )
-                with unittest.mock.patch.object(
+                with patch.object(
                     app.state.decisions.audit,
                     "append",
                     side_effect=RuntimeError("SYNTHETIC_AUDIT_FAILURE"),
