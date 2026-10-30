@@ -1,6 +1,6 @@
 # Day 20–21 cross-component acceptance status
 
-**Baseline:** `main` at `d2ce9ae92eb079af0c07c4c3c9dc12bc8dbe1b0e` (2026-10-28 UTC), after PRs #90 and #91.
+**Baseline:** `main` at `35967e31249a814b3c22de2b2c435d225cab299d` (2026-10-29 17:12 UTC), after PR #98.
 **Purpose:** Carry forward the next two scheduled acceptance areas without
 confusing a policy document or a volatile prototype with completed runtime
 controls.
@@ -86,3 +86,37 @@ before being credited. No local test execution is claimed here.
 Keep `monitor_only`, zero active enforcement rules and release
 **NOT APPROVED**. Do not infer human sign-off from requested reviews, merged
 documentation, synthetic demos or passing unit tests.
+
+
+## 2026-10-30 scoped Member 5 continuation — candidate, not acceptance
+
+**Verified main baseline:** PR #98 is merged at `35967e31249a814b3c22de2b2c435d225cab299d`.
+Its reviewed diff normalizes OpenAPI contract line endings, adds cross-platform
+fingerprint coverage, and refreshes the frozen candidate manifest. It does not
+replace `analytics/audit.py` or `analytics/store.py` with durable storage.
+The current analytics health response still reports `storage: volatile`; Day 20
+remains blocked pending the service-owner architecture decision in Issue #83.
+
+**Day 21 candidate tests on `automation/day21-route-failure-matrix-20261030`:**
+
+- `tests/test_day21_route_failure_matrix.py` exercises missing and unsupported
+  policy versions for RF-01 through RF-04. It asserts bounded denial, no order
+  payload, and unchanged fixture state.
+- A PATCH recovery case verifies that restoring AP-1.0 allows a retry with the
+  same nonce after the rejected request; the failed precondition must not
+  consume the nonce or mutate the order.
+- RF-05 tests cover an unknown route and unsupported method while checking that
+  synthetic path/query markers are absent from the response and application
+  logs.
+
+These tests cover the mock API's authoritative policy boundary and unknown-route
+diagnostic privacy only. They do not establish optional observation/enforcement
+overlay failover, circuit-breaker behavior, durable-audit outage semantics,
+route-specific dependency timeouts, restart-safe recovery, or integrated
+sensor-to-dashboard acceptance. Exact-head CI is pending; no local test run is
+claimed.
+
+The `main` branch object reports `protected: false`; the detailed protection
+read endpoint returns 403 to the current connection. Issue #89 remains open
+with all administrator and human-evidence requirements unchecked. No settings
+were changed and no owner/reviewer decision is inferred.
