@@ -68,7 +68,7 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
                 app = create_app(
                     self.settings,
                     clock=lambda: self.now,
-                    resolver=lambda _event_id, item=observation: item,
+                    resolver=lambda event_id, item=observation: Observation(\n                        event_id, item.observed_at, item.method, item.target,\n                        item.actor, item.resource, item.status_code,\n                    ),
                 )
                 with patch.object(
                     app.state.decisions.audit,
@@ -112,7 +112,7 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         app = create_app(
             self.settings,
             clock=lambda: self.now,
-            resolver=lambda _event_id: observation,
+            resolver=lambda event_id: Observation(\n                event_id, observation.observed_at, observation.method,\n                observation.target, observation.actor, observation.resource,\n                observation.status_code,\n            ),
         )
         app.state.decisions.policy_expires_at = self.now
         response = TestClient(app).post(
