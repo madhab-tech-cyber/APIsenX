@@ -37,6 +37,11 @@ from authorization import (  # noqa: E402, I001
     load_users,
 )
 
+from sentinel_adapter import (  # noqa: E402
+    SentinelObservationAdapter,
+    SentinelObservationMiddleware,
+)
+
 
 app = FastAPI(
     title="APISenX Mock API",
@@ -45,6 +50,12 @@ app = FastAPI(
         "Local API-Sentinel security testing lab. "
         "Uses demo tokens and process-local order updates."
     ),
+)
+
+# Optional monitor-only telemetry. No Sentinel response can authorize or deny API work.
+app.add_middleware(
+    SentinelObservationMiddleware,
+    adapter=SentinelObservationAdapter.from_env(),
 )
 
 logging.basicConfig(level=logging.INFO)
