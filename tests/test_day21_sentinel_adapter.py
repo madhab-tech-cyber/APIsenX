@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
 
-from sentinel_adapter import SentinelObservationAdapter
+from sentinel_adapter import SentinelObservationAdapter  # noqa: E402
 
 
 class SentinelObservationAdapterTests(unittest.TestCase):
