@@ -169,9 +169,10 @@ class Day21AnalyticsFailureBoundaryTests(unittest.TestCase):
             "requested_at": self.now.isoformat(),
         }
 
-    def observation_for(self, event_id, method="GET", target="/orders"):
+    def observation_for(self, event_id, method="GET", target="/orders", actor="admin-1"):
+        resource = "order-1001" if target.endswith("order-1001") else None
         return Observation(
-            event_id, self.now, method, target, "user-a", None, 200
+            event_id, self.now, method, target, actor, resource, 200
         )
 
     def test_audit_append_failure_returns_bounded_error_without_signature(self):
@@ -226,7 +227,7 @@ class Day21AnalyticsFailureBoundaryTests(unittest.TestCase):
         app = create_app(
             self.settings,
             clock=lambda: self.now,
-            resolver=lambda event_id: self.observation_for(event_id),
+            resolver=lambda event_id: self.observation_for(event_id, actor="admin-1"),
         )
         client = TestClient(app)
         payload = self.payload()
@@ -250,9 +251,9 @@ class Day21AnalyticsFailureBoundaryTests(unittest.TestCase):
 
 # Preserved from the conflicted PR branch under a distinct class name.
 ROUTE_CASES = (
-    ("RF-01", "GET", "/orders", "user-a", None),
-    ("RF-02", "GET", "/orders/order-1001", "user-a", "order-1001"),
-    ("RF-03", "PATCH", "/orders/order-1001", "user-a", "order-1001"),
+    ("RF-01", "GET", "/orders", "admin-1", None),
+    ("RF-02", "GET", "/orders/order-1001", "admin-1", "order-1001"),
+    ("RF-03", "PATCH", "/orders/order-1001", "admin-1", "order-1001"),
     ("RF-04", "GET", "/admin/orders", "admin-1", None),
 )
 
@@ -305,7 +306,7 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
                     ),
                 )
                 with patch.object(
-                    app.state.decisions.audit,
+                    app.state.decisions.audit.store,
                     "append",
                     side_effect=RuntimeError("SYNTHETIC_AUDIT_FAILURE"),
                 ):
