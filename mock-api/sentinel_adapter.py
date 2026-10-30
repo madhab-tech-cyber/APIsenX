@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import httpx
+from starlette.middleware.base import BaseHTTPMiddleware
 
 LOG = logging.getLogger("apisenx.sentinel")
 
@@ -80,3 +81,20 @@ class SentinelObservationAdapter:
             # Do not log credentials, URLs, raw exception text or request data.
             LOG.info("sentinel_delivery outcome=unavailable")
             return False
+
+
+class SentinelObservationMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, adapter=None):
+        super().__init__(app)
+        self.adapter = adapter
+
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        if self.adapter is not None:
+            route = request.scope.get("route")
+            route_template = getattr(route, "path", None)
+            if route_template:
+                await self.adapter.publish(
+                    request.method, route_template, response.status_code
+                )
+        return response
