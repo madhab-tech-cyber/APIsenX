@@ -6,6 +6,15 @@ durable-audit, or integrated sensor/collector failure acceptance.
 """
 
 import logging
+
+import secrets
+from datetime import datetime, timezone
+from unittest.mock import patch
+from uuid import uuid4
+
+from analytics.app import Settings, create_app
+from analytics.detection import Observation
+
 import sys
 import unittest
 from copy import deepcopy
@@ -133,3 +142,106 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+class Day21AnalyticsFailureBoundaryTests(unittest.TestCase):
+    """Optional analytics recommendation failures never create trusted replies."""
+
+    def setUp(self):
+        self.now = datetime.now(timezone.utc)
+        self.settings = Settings(
+            secrets.token_urlsafe(32),
+            "synthetic_source",
+            secrets.token_bytes(32),
+            decision_token=secrets.token_urlsafe(32),
+            decision_key=secrets.token_bytes(32),
+        )
+        self.headers = {
+            "authorization": "Bearer " + self.settings.decision_token,
+            "content-type": "application/json",
+        }
+
+    def payload(self):
+        return {
+            "event_id": str(uuid4()),
+            "nonce": str(uuid4()),
+            "requested_at": self.now.isoformat(),
+        }
+
+    def observation_for(self, event_id, method="GET", target="/orders"):
+        return Observation(
+            event_id, self.now, method, target, "user-a", None, 200
+        )
+
+    def test_audit_append_failure_returns_bounded_error_without_signature(self):
+        app = create_app(
+            self.settings,
+            clock=lambda: self.now,
+            resolver=lambda event_id: self.observation_for(event_id),
+        )
+        with patch.object(
+            app.state.decisions.audit,
+            "append",
+            side_effect=RuntimeError("SYNTHETIC_AUDIT_FAILURE"),
+        ):
+            response = TestClient(app).post(
+                "/v1/recommendations", json=self.payload(), headers=self.headers
+            )
+        self.assertEqual(response.status_code, 503)
+        self.assertNotIn("SYNTHETIC_AUDIT_FAILURE", response.text)
+        self.assertNotIn("signature", response.text)
+
+    def test_unavailable_resolver_returns_bounded_error_without_signature(self):
+        app = create_app(
+            self.settings,
+            clock=lambda: self.now,
+            resolver=lambda _event_id: (_ for _ in ()).throw(
+                RuntimeError("SYNTHETIC_CONTEXT_FAILURE")
+            ),
+        )
+        response = TestClient(app).post(
+            "/v1/recommendations", json=self.payload(), headers=self.headers
+        )
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json(), {"detail": "CONTEXT_UNAVAILABLE"})
+        self.assertNotIn("SYNTHETIC_CONTEXT_FAILURE", response.text)
+        self.assertNotIn("signature", response.text)
+
+    def test_stale_policy_returns_bounded_error_without_signature(self):
+        app = create_app(
+            self.settings,
+            clock=lambda: self.now,
+            resolver=lambda event_id: self.observation_for(event_id),
+        )
+        app.state.decisions.policy_expires_at = self.now
+        response = TestClient(app).post(
+            "/v1/recommendations", json=self.payload(), headers=self.headers
+        )
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json(), {"detail": "POLICY_STALE"})
+        self.assertNotIn("signature", response.text)
+
+    def test_replayed_nonce_is_rejected_without_second_audit_record(self):
+        app = create_app(
+            self.settings,
+            clock=lambda: self.now,
+            resolver=lambda event_id: self.observation_for(event_id),
+        )
+        client = TestClient(app)
+        payload = self.payload()
+        first = client.post(
+            "/v1/recommendations", json=payload, headers=self.headers
+        )
+        self.assertEqual(first.status_code, 200)
+        count_after_first = len(
+            app.state.decisions.audit.store.snapshot(self.now)
+        )
+        replay = client.post(
+            "/v1/recommendations", json=payload, headers=self.headers
+        )
+        self.assertEqual(replay.status_code, 409)
+        self.assertEqual(
+            len(app.state.decisions.audit.store.snapshot(self.now)),
+            count_after_first,
+        )
