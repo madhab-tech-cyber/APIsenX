@@ -23,7 +23,6 @@ ROUTE_CASES = (
     ("RF-02", "GET", "/orders/order-1001", "user-a", "order-1001"),
     ("RF-03", "PATCH", "/orders/order-1001", "user-a", "order-1001"),
     ("RF-04", "GET", "/admin/orders", "admin-1", None),
-    ("RF-05", "GET", "/unregistered-route", None, None),
 )
 
 
@@ -123,6 +122,25 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json(), {"detail": "POLICY_STALE"})
+        self.assertNotIn("signature", response.text)
+
+
+    def test_unknown_route_never_gets_a_signed_recommendation(self):
+        observation = self.make_observation(
+            "GET", "/unregistered-route", "user-a", None
+        )
+        app = create_app(
+            self.settings,
+            clock=lambda: self.now,
+            resolver=lambda _event_id: observation,
+        )
+        response = TestClient(app).post(
+            "/v1/recommendations",
+            json=self.request_payload(),
+            headers=self.headers,
+        )
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json(), {"detail": "CONTEXT_UNAVAILABLE"})
         self.assertNotIn("signature", response.text)
 
     def test_replayed_nonce_is_rejected_without_second_audit_record(self):
