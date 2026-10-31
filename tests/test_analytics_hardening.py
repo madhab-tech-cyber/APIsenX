@@ -182,7 +182,6 @@ class HardeningTests(unittest.TestCase):
         snapshot[0]["alert"]["reason_code"] = "SYNTHETIC_SECRET"
         self.assertEqual(store.snapshot(self.now), before)
 
-
     def test_audit_projection_excludes_observation_identity_and_raw_target(self):
         event_id = uuid4()
         observation = Observation(
