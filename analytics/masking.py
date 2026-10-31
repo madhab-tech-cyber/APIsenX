@@ -111,5 +111,5 @@ class StorageMasker:
                 ):
                     raise ValueError()
             return projected
-        except (ValidationError, ValueError, TypeError, AttributeError):
+        except (ValidationError, ValueError, TypeError, AttributeError, RecursionError):
             raise MaskingError("MASKING_REJECTED") from None
