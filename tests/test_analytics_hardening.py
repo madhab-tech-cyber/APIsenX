@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 from analytics.app import Settings, create_app
 from analytics.decisions import RequestContext, rules_digest
-from analytics.detection import Observation
+from analytics.detection import Detection, Observation
 from analytics.store import StoreError
 
 
@@ -181,6 +181,87 @@ class HardeningTests(unittest.TestCase):
         before = copy.deepcopy(snapshot)
         snapshot[0]["alert"]["reason_code"] = "SYNTHETIC_SECRET"
         self.assertEqual(store.snapshot(self.now), before)
+
+
+    def test_audit_projection_excludes_observation_identity_and_raw_target(self):
+        event_id = uuid4()
+        observation = Observation(
+            event_id,
+            self.now,
+            "GET",
+            "/orders/SYNTHETIC_PATH_MARKER?token=SYNTHETIC_QUERY_MARKER",
+            "SYNTHETIC_ACTOR_MARKER",
+            "SYNTHETIC_RESOURCE_MARKER",
+            200,
+        )
+        detection = Detection(
+            action="allow",
+            reason_code="AUTHORIZED_OPERATION",
+            rule_id="DET-OBS-1",
+            method="GET",
+            route="/orders",
+            expected_access="allowed",
+        )
+        audit = self.app.state.decisions.audit
+        audit.append(
+            observation,
+            detection,
+            self.app.state.normalizer.contract_version,
+            self.now,
+        )
+
+        rows = audit.store.snapshot(self.now)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["route"], "/orders")
+        rendered = repr(rows)
+        for marker in (
+            "SYNTHETIC_PATH_MARKER",
+            "SYNTHETIC_QUERY_MARKER",
+            "SYNTHETIC_ACTOR_MARKER",
+            "SYNTHETIC_RESOURCE_MARKER",
+        ):
+            with self.subTest(marker=marker):
+                self.assertNotIn(marker, rendered)
+
+    def test_caller_nested_alert_mutation_cannot_change_retained_projection(self):
+        store = self.app.state.store
+        summary = {
+            **self.app.state.normalizer.normalize("GET", "/synthetic/new").to_dict(),
+            "status_code": 200,
+            "alert": {
+                "finding_id": str(uuid4()),
+                "finding_class": "shadow_candidate",
+                "reason_code": "PATH_NOT_IN_CONTRACT",
+            },
+        }
+        store.append(
+            [("synthetic", uuid4(), store.digest(summary), summary)], self.now
+        )
+        summary["alert"]["reason_code"] = "SYNTHETIC_SECRET"
+        rows = store.snapshot(self.now)
+        self.assertEqual(
+            rows[0]["alert"]["reason_code"], "PATH_NOT_IN_CONTRACT"
+        )
+
+    def test_recursive_malformed_projection_is_generic_and_batch_atomic(self):
+        store = self.app.state.store
+        valid = self.summary()
+        recursive = self.summary()
+        cursor = recursive
+        for _ in range(1100):
+            child = {}
+            cursor["untrusted"] = child
+            cursor = child
+
+        with self.assertRaisesRegex(StoreError, "MASKING_REJECTED"):
+            store.append(
+                [
+                    ("synthetic", uuid4(), store.digest(valid), valid),
+                    ("synthetic", uuid4(), "d" * 64, recursive),
+                ],
+                self.now,
+            )
+        self.assertEqual(store.snapshot(self.now), [])
 
     def test_backend_mask_failure_is_generic_and_does_not_change_fixture_objects(self):
         before = copy.deepcopy(self.app.state.decisions.engine.orders)
