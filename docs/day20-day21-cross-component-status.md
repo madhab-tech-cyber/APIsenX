@@ -120,3 +120,63 @@ The `main` branch object reports `protected: false`; the detailed protection
 read endpoint returns 403 to the current connection. Issue #89 remains open
 with all administrator and human-evidence requirements unchecked. No settings
 were changed and no owner/reviewer decision is inferred.
+
+
+## 2026-10-31 verified-main reconciliation
+
+**Current main:** `6b0b21752dff8bcec2bce77f459a9f9df1e50bc2` (merge of PR #106).
+This section supersedes the earlier October 29/30 candidate-state descriptions
+above for the Day 21 branch/PR disposition.
+
+### Day 21 engineering work now merged
+
+- PR [#103](https://github.com/madhab-tech-cyber/APIsenX/pull/103) adds
+  deterministic analytics recommendation-boundary tests for audit failure,
+  resolver outage, stale policy and replay; exact-head API run
+  [41006576369](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41006576369)
+  and analytics run
+  [41006576407](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41006576407)
+  passed.
+- PR [#104](https://github.com/madhab-tech-cyber/APIsenX/pull/104) adds atomic
+  store/batch, volatile-store restart and bounded request-body timeout
+  regressions; exact-head API run
+  [41006977674](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41006977674)
+  and analytics run
+  [41006977736](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41006977736)
+  passed.
+- PR [#105](https://github.com/madhab-tech-cyber/APIsenX/pull/105) adds an
+  optional loopback-only, bounded-timeout, monitor-only observation adapter;
+  exact-head analytics run
+  [41007254976](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41007254976)
+  and API run
+  [41007255025](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41007255025)
+  passed.
+- PR [#106](https://github.com/madhab-tech-cyber/APIsenX/pull/106) preserves
+  the API policy rejection/nonce recovery/RF-05 tests and the optional
+  analytics failure matrix; exact-head API run
+  [41008892369](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41008892369)
+  and analytics run
+  [41008892367](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41008892367)
+  passed.
+
+These PRs provide component-level regression evidence and monitor-only
+observation telemetry. They do **not** implement a signed-decision enforcement
+adapter, accepted route-specific circuit breaker, production transport or
+durable audit backend. Issue [#102](https://github.com/madhab-tech-cyber/APIsenX/issues/102)
+has been reopened with only verified engineering items checked; integrated
+failure/recovery and human/independent acceptance remain unchecked.
+
+### Day 20 and release gates remain blocked
+
+The main analytics audit path still uses volatile `MemoryStore`. Issue
+[#83](https://github.com/madhab-tech-cyber/APIsenX/issues/83) is open because
+no dated service-owner approval of the PostgreSQL/KMS operating model or
+durable runtime acceptance evidence is recorded. Issue
+[#89](https://github.com/madhab-tech-cyber/APIsenX/issues/89) is open because
+`main` reports `protected: false`, and the administrator verification,
+human-led integrated demonstration, service-owner decision and independent
+reviewer decision are not evidenced.
+
+Keep AP-1.0 `monitor_only`, active rules at zero, and release
+**NOT APPROVED**. Passing PR CI, synthetic tests, or requested reviews do not
+close these human, administrative, durable-storage or integrated-runtime gates.

@@ -112,3 +112,27 @@ Full runtime acceptance, real Days 14/15/22/28/30 reviews, durable privacy/audit
 shared identity/TLS, independent accuracy and performance/route-failure/rollback
 evidence remain open. All recommendations are monitor_only/enforce=false;
 active rules are zero and release remains held.
+
+
+## 2026-10-31 Day 22–23 runtime-hardening follow-up (candidate)
+
+**Baseline:** `main` at `6b0b21752dff8bcec2bce77f459a9f9df1e50bc2`. **Source candidate commit:** `aec622af035f825f6e1fb4a94f93469a9e98f9e3`.
+This follow-up adds focused regression coverage to the existing Day 22/23
+engineering work; it does not replace the historical October 22 test snapshot.
+
+- **Day 22 audit projection:** a deterministic test supplies synthetic raw
+  target, query, actor and resource markers to the observation object and
+  verifies that the retained audit projection contains none of them.
+- **Day 23 typed masking:** recursive JSON serialization failures are now
+  converted to the same fixed `MASKING_REJECTED` boundary as other invalid
+  projections. A batch regression verifies that a valid first item is not
+  partially appended when a later deeply nested item is rejected.
+- **Day 23 immutability:** a caller-owned nested alert is mutated after append;
+  the stored projection must remain unchanged. The existing snapshot-mutation
+  regression remains in place as a separate direction of isolation.
+
+These are deterministic synthetic tests around the existing volatile
+`MemoryStore`. They do not establish durable persistence, 90-day retention,
+deletion/restore behavior, independent leak review, or integrated sensor-to-
+dashboard acceptance. The exact-head PR CI is the validation source for this
+candidate; no local test run is claimed.
