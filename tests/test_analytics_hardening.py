@@ -247,7 +247,7 @@ class HardeningTests(unittest.TestCase):
         valid = self.summary()
         recursive = self.summary()
         cursor = recursive
-        for _ in range(1100):
+        for _ in range(10000):
             child = {}
             cursor["untrusted"] = child
             cursor = child
