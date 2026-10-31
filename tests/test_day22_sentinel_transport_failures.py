@@ -61,6 +61,42 @@ class Day22SentinelTransportFailureTests(unittest.IsolatedAsyncioTestCase):
         adapter = self.adapter(httpx.MockTransport(handler))
         self.assertTrue(await adapter.publish("GET", "/orders", 200))
 
+    async def test_redirect_is_not_followed_or_accepted(self):
+        requests = []
+
+        def handler(request):
+            requests.append(request)
+            return httpx.Response(
+                302,
+                headers={"Location": "http://127.0.0.1:9001/redirect-target"},
+                request=request,
+            )
+
+        adapter = self.adapter(httpx.MockTransport(handler))
+        self.assertFalse(await adapter.publish("GET", "/orders", 200))
+        self.assertEqual(len(requests), 1)
+
+    async def test_event_body_is_allowlisted_and_token_stays_in_header(self):
+        captured = {}
+
+        def handler(request):
+            captured["body"] = request.read()
+            captured["authorization"] = request.headers.get("Authorization")
+            return httpx.Response(200, request=request)
+
+        adapter = self.adapter(httpx.MockTransport(handler))
+        self.assertTrue(await adapter.publish("GET", "/orders/{orderId}", 200))
+        import json
+        event = json.loads(captured["body"])
+        self.assertEqual(
+            set(event),
+            {"schema_name", "schema_version", "event_id", "source_id",
+             "observed_at", "method", "request_target", "status_code"},
+        )
+        self.assertEqual(event["request_target"], "/orders/{orderId}")
+        self.assertEqual(captured["authorization"], "Bearer " + TOKEN)
+        self.assertNotIn(TOKEN.encode(), captured["body"])
+
     async def test_invalid_observation_is_rejected_without_transport_call(self):
         called = False
         def handler(request):
