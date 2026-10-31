@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "observed_date": "2026-10-29",
+  "observed_date": "2026-10-31",
   "timezone": "Asia/Calcutta",
   "implementation_owner": "madhab-tech-cyber",
-  "candidate_commit": "https://github.com/madhab-tech-cyber/APISenX/commit/e7f983d510e53ec42d8f811d3f31830155e6fc2b",
-  "candidate_rules_digest": "sha256:4dde495bc26605f926c07721f8a41f442d377410d537bf527ad0dcba2aa58ffe",
+  "candidate_commit": "https://github.com/madhab-tech-cyber/APIsenX/commit/aec622af035f825f6e1fb4a94f93469a9e98f9e3",
+  "candidate_rules_digest": "sha256:0077e54633a132ab249d5fea693d6a78f5f8f867bb3f2dc631b77391f20207e9",
   "rule_version": "DET-1.2",
   "contract_version": "sha256:86c520374c7147ede7a35e5fc1c21255184d7f76acf64f98d914f48fc50f803a",
   "engineering_status": "implemented_pending_independent_acceptance",
