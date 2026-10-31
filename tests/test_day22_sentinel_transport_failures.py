@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / "mock-api"))
 from sentinel_adapter import SentinelObservationAdapter  # noqa: E402
 
 
-TOKEN = "synthetic-sentinel-ingest-token-0123456789"
+TOKEN = "t" * 40
 ENDPOINT = "http://127.0.0.1:9000"
 
 
