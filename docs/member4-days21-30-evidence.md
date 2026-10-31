@@ -116,7 +116,7 @@ active rules are zero and release remains held.
 
 ## 2026-10-31 Day 22–23 runtime-hardening follow-up (candidate)
 
-**Baseline:** `main` at `6b0b21752dff8bcec2bce77f459a9f9df1e50bc2`.
+**Baseline:** `main` at `6b0b21752dff8bcec2bce77f459a9f9df1e50bc2`. **Source candidate commit:** `aec622af035f825f6e1fb4a94f93469a9e98f9e3`.
 This follow-up adds focused regression coverage to the existing Day 22/23
 engineering work; it does not replace the historical October 22 test snapshot.
 
