@@ -1,7 +1,6 @@
 """Day 25: reconcile controlled API attack outcomes with source application logs."""
 
 import logging
-import re
 import sys
 import unittest
 from pathlib import Path
@@ -48,7 +47,7 @@ class Day25SourceLogAlignmentTests(unittest.TestCase):
         self.assertIn("method=GET", log_line)
         self.assertIn(f"route={expected_route}", log_line)
         self.assertIn(f"status={expected_status}", log_line)
-        self.assertRegex(log_line, r"elapsed_ms=[0-9]+(?:\.[0-9]+)?")
+        self.assertRegex(log_line, r"elapsed_ms=[0-9]+(?:\\.[0-9]+)?")
 
         for marker in forbidden:
             with self.subTest(marker=marker):
