@@ -124,7 +124,7 @@ def main():
                 )
             else:
                 wait_ready(
-                    f"http://127.0.0.1:{api_port}/health",
+                    f"http://127.0.0.1:{api_port}/openapi.json",
                     process, handle,
                 )
 
