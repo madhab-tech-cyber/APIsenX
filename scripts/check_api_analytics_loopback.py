@@ -79,6 +79,7 @@ def main():
             "APISENTINEL_URL": f"http://127.0.0.1:{analytics_port}",
             "APISENTINEL_INGEST_TOKEN": ingest_token,
             "APISENTINEL_SOURCE_ID": "mock_api",
+            "APISENTINEL_DIAGNOSTICS": "1",
         }
     )
 
@@ -202,7 +203,7 @@ def main():
             ):
                 raise RuntimeError("A runtime credential appeared in service logs")
             safe_markers = (
-                "sentinel_delivery outcome=",
+                "sentinel_delivery status=",
                 "ingestion outcome=",
             )
             safe_lines = [
