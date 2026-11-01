@@ -96,7 +96,7 @@ class SentinelObservationAdapter:
         # path parameter with a fixed synthetic value before transmission so
         # no real object identifier crosses the observation boundary.
         request_target = re.sub(
-            r"\\{[A-Za-z][A-Za-z0-9_]*\\}", "apisenx-redacted", route_template
+            r"\{[A-Za-z][A-Za-z0-9_]*\}", "apisenx-redacted", route_template
         )
         if "{" in request_target or "}" in request_target:
             return False
