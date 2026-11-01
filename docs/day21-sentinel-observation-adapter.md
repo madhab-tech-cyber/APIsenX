@@ -11,7 +11,7 @@ This is **monitor-only telemetry**. The adapter:
   event ID and configured source ID;
 - never sends raw URL paths, query strings, request/response bodies, bearer
   credentials, or user identity;
-- uses a loopback-only HTTP endpoint and a bounded request timeout;
+- uses a literal IPv4 loopback HTTP endpoint and a bounded request timeout;
 - does not follow redirects;
 - treats Sentinel errors/timeouts as telemetry delivery failures and does not
   change the API response;
@@ -24,18 +24,22 @@ mutation controls remain authoritative and execute independently of Sentinel.
 
 Configure all three variables in the API process environment:
 
-- \`APISENTINEL_URL=http://127.0.0.1:9000\`
-- \`APISENTINEL_INGEST_TOKEN=<separate runtime ingest credential>\`
-- \`APISENTINEL_SOURCE_ID=mock_api\`
+- `APISENTINEL_URL=http://127.0.0.1:9000`
+- `APISENTINEL_INGEST_TOKEN=<separate runtime ingest credential>`
+- `APISENTINEL_SOURCE_ID=mock_api`
 
-The configured source ID must satisfy the analytics \`SourceID\` schema and must
-match the analytics service's configured \`APISENTINEL_SOURCE_ID\`. The ingest
+The configured source ID must satisfy the analytics `SourceID` schema and must
+match the analytics service's configured `APISENTINEL_SOURCE_ID`. The ingest
 credential must be the same secret configured for the analytics service.
 Do not commit these values. If all three variables are absent, the adapter is
 disabled. Partial configuration prevents the API process from starting rather
 than silently operating with a broken integration.
 
-The adapter only accepts loopback HTTP endpoints. This is a local lab
+The adapter accepts only plain HTTP URLs whose authority is a literal IPv4
+loopback address in `127.0.0.0/8`. DNS names (including `localhost`), user-info,
+non-root paths, query strings, fragments, empty/invalid ports, and non-loopback
+addresses are rejected. The destination is canonicalized before use, avoiding
+URL-prefix lookalikes and DNS resolution ambiguity. This remains a local lab
 integration, not a production transport or deployment recommendation.
 
 ## Failure behavior
@@ -52,10 +56,10 @@ integration, not a production transport or deployment recommendation.
 
 This adapter intentionally does not implement an enforcement circuit breaker.
 It does not consume signed recommendations, block reads, block PATCH, or claim
-durable audit. The existing analytics store is still volatile \`MemoryStore\`.
+durable audit. The existing analytics store is still volatile `MemoryStore`.
 Route-specific enforcement outage semantics, durable storage, operational
 monitoring, human demonstration and independent/service-owner acceptance
 remain separate release blockers.
 
-Release state remains \`monitor_only\`, zero active enforcement rules, and
-\`release_approved=false\`.
+Release state remains `monitor_only`, zero active enforcement rules, and
+`release_approved=false`.
