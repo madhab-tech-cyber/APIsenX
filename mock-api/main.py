@@ -39,7 +39,6 @@ from authorization import (  # noqa: E402, I001
 
 from sentinel_adapter import (  # noqa: E402
     SentinelObservationAdapter,
-    SentinelObservationMiddleware,
 )
 
 
@@ -52,11 +51,9 @@ app = FastAPI(
     ),
 )
 
-# Optional monitor-only telemetry. No Sentinel response can authorize or deny API work.
-app.add_middleware(
-    SentinelObservationMiddleware,
-    adapter=SentinelObservationAdapter.from_env(),
-)
+# Optional monitor-only telemetry. Delivery is called from the existing
+# request observer after FastAPI has resolved the route template.
+SENTINEL_ADAPTER = SentinelObservationAdapter.from_env()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("apisenx.audit")
@@ -419,6 +416,11 @@ async def observe_request(request: Request, call_next):
     route = request.scope.get("route")
     route_template = getattr(route, "path", "unmatched")
     elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+
+    if SENTINEL_ADAPTER is not None and route_template != "unmatched":
+        await SENTINEL_ADAPTER.publish(
+            request.method, route_template, response.status_code
+        )
 
     logger.info(
         "observation correlation_id=%s method=%s route=%s status=%s elapsed_ms=%s",
