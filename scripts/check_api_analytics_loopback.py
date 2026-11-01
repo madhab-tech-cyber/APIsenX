@@ -201,6 +201,19 @@ def main():
                 for secret in (ingest_token, hmac_key, reader_token)
             ):
                 raise RuntimeError("A runtime credential appeared in service logs")
+            safe_markers = (
+                "sentinel_delivery outcome=",
+                "ingestion outcome=",
+            )
+            safe_lines = [
+                line for line in logs.splitlines()
+                if any(marker in line for marker in safe_markers)
+            ]
+            if safe_lines:
+                print(
+                    f"DIAGNOSTIC {label}_safe_outcomes="
+                    + json.dumps(safe_lines[-12:])
+                )
             handle.close()
             try:
                 os.unlink(handle.name)
