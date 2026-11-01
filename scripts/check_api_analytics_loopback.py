@@ -51,6 +51,8 @@ def wait_ready(url, process, log_file):
 
 def main():
     analytics_port, api_port = free_port(), free_port()
+    while api_port == analytics_port:
+        api_port = free_port()
     ingest_token = secrets.token_urlsafe(36)
     hmac_key = secrets.token_hex(32)
     reader_token = secrets.token_urlsafe(36)
