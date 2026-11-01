@@ -2,7 +2,7 @@
   "metadata_version": "1.0",
   "standard": "OWASP API Security Top 10",
   "edition": 2023,
-  "source_url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/",
+  "source_url": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
   "component_scope": "Member 5 mock API and optional Sentinel observation adapter",
   "disclaimer": "Traceability aid for the synthetic lab only. A mapping and its cited regression tests are not a full OWASP assessment, certification, production assurance, or release approval. Each coverage value applies only to the example described.",
   "coverage_values": {
@@ -15,8 +15,14 @@
       "id": "API1:2023",
       "name": "Broken Object Level Authorization",
       "coverage": "regression_tested",
-      "routes": ["GET /orders/{orderId}", "PATCH /orders/{orderId}"],
-      "evidence_files": ["tests/test_mock_api.py", "tests/test_day22_api_authority_boundary.py"],
+      "routes": [
+        "GET /orders/{orderId}",
+        "PATCH /orders/{orderId}"
+      ],
+      "evidence_files": [
+        "tests/test_mock_api.py",
+        "tests/test_day22_api_authority_boundary.py"
+      ],
       "example": {
         "scenario": "Customer A attempts to read a synthetic order owned by Customer B.",
         "expected_result": "The API returns the generic not-found response and does not disclose the other customer's order."
@@ -26,8 +32,15 @@
       "id": "API2:2023",
       "name": "Broken Authentication",
       "coverage": "regression_tested",
-      "routes": ["GET /orders", "GET /orders/{orderId}", "GET /admin/orders"],
-      "evidence_files": ["tests/test_mock_api.py", "tests/test_day22_optional_observer_noop.py"],
+      "routes": [
+        "GET /orders",
+        "GET /orders/{orderId}",
+        "GET /admin/orders"
+      ],
+      "evidence_files": [
+        "tests/test_mock_api.py",
+        "tests/test_day22_optional_observer_noop.py"
+      ],
       "example": {
         "scenario": "A request calls an authenticated order route without a bearer credential.",
         "expected_result": "The API returns 401; disabling optional observation does not bypass authentication."
@@ -37,8 +50,14 @@
       "id": "API3:2023",
       "name": "Broken Object Property Level Authorization",
       "coverage": "regression_tested",
-      "routes": ["GET /support/orders", "PATCH /orders/{orderId}"],
-      "evidence_files": ["tests/test_mock_api.py", "tests/test_day23_sensitive_field_fixtures.py"],
+      "routes": [
+        "GET /support/orders",
+        "PATCH /orders/{orderId}"
+      ],
+      "evidence_files": [
+        "tests/test_mock_api.py",
+        "tests/test_day23_sensitive_field_fixtures.py"
+      ],
       "example": {
         "scenario": "A PATCH includes an extra email, phone, card_number, or api_key property.",
         "expected_result": "The strict request schema rejects the extra property with 400, leaves the order unchanged, and does not echo the supplied marker."
@@ -48,8 +67,14 @@
       "id": "API4:2023",
       "name": "Unrestricted Resource Consumption",
       "coverage": "partial",
-      "routes": ["GET /orders", "PATCH /orders/{orderId}"],
-      "evidence_files": ["tests/test_rate_limits.py", "tests/test_day19_load_probe.py"],
+      "routes": [
+        "GET /orders",
+        "PATCH /orders/{orderId}"
+      ],
+      "evidence_files": [
+        "tests/test_rate_limits.py",
+        "tests/test_day19_load_probe.py"
+      ],
       "example": {
         "scenario": "A synthetic client exceeds a configured in-process request budget.",
         "expected_result": "The API applies the bounded rate/concurrency response; distributed capacity and authorized live-load acceptance remain unverified."
@@ -59,8 +84,14 @@
       "id": "API5:2023",
       "name": "Broken Function Level Authorization",
       "coverage": "regression_tested",
-      "routes": ["GET /admin/orders", "PATCH /orders/{orderId}"],
-      "evidence_files": ["tests/test_mock_api.py", "tests/test_day22_api_authority_boundary.py"],
+      "routes": [
+        "GET /admin/orders",
+        "PATCH /orders/{orderId}"
+      ],
+      "evidence_files": [
+        "tests/test_mock_api.py",
+        "tests/test_day22_api_authority_boundary.py"
+      ],
       "example": {
         "scenario": "A customer attempts an administrator-only inventory read or order mutation.",
         "expected_result": "The API denies the function-level request and preserves order state."
@@ -80,21 +111,31 @@
     {
       "id": "API7:2023",
       "name": "Server Side Request Forgery",
-      "coverage": "regression_tested",
+      "coverage": "partial",
       "routes": [],
       "component": "mock-api/sentinel_adapter.py",
-      "evidence_files": ["tests/test_day24_sentinel_endpoint_validation.py"],
+      "evidence_files": [
+        "tests/test_day24_sentinel_endpoint_validation.py"
+      ],
       "example": {
         "scenario": "The optional observer is configured with a DNS name, user-info authority, non-loopback IP, or URL-prefix lookalike.",
-        "expected_result": "Configuration is rejected; only a literal IPv4 address in 127.0.0.0/8 over HTTP is accepted."
+        "expected_result": "Configuration is rejected; only a literal IPv4 address in 127.0.0.0/8 over HTTP is accepted. This hardens a fixed environment-configured observer destination; user-supplied URL fetching is not in scope."
       }
     },
     {
       "id": "API8:2023",
       "name": "Security Misconfiguration",
       "coverage": "partial",
-      "routes": ["GET /orders", "GET /admin/orders", "PATCH /orders/{orderId}"],
-      "evidence_files": ["tests/test_mock_api.py", "tests/test_day21_sentinel_adapter.py", "tests/test_day24_sentinel_endpoint_validation.py"],
+      "routes": [
+        "GET /orders",
+        "GET /admin/orders",
+        "PATCH /orders/{orderId}"
+      ],
+      "evidence_files": [
+        "tests/test_mock_api.py",
+        "tests/test_day21_sentinel_adapter.py",
+        "tests/test_day24_sentinel_endpoint_validation.py"
+      ],
       "example": {
         "scenario": "A caller omits the required X-Policy-Version header or configures an unsafe observer endpoint.",
         "expected_result": "The API rejects the missing policy version and the observer rejects unsafe endpoint configuration; production deployment configuration is not assessed."
@@ -104,8 +145,16 @@
       "id": "API9:2023",
       "name": "Improper Inventory Management",
       "coverage": "partial",
-      "routes": ["GET /orders", "GET /orders/{orderId}", "PATCH /orders/{orderId}", "GET /admin/orders", "GET /support/orders"],
-      "evidence_files": ["tests/test_openapi_contract.py"],
+      "routes": [
+        "GET /orders",
+        "GET /orders/{orderId}",
+        "PATCH /orders/{orderId}",
+        "GET /admin/orders",
+        "GET /support/orders"
+      ],
+      "evidence_files": [
+        "tests/test_openapi_contract.py"
+      ],
       "example": {
         "scenario": "Compare the documented OpenAPI operation set with the current FastAPI runtime operation set.",
         "expected_result": "The contract test detects documented/runtime drift; it does not prove discovery of every deployed, hidden, deprecated, or rogue route."
@@ -114,13 +163,15 @@
     {
       "id": "API10:2023",
       "name": "Unsafe Consumption of APIs",
-      "coverage": "regression_tested",
+      "coverage": "partial",
       "routes": [],
       "component": "mock-api/sentinel_adapter.py",
-      "evidence_files": ["tests/test_day22_sentinel_transport_failures.py"],
+      "evidence_files": [
+        "tests/test_day22_sentinel_transport_failures.py"
+      ],
       "example": {
         "scenario": "The optional observer receives a redirect, non-200 response, or delayed response from the local ingestion service.",
-        "expected_result": "Redirects are not followed, only HTTP 200 is accepted, and delivery is bounded by the configured timeout without changing the API response."
+        "expected_result": "Redirects are not followed, only HTTP 200 is accepted, and delivery is bounded by the configured timeout without changing the API response. This covers internal monitor-only telemetry only; third-party API consumption is not assessed."
       }
     }
   ]

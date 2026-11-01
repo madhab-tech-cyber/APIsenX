@@ -31,10 +31,12 @@ references against `docs/openapi.yaml`, evidence-file existence, and
 conservative coverage labels.
 
 API6 is explicitly `not_assessed` because the current lab has no checkout,
-payment, promotion, or transfer business-flow endpoint. API4, API8 and API9
-remain `partial`; for example, contract/runtime route parity is not a
-complete inventory of deployed hidden or rogue routes. The mapping is a
-traceability aid, not a full OWASP assessment or certification.
+payment, promotion, or transfer business-flow endpoint. API4, API7, API8,
+API9 and API10 remain `partial`: the SSRF change hardens a fixed environment-
+configured observer destination, while API10 transport tests cover internal
+monitor-only telemetry rather than third-party API consumption. Contract/runtime
+route parity is not a complete inventory of deployed hidden or rogue routes.
+The mapping is a traceability aid, not a full OWASP assessment or certification.
 
 ## Additional Day 24 security correction — observer SSRF boundary
 

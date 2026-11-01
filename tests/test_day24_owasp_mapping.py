@@ -65,7 +65,7 @@ class Day24OWASPMappingTests(unittest.TestCase):
         for entry in self.mapping["mappings"]:
             self.assertIn(entry["coverage"], allowed)
         self.assertEqual(by_id["API6:2023"]["coverage"], "not_assessed")
-        for identifier in ("API4:2023", "API8:2023", "API9:2023"):
+        for identifier in ("API4:2023", "API7:2023", "API8:2023", "API9:2023", "API10:2023"):
             self.assertEqual(by_id[identifier]["coverage"], "partial")
         self.assertIn("not a full OWASP assessment", self.mapping["disclaimer"])
 
