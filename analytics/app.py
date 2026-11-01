@@ -323,15 +323,42 @@ def create_app(settings=None, clock=None, resolver=None):
             return error(403, "SOURCE_NOT_AUTHORIZED")
         if not fresh(event.observed_at, now):
             return error(422, "EVENT_TIME_INVALID")
-        result = normalizer.normalize(event.method, event.request_target)
-        if result.classification == "invalid":
-            return error(422, result.reason_code)
-        summary = {**result.to_dict(), "status_code": event.status_code}
-        if result.classification != "documented":
+        # The Mock API observation adapter sends only an already-resolved
+        # OpenAPI route template. Accept exact templates directly; never treat
+        # braces or a producer-supplied arbitrary path as a route match.
+        template = next(
+            (item for item in normalizer.templates if event.request_target == item.route),
+            None,
+        )
+        if template is not None:
+            classification = (
+                "documented" if event.method in template.methods
+                else "method_not_documented"
+            )
+            reason_code = (
+                "DOCUMENTED_OPERATION" if classification == "documented"
+                else "METHOD_NOT_IN_CONTRACT"
+            )
+            summary = {
+                "method": event.method,
+                "route": template.route,
+                "classification": classification,
+                "reason_code": reason_code,
+                "contract_version": normalizer.contract_version,
+                "status_code": event.status_code,
+            }
+        else:
+            result = normalizer.normalize(event.method, event.request_target)
+            if result.classification == "invalid":
+                return error(422, result.reason_code)
+            summary = {**result.to_dict(), "status_code": event.status_code}
+            reason_code = result.reason_code
+            classification = result.classification
+        if classification != "documented":
             summary["alert"] = Alert(
                 finding_id=uuid4(),
                 finding_class="shadow_candidate",
-                reason_code=result.reason_code,
+                reason_code=reason_code,
             ).model_dump(mode="json")
         # Dedup is over the masked semantic projection, never raw query/body.
         failed = append(
