@@ -204,6 +204,7 @@ def main():
                 raise RuntimeError("A runtime credential appeared in service logs")
             safe_markers = (
                 "sentinel_delivery status=",
+                "sentinel_observation route=",
                 "ingestion outcome=",
             )
             safe_lines = [
