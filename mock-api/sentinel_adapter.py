@@ -5,9 +5,11 @@ response. API authentication and authorization remain the only access boundary.
 """
 
 import asyncio
+import ipaddress
 import logging
 import os
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 import httpx
@@ -16,17 +18,58 @@ from starlette.middleware.base import BaseHTTPMiddleware
 LOG = logging.getLogger("apisenx.sentinel")
 
 
+def _validated_loopback_endpoint(endpoint):
+    """Return a canonical event URL for a literal IPv4 loopback authority.
+
+    DNS names are deliberately rejected: resolving a hostname at connection
+    time would make the destination depend on mutable resolver configuration.
+    """
+    error = "Sentinel endpoint must be a literal IPv4 loopback HTTP URL"
+    if not isinstance(endpoint, str) or not endpoint:
+        raise ValueError(error)
+
+    try:
+        parsed = urlsplit(endpoint)
+        host = parsed.hostname
+        port = parsed.port
+    except ValueError:
+        raise ValueError(error) from None
+
+    try:
+        address = ipaddress.ip_address(host) if host else None
+    except ValueError:
+        address = None
+
+    if (
+        parsed.scheme.lower() != "http"
+        or address is None
+        or address.version != 4
+        or not address.is_loopback
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.path not in ("", "/")
+        or parsed.query
+        or parsed.fragment
+        or parsed.netloc.endswith(":")
+        or (port is not None and not 1 <= port <= 65535)
+    ):
+        raise ValueError(error)
+
+    authority = str(address)
+    if port is not None:
+        authority += f":{port}"
+    return f"http://{authority}/v1/events"
+
+
 class SentinelObservationAdapter:
     def __init__(self, endpoint, token, source_id, timeout=0.25, transport=None):
-        if not endpoint.startswith(("http://127.0.0.1:", "http://localhost:")):
-            raise ValueError("Sentinel endpoint must be loopback HTTP")
+        self.endpoint = _validated_loopback_endpoint(endpoint)
         if not token or len(token) < 32 or not token.isascii():
             raise ValueError("Sentinel credential must be bounded and non-default")
         if not source_id or len(source_id) > 64:
             raise ValueError("Invalid Sentinel source identity")
         if not 0 < timeout <= 1:
             raise ValueError("Sentinel timeout must be between 0 and 1 second")
-        self.endpoint = endpoint.rstrip("/") + "/v1/events"
         self.token = token
         self.source_id = source_id
         self.timeout = timeout

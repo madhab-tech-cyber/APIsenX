@@ -1,0 +1,26 @@
+{
+  "fixture_id": "DAY23-SYNTHETIC-SENSITIVE-FIELDS-1",
+  "classification": "synthetic-test-only",
+  "records": [
+    {
+      "field": "email",
+      "value": "day23.user@example.invalid",
+      "note": "Reserved invalid example domain; not a mailbox."
+    },
+    {
+      "field": "phone",
+      "value": "+1-202-555-0100",
+      "note": "Fictional 555-01xx telephone range."
+    },
+    {
+      "field": "card_number",
+      "value": "0000-0000-0000-0000",
+      "note": "Invalid all-zero placeholder; not a payment card."
+    },
+    {
+      "field": "api_key",
+      "value": "TEST_ONLY_NOT_A_CREDENTIAL_DAY23",
+      "note": "Non-operational marker; not a credential."
+    }
+  ]
+}
