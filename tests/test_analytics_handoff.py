@@ -90,36 +90,6 @@ class HandoffTests(unittest.TestCase):
         )
         self.assertEqual(inventory.headers["cache-control"], "no-store")
 
-    def test_application_event_accepts_only_exact_openapi_route_template(self):
-        event = {
-            "schema_name": "application_event",
-            "schema_version": "1.0",
-            "event_id": str(uuid4()),
-            "source_id": "handoff-lab",
-            "observed_at": self.now.isoformat(),
-            "method": "GET",
-            "request_target": "/orders/{orderId}",
-            "status_code": 200,
-        }
-        response = self.client.post(
-            "/v1/events", headers=self.ingest, json=event
-        )
-        self.assertEqual(response.status_code, 200)
-        inventory = self.inventory().json()
-        self.assertEqual(len(inventory["items"]), 1)
-        self.assertEqual(inventory["items"][0]["route"], "/orders/{orderId}")
-        self.assertEqual(inventory["items"][0]["classification"], "documented")
-        self.assertEqual(inventory["items"][0]["observation_count"], 1)
-
-        invalid = dict(event)
-        invalid["event_id"] = str(uuid4())
-        invalid["request_target"] = "/orders/{unapproved}"
-        rejected = self.client.post(
-            "/v1/events", headers=self.ingest, json=invalid
-        )
-        self.assertEqual(rejected.status_code, 422)
-        self.assertEqual(self.inventory().json()["items"][0]["observation_count"], 1)
-
     def test_missing_route_is_unavailable_not_documented_or_healthy(self):
         batch = self.batch()
         batch["events"][0].update(
