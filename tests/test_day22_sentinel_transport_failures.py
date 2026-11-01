@@ -93,7 +93,7 @@ class Day22SentinelTransportFailureTests(unittest.IsolatedAsyncioTestCase):
             {"schema_name", "schema_version", "event_id", "source_id",
              "observed_at", "method", "request_target", "status_code"},
         )
-        self.assertEqual(event["request_target"], "/orders/{orderId}")
+        self.assertEqual(event["request_target"], "/orders/apisenx-redacted")
         self.assertEqual(captured["authorization"], "Bearer " + TOKEN)
         self.assertNotIn(TOKEN.encode(), captured["body"])
 
