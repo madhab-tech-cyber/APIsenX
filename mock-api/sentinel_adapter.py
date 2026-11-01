@@ -92,6 +92,14 @@ class SentinelObservationAdapter:
             return False
         if not isinstance(status_code, int) or not 100 <= status_code <= 599:
             return False
+        # Analytics normalizes concrete paths against OpenAPI. Replace every
+        # path parameter with a fixed synthetic value before transmission so
+        # no real object identifier crosses the observation boundary.
+        request_target = re.sub(
+            r"\\{[A-Za-z][A-Za-z0-9_]*\\}", "apisenx-redacted", route_template
+        )
+        if "{" in request_target or "}" in request_target:
+            return False
         event = {
             "schema_name": "application_event",
             "schema_version": "1.0",
@@ -101,7 +109,7 @@ class SentinelObservationAdapter:
             "method": method,
             # Only the framework's matched route template is sent. No raw path,
             # query string, headers, identity, request body or response body.
-            "request_target": route_template,
+            "request_target": request_target,
             "status_code": status_code,
         }
         try:
