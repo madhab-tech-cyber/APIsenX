@@ -162,6 +162,9 @@ def main():
             and item.get("classification") == "documented"
         ]
         if len(matching) != 1 or matching[0]["observation_count"] != 2:
+            # Inventory is already privacy-masked; include it to make CI failures
+            # diagnosable without exposing credentials or raw request targets.
+            print("DIAGNOSTIC masked_analytics_inventory=" + json.dumps(inventory, sort_keys=True))
             raise RuntimeError(
                 "Analytics inventory did not contain both API observations"
             )
