@@ -13,7 +13,6 @@ from urllib.parse import urlsplit
 from uuid import uuid4
 
 import httpx
-from starlette.middleware.base import BaseHTTPMiddleware
 
 LOG = logging.getLogger("apisenx.sentinel")
 
@@ -126,18 +125,36 @@ class SentinelObservationAdapter:
             return False
 
 
-class SentinelObservationMiddleware(BaseHTTPMiddleware):
+class SentinelObservationMiddleware:
+    """Pure ASGI observer so the router's matched route remains in shared scope.
+
+    BaseHTTPMiddleware runs the downstream app with a copied scope; route metadata
+    attached by Starlette's router is therefore not visible to its dispatch request.
+    This pure ASGI wrapper observes the original scope after the downstream app
+    completes and emits only the matched route template and response status.
+    """
+
     def __init__(self, app, adapter=None):
-        super().__init__(app)
+        self.app = app
         self.adapter = adapter
 
-    async def dispatch(self, request, call_next):
-        response = await call_next(request)
-        if self.adapter is not None:
-            route = request.scope.get("route")
-            route_template = getattr(route, "path", None)
-            if route_template:
-                await self.adapter.publish(
-                    request.method, route_template, response.status_code
-                )
-        return response
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http" or self.adapter is None:
+            await self.app(scope, receive, send)
+            return
+
+        status_code = 500
+
+        async def capture_response(message):
+            nonlocal status_code
+            if message.get("type") == "http.response.start":
+                status_code = message.get("status", 500)
+            await send(message)
+
+        await self.app(scope, receive, capture_response)
+
+        route = scope.get("route")
+        route_template = getattr(route, "path", None)
+        if route_template:
+            method = scope.get("method", "")
+            await self.adapter.publish(method, route_template, status_code)
