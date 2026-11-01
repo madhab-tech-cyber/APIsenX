@@ -8,6 +8,7 @@ from pathlib import Path
 
 import httpx
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -97,6 +98,10 @@ class Day23SensitiveFieldFixtureTests(unittest.TestCase):
         )
         app = FastAPI()
         app.include_router(main.app.router)
+        app.add_exception_handler(
+            RequestValidationError,
+            main.app.exception_handlers[RequestValidationError],
+        )
         app.add_middleware(SentinelObservationMiddleware, adapter=adapter)
         client = TestClient(app)
 
