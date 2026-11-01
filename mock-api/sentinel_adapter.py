@@ -119,7 +119,12 @@ class SentinelObservationAdapter:
                     ),
                     timeout=self.timeout,
                 )
-            return response.status_code == 200
+            accepted = response.status_code == 200
+            LOG.info(
+                "sentinel_delivery outcome=%s",
+                "accepted" if accepted else "rejected",
+            )
+            return accepted
         except Exception:
             # Do not log credentials, URLs, raw exception text or request data.
             LOG.info("sentinel_delivery outcome=unavailable")
