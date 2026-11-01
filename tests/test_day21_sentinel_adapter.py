@@ -116,7 +116,7 @@ class SentinelObservationAdapterTests(unittest.TestCase):
             return None
 
         asyncio.run(middleware(scope, receive, send))
-        self.assertEqual(captured["body"]["request_target"], "/orders/{orderId}")
+        self.assertEqual(captured["body"]["request_target"], "/orders/apisenx-redacted")
         self.assertNotIn("order-1001", json.dumps(captured["body"]))
         self.assertEqual(captured["body"]["status_code"], 404)
 
