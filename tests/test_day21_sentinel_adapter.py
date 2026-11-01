@@ -44,7 +44,7 @@ class SentinelObservationAdapterTests(unittest.TestCase):
 
         self.assertTrue(delivered)
         body = captured["body"]
-        self.assertEqual(body["request_target"], "/orders/{orderId}")
+        self.assertEqual(body["request_target"], "/orders/apisenx-redacted")
         self.assertEqual(body["method"], "GET")
         self.assertEqual(body["status_code"], 200)
         self.assertEqual(body["source_id"], "mock_api")
