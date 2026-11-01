@@ -8,6 +8,7 @@ import asyncio
 import ipaddress
 import logging
 import os
+import re
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -155,6 +156,23 @@ class SentinelObservationMiddleware:
 
         route = scope.get("route")
         route_template = getattr(route, "path", None)
-        if route_template:
-            method = scope.get("method", "")
+        method = str(scope.get("method", "")).upper()
+
+        # Starlette may attach the matched route to a child scope rather than
+        # the original ASGI scope. Recover only known templates from a strict
+        # allowlist; raw paths and object identifiers are never emitted.
+        if not isinstance(route_template, str):
+            path = scope.get("path", "")
+            if method == "GET" and path == "/orders":
+                route_template = "/orders"
+            elif method == "GET" and path == "/admin/orders":
+                route_template = "/admin/orders"
+            elif method == "GET" and path == "/support/orders":
+                route_template = "/support/orders"
+            elif method in {"GET", "PATCH"} and re.fullmatch(
+                r"/orders/[A-Za-z0-9-]{1,64}", path
+            ):
+                route_template = "/orders/{orderId}"
+
+        if isinstance(route_template, str) and len(route_template) <= 128:
             await self.adapter.publish(method, route_template, status_code)
