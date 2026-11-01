@@ -172,11 +172,18 @@ class SentinelObservationMiddleware:
         route = scope.get("route")
         route_template = getattr(route, "path", None)
         method = str(scope.get("method", "")).upper()
+        allowed_templates = {
+            "/orders",
+            "/orders/{orderId}",
+            "/admin/orders",
+            "/support/orders",
+        }
 
-        # Starlette may attach the matched route to a child scope rather than
-        # the original ASGI scope. Recover only known templates from a strict
-        # allowlist; raw paths and object identifiers are never emitted.
-        if not isinstance(route_template, str):
+        # Never trust a route-like string unless it is one of the contract's
+        # exact templates. Some middleware/test scopes expose a redacted or raw
+        # concrete path through route.path; recover only from the local allowlist.
+        if route_template not in allowed_templates:
+            route_template = None
             path = scope.get("path", "")
             if method == "GET" and path == "/orders":
                 route_template = "/orders"
