@@ -189,5 +189,11 @@ class SentinelObservationMiddleware:
             ):
                 route_template = "/orders/{orderId}"
 
+        if os.getenv("APISENTINEL_DIAGNOSTICS") == "1":
+            LOG.info(
+                "sentinel_observation route=%s status=%s",
+                route_template if isinstance(route_template, str) else "unmatched",
+                status_code,
+            )
         if isinstance(route_template, str) and len(route_template) <= 128:
             await self.adapter.publish(method, route_template, status_code)
