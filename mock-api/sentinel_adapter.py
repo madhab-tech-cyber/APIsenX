@@ -120,10 +120,12 @@ class SentinelObservationAdapter:
                     timeout=self.timeout,
                 )
             accepted = response.status_code == 200
-            LOG.info(
-                "sentinel_delivery outcome=%s",
-                "accepted" if accepted else "rejected",
-            )
+            if os.getenv("APISENTINEL_DIAGNOSTICS") == "1":
+                LOG.info(
+                    "sentinel_delivery status=%s outcome=%s",
+                    response.status_code,
+                    "accepted" if accepted else "rejected",
+                )
             return accepted
         except Exception:
             # Do not log credentials, URLs, raw exception text or request data.
