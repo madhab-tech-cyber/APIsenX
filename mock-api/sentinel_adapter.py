@@ -175,6 +175,7 @@ class SentinelObservationMiddleware:
         allowed_templates = {
             "/orders",
             "/orders/{orderId}",
+            "/orders/apisenx-redacted",
             "/admin/orders",
             "/support/orders",
         }
