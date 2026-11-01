@@ -80,7 +80,7 @@ class Day22APIAuthorityBoundaryTests(unittest.TestCase):
         self.assertEqual(main.ORDERS["order-1001"]["status"], "shipped")
         event = self.event_payload()
         self.assertEqual(event["method"], "PATCH")
-        self.assertEqual(event["request_target"], "/orders/{orderId}")
+        self.assertEqual(event["request_target"], "/orders/apisenx-redacted")
         self.assertEqual(event["status_code"], 200)
 
     def test_sentinel_acceptance_cannot_override_denied_customer_patch(self):
@@ -99,7 +99,7 @@ class Day22APIAuthorityBoundaryTests(unittest.TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(main.ORDERS["order-1001"], before)
         event = self.event_payload()
-        self.assertEqual(event["request_target"], "/orders/{orderId}")
+        self.assertEqual(event["request_target"], "/orders/apisenx-redacted")
         self.assertEqual(event["status_code"], 403)
 
     def test_telemetry_uses_route_template_and_excludes_query_and_object_values(self):
@@ -112,7 +112,7 @@ class Day22APIAuthorityBoundaryTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         event = self.event_payload()
-        self.assertEqual(event["request_target"], "/orders/{orderId}")
+        self.assertEqual(event["request_target"], "/orders/apisenx-redacted")
         rendered = repr(event)
         self.assertNotIn("order-1001", rendered)
         self.assertNotIn("SYNTHETIC_QUERY_SECRET", rendered)
