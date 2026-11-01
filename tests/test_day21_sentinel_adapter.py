@@ -12,7 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
 
-from sentinel_adapter import SentinelObservationAdapter  # noqa: E402
+from sentinel_adapter import (  # noqa: E402
+    SentinelObservationAdapter,
+    SentinelObservationMiddleware,
+)
 
 
 class SentinelObservationAdapterTests(unittest.TestCase):
@@ -41,7 +44,7 @@ class SentinelObservationAdapterTests(unittest.TestCase):
 
         self.assertTrue(delivered)
         body = captured["body"]
-        self.assertEqual(body["request_target"], "/orders/{orderId}")
+        self.assertEqual(body["request_target"], "/orders/apisenx-redacted")
         self.assertEqual(body["method"], "GET")
         self.assertEqual(body["status_code"], 200)
         self.assertEqual(body["source_id"], "mock_api")
@@ -84,6 +87,38 @@ class SentinelObservationAdapterTests(unittest.TestCase):
         self.assertFalse(asyncio.run(adapter.publish("GET", None, 200)))
         self.assertFalse(asyncio.run(adapter.publish("GET", "/orders", 99)))
         self.assertEqual(calls, [])
+
+    def test_asgi_middleware_recovers_only_allowlisted_route_template(self):
+        captured = {}
+
+        def handler(request):
+            captured["body"] = json.loads(request.content)
+            return httpx.Response(200)
+
+        adapter = self.make_adapter(handler)
+        async def app(scope, receive, send):
+            scope["route"] = None
+            await send({"type": "http.response.start", "status": 404, "headers": []})
+            await send({"type": "http.response.body", "body": b""})
+
+        middleware = SentinelObservationMiddleware(app, adapter)
+        scope = {
+            "type": "http",
+            "method": "GET",
+            "path": "/orders/order-1001",
+            "headers": [],
+        }
+
+        async def receive():
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        async def send(_message):
+            return None
+
+        asyncio.run(middleware(scope, receive, send))
+        self.assertEqual(captured["body"]["request_target"], "/orders/apisenx-redacted")
+        self.assertNotIn("order-1001", json.dumps(captured["body"]))
+        self.assertEqual(captured["body"]["status_code"], 404)
 
     def test_configuration_requires_loopback_endpoint_and_strong_token(self):
         with self.assertRaises(ValueError):

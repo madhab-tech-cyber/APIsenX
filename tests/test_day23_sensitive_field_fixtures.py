@@ -126,7 +126,7 @@ class Day23SensitiveFieldFixtureTests(unittest.TestCase):
         for record in self.fixture["records"]:
             self.assertNotIn(record["value"], response.text)
             self.assertNotIn(record["value"], rendered_event)
-        self.assertEqual(events[0]["request_target"], "/orders/{orderId}")
+        self.assertEqual(events[0]["request_target"], "/orders/apisenx-redacted")
         self.assertEqual(events[0]["status_code"], 400)
 
 
