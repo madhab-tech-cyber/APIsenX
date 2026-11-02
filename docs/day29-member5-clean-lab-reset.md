@@ -24,7 +24,7 @@ python -m unittest discover -s tests -p 'test_day29_lab_reset.py' -v
 ```
 
 The verifier:
-- Checks SHA-256 digests for orders, users, sharing grants and authorization cases.
+- Checks Git blob SHA-1 identifiers for orders, users, sharing grants and authorization cases.
 - Checks the expected synthetic record counts and confirms the sharing-grant fixture is empty.
 - Dirties volatile state in an isolated parent interpreter, starts a separate fresh Python process, and verifies original order state plus empty revoked-token, nonce, rate-limit and subject-semaphore state.
 - Never contacts a network target and never edits checked-in fixture files.
