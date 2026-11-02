@@ -104,7 +104,7 @@ tenant, or other full-order fields.
 ### Customer mutation attempt — expected 403 and no state change
 
 ```powershell
-curl.exe -i -X PATCH http://127.0.0.1:8000/orders/order-1001 -H "Authorization: Bearer lab-user-a-token" -H "X-Policy-Version: AP-1.0" -H "X-Request-Nonce: day28-customer-0001" -H "Content-Type: application/json" -d "{\"status\":\"shipped\"}"
+curl.exe -i -X PATCH http://127.0.0.1:8000/orders/order-1001 -H "Authorization: Bearer lab-user-a-token" -H "X-Policy-Version: AP-1.0" -H "X-Request-Nonce: day28-customer-0001" -H "Content-Type: application/json" -d '{"status":"shipped"}'
 ```
 
 ### Optional authorized admin mutation — expected 200
@@ -112,7 +112,7 @@ curl.exe -i -X PATCH http://127.0.0.1:8000/orders/order-1001 -H "Authorization: 
 Run this last because it changes the in-memory order until the service restarts.
 
 ```powershell
-curl.exe -i -X PATCH http://127.0.0.1:8000/orders/order-1001 -H "Authorization: Bearer lab-admin-token" -H "X-Policy-Version: AP-1.0" -H "X-Request-Nonce: day28-admin-0001" -H "Content-Type: application/json" -d "{\"status\":\"shipped\"}"
+curl.exe -i -X PATCH http://127.0.0.1:8000/orders/order-1001 -H "Authorization: Bearer lab-admin-token" -H "X-Policy-Version: AP-1.0" -H "X-Request-Nonce: day28-admin-0001" -H "Content-Type: application/json" -d '{"status":"shipped"}'
 ```
 
 ## 5. Clean reset

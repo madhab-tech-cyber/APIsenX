@@ -23,15 +23,17 @@ class Day27AuthorizationAttackMatrixTests(unittest.TestCase):
     """Keep allowed owner/share cases and denied BOLA/BFLA cases deterministic."""
 
     def setUp(self):
-        self.original_orders = deepcopy(main.ORDERS)
+        self.previous_orders = deepcopy(main.ORDERS)
+        self.previous_nonces = dict(main.USED_NONCES)
         main.USED_NONCES.clear()
         main.ORDERS.clear()
-        main.ORDERS.update(deepcopy(self.original_orders))
+        main.ORDERS.update(main.load_orders())
 
     def tearDown(self):
         main.USED_NONCES.clear()
+        main.USED_NONCES.update(self.previous_nonces)
         main.ORDERS.clear()
-        main.ORDERS.update(deepcopy(self.original_orders))
+        main.ORDERS.update(self.previous_orders)
 
     @staticmethod
     def order_read_grant(resource_type="order"):
