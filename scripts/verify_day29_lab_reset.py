@@ -6,6 +6,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -88,7 +89,7 @@ print("fresh-process reset: PASS")
     main.USED_NONCES["day29-reset-probe"] = main.utc_now()
     main.SERVICE_LIMITER.consume(("day29-probe",), 1.0, 1.0)
     main.SUBJECT_SEMAPHORES[("day29-probe", "read")] = (
-        __import__("threading").BoundedSemaphore(1)
+        threading.BoundedSemaphore(1)
     )
 
     result = subprocess.run(
