@@ -1,1 +1,11 @@
-ZXhwb3J0IHR5cGUgU2VjdXJpdHlNZXRyaWMgPSB7CiAgbGFiZWw6IHN0cmluZwogIHZhbHVlOiBudW1iZXIgfCBzdHJpbmcKfQoKZXhwb3J0IGNvbnN0IHNlY3VyaXR5TWV0cmljczogU2VjdXJpdHlNZXRyaWNbXSA9IFsKICB7IGxhYmVsOiAnUHJvdGVjdGVkIEVuZHBvaW50cycsIHZhbHVlOiAwIH0sCiAgeyBsYWJlbDogJ09wZW4gQWxlcnRzJywgdmFsdWU6IDAgfSwKICB7IGxhYmVsOiAnQ3JpdGljYWwgRmluZGluZ3MnLCB2YWx1ZTogMCB9LAogIHsgbGFiZWw6ICdTeXN0ZW0gSGVhbHRoJywgdmFsdWU6ICdIZWFsdGh5JyB9LApdCg==
+export type SecurityMetric = {
+  label: string
+  value: number | string
+}
+
+export const securityMetrics: SecurityMetric[] = [
+  { label: 'Protected Endpoints', value: 0 },
+  { label: 'Open Alerts', value: 0 },
+  { label: 'Critical Findings', value: 0 },
+  { label: 'System Health', value: 'Healthy' },
+]
