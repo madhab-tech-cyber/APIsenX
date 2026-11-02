@@ -36,7 +36,8 @@ def verify_fixture_shape(root: Path, manifest: dict) -> None:
         users = json.load(handle)["users"]
     with (root / "mock_data" / "sharing_grants.json").open(encoding="utf-8") as handle:
         grants = json.load(handle)["grants"]
-    with (root / "mock_data" / "authorization_cases.json").open(encoding="utf-8") as handle:
+    cases_path = root / "mock_data" / "authorization_cases.json"
+    with cases_path.open(encoding="utf-8") as handle:
         cases = json.load(handle)["cases"]
 
     if len(orders) != expected["orders"]:
