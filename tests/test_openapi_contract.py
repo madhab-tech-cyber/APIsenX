@@ -202,6 +202,8 @@ class OpenAPIContractTests(unittest.TestCase):
             "Unauthorized",
             "Forbidden",
             "NotFound",
+            "RateLimited",
+            "ServiceUnavailable",
         ):
             with self.subTest(response=response_name):
                 self.assertIn(response_name, responses)
@@ -221,6 +223,37 @@ class OpenAPIContractTests(unittest.TestCase):
         self.assertIn("error", error["required"])
         self.assertIn("code", detail["required"])
         self.assertIn("message", detail["required"])
+
+    def test_rate_limit_and_capacity_failures_are_documented_for_every_operation(self):
+        for path, methods in self.contract["paths"].items():
+            for method, operation in methods.items():
+                if method not in HTTP_METHODS:
+                    continue
+
+                with self.subTest(path=path, method=method):
+                    self.assertIn("429", operation["responses"])
+                    self.assertIn("503", operation["responses"])
+                    self.assertEqual(
+                        operation["responses"]["429"]["$ref"],
+                        "#/components/responses/RateLimited",
+                    )
+                    self.assertEqual(
+                        operation["responses"]["503"]["$ref"],
+                        "#/components/responses/ServiceUnavailable",
+                    )
+
+    def test_error_codes_match_generated_runtime_schema(self):
+        documented = set(
+            self.contract["components"]["schemas"]["Error"]["properties"][
+                "error"
+            ]["properties"]["code"]["enum"]
+        )
+        runtime = set(
+            self.generated["components"]["schemas"]["ErrorDetail"][
+                "properties"
+            ]["code"]["enum"]
+        )
+        self.assertEqual(documented, runtime)
 
     def test_tenant_boundary_is_documented_for_order_operations(self):
         operations = (

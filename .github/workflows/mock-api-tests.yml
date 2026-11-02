@@ -51,10 +51,10 @@ jobs:
           scripts/manage_main_protection.py
 
       - name: Run Ruff lint checks
-        run: python -m ruff check mock-api tests
+        run: python -m ruff check mock-api src tests
 
-      - name: Run Mock API Bandit SAST
-        run: python -m bandit -r mock-api -q
+      - name: Run Mock API and authorization-source Bandit SAST
+        run: python -m bandit -r mock-api src -q
 
       - name: Audit dependency vulnerabilities
         run: python -m pip_audit -r requirements.txt
