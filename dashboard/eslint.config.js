@@ -1,1 +1,22 @@
-aW1wb3J0IGpzIGZyb20gJ0Blc2xpbnQvanMnCmltcG9ydCBnbG9iYWxzIGZyb20gJ2dsb2JhbHMnCmltcG9ydCByZWFjdEhvb2tzIGZyb20gJ2VzbGludC1wbHVnaW4tcmVhY3QtaG9va3MnCmltcG9ydCByZWFjdFJlZnJlc2ggZnJvbSAnZXNsaW50LXBsdWdpbi1yZWFjdC1yZWZyZXNoJwppbXBvcnQgdHNlc2xpbnQgZnJvbSAndHlwZXNjcmlwdC1lc2xpbnQnCmltcG9ydCB7IGRlZmluZUNvbmZpZywgZ2xvYmFsSWdub3JlcyB9IGZyb20gJ2VzbGludC9jb25maWcnCgpleHBvcnQgZGVmYXVsdCBkZWZpbmVDb25maWcoWwogIGdsb2JhbElnbm9yZXMoWydkaXN0J10pLAogIHsKICAgIGZpbGVzOiBbJyoqLyoue3RzLHRzeH0nXSwKICAgIGV4dGVuZHM6IFsKICAgICAganMuY29uZmlncy5yZWNvbW1lbmRlZCwKICAgICAgdHNlc2xpbnQuY29uZmlncy5yZWNvbW1lbmRlZCwKICAgICAgcmVhY3RIb29rcy5jb25maWdzLmZsYXQucmVjb21tZW5kZWQsCiAgICAgIHJlYWN0UmVmcmVzaC5jb25maWdzLnZpdGUsCiAgICBdLAogICAgbGFuZ3VhZ2VPcHRpb25zOiB7CiAgICAgIGdsb2JhbHM6IGdsb2JhbHMuYnJvd3NlciwKICAgIH0sCiAgfSwKXSkK
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
+])
