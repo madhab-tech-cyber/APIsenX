@@ -37,7 +37,7 @@ def reference(value):
     require(
         url.scheme == "https"
         and url.netloc == "github.com"
-        and url.path.startswith("/madhab-tech-cyber/APISenX/"),
+        and url.path.casefold().startswith("/madhab-tech-cyber/apisenx/"),
         "evidence must reference this repository over HTTPS",
     )
 
