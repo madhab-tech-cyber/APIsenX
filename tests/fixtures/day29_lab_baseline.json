@@ -2,10 +2,10 @@
   "schema_version": 1,
   "purpose": "SHA-256 baseline for the checked-in synthetic Mock API lab fixtures. Update only through reviewed fixture changes.",
   "fixtures": {
-    "mock_data/orders.json": "31865963b4980679d6c3de06ff6a2021d5799d3fbcb10973b3af6c84ec96589d",
-    "mock_data/users.json": "1e73646f9294571cdc537333a22d0017486497df445871994e262bad379ec14b",
-    "mock_data/sharing_grants.json": "ef58339732149617b7127749c647942f3229d8dd521170bc122e546fd53af7f1",
-    "mock_data/authorization_cases.json": "30022324674f8b0a5d1beabffee81c8eb0bf8f1586f578184b6d34df059321f5"
+    "mock_data/orders.json": "b02c7ade3b5a0d9627a9c181e18181dd99ac06ec",
+    "mock_data/users.json": "fa5cb3d719d8307d3d9a885f903a45c9a4073741",
+    "mock_data/sharing_grants.json": "bd70c58ca771f55c1a7f36aca964a1da8f205650",
+    "mock_data/authorization_cases.json": "dc6fb494a92a3fc7958f73352fa5afc2c5a7ce33"
   },
   "expected": {
     "orders": 3,
@@ -13,5 +13,6 @@
     "sharing_grants": 0,
     "authorization_cases": 7,
     "classification": "synthetic-test-only"
-  }
+  },
+  "algorithm": "git-blob-sha1"
 }
