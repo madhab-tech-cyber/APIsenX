@@ -1,1 +1,43 @@
-ZXhwb3J0IHR5cGUgRXZpZGVuY2VTZXZlcml0eSA9ICdMb3cnIHwgJ01lZGl1bScgfCAnSGlnaCcgfCAnQ3JpdGljYWwnCgpleHBvcnQgdHlwZSBFdmlkZW5jZVR5cGUgPSAnUmVxdWVzdCBQYXR0ZXJuJyB8ICdBdXRoZW50aWNhdGlvbiBFdmVudCcgfCAnQWNjZXNzIENvbnRyb2wnCgpleHBvcnQgdHlwZSBTZWN1cml0eUV2aWRlbmNlID0gewogIGlkOiBzdHJpbmcKICBmaW5kaW5nOiBzdHJpbmcKICBlbmRwb2ludDogc3RyaW5nCiAgZXZpZGVuY2VUeXBlOiBFdmlkZW5jZVR5cGUKICBzZXZlcml0eTogRXZpZGVuY2VTZXZlcml0eQogIG1hc2tlZEV2aWRlbmNlOiBzdHJpbmcKICBjYXB0dXJlZEF0OiBzdHJpbmcKfQoKZXhwb3J0IGNvbnN0IHNlY3VyaXR5RXZpZGVuY2U6IFNlY3VyaXR5RXZpZGVuY2VbXSA9IFsKICB7CiAgICBpZDogJ0VWRC0wMDEnLAogICAgZmluZGluZzogJ1JlcGVhdGVkIHVuYXV0aG9yaXplZCBhY2Nlc3MgYXR0ZW1wdHMnLAogICAgZW5kcG9pbnQ6ICcvYXBpL2FkbWluJywKICAgIGV2aWRlbmNlVHlwZTogJ0FjY2VzcyBDb250cm9sJywKICAgIHNldmVyaXR5OiAnQ3JpdGljYWwnLAogICAgbWFza2VkRXZpZGVuY2U6ICdHRVQgL2FwaS9hZG1pbiA/IDQwMSDDlyAxMiBmcm9tIFtNQVNLRURdJywKICAgIGNhcHR1cmVkQXQ6ICcyMDI2LTEwLTE2IDA5OjQyJywKICB9LAogIHsKICAgIGlkOiAnRVZELTAwMicsCiAgICBmaW5kaW5nOiAnU3VzcGljaW91cyByZXF1ZXN0IHBhdHRlcm4nLAogICAgZW5kcG9pbnQ6ICcvYXBpL3VzZXJzJywKICAgIGV2aWRlbmNlVHlwZTogJ1JlcXVlc3QgUGF0dGVybicsCiAgICBzZXZlcml0eTogJ0hpZ2gnLAogICAgbWFza2VkRXZpZGVuY2U6ICdHRVQgL2FwaS91c2Vycz9pZD1bTUFTS0VEXSA/IHJlcGVhdGVkIGVudW1lcmF0aW9uJywKICAgIGNhcHR1cmVkQXQ6ICcyMDI2LTEwLTE2IDA5OjM1JywKICB9LAogIHsKICAgIGlkOiAnRVZELTAwMycsCiAgICBmaW5kaW5nOiAnTXVsdGlwbGUgZmFpbGVkIGF1dGhlbnRpY2F0aW9uIGF0dGVtcHRzJywKICAgIGVuZHBvaW50OiAnL2FwaS9sb2dpbicsCiAgICBldmlkZW5jZVR5cGU6ICdBdXRoZW50aWNhdGlvbiBFdmVudCcsCiAgICBzZXZlcml0eTogJ01lZGl1bScsCiAgICBtYXNrZWRFdmlkZW5jZTogJ1BPU1QgL2FwaS9sb2dpbiA/IDQwMSDDlyA3IGZyb20gW01BU0tFRF0nLAogICAgY2FwdHVyZWRBdDogJzIwMjYtMTAtMTYgMDk6MjEnLAogIH0sCl0K
+export type EvidenceSeverity = 'Low' | 'Medium' | 'High' | 'Critical'
+
+export type EvidenceType = 'Request Pattern' | 'Authentication Event' | 'Access Control'
+
+export type SecurityEvidence = {
+  id: string
+  finding: string
+  endpoint: string
+  evidenceType: EvidenceType
+  severity: EvidenceSeverity
+  maskedEvidence: string
+  capturedAt: string
+}
+
+export const securityEvidence: SecurityEvidence[] = [
+  {
+    id: 'EVD-001',
+    finding: 'Repeated unauthorized access attempts',
+    endpoint: '/api/admin',
+    evidenceType: 'Access Control',
+    severity: 'Critical',
+    maskedEvidence: 'GET /api/admin ? 401 × 12 from [MASKED]',
+    capturedAt: '2026-10-16 09:42',
+  },
+  {
+    id: 'EVD-002',
+    finding: 'Suspicious request pattern',
+    endpoint: '/api/users',
+    evidenceType: 'Request Pattern',
+    severity: 'High',
+    maskedEvidence: 'GET /api/users?id=[MASKED] ? repeated enumeration',
+    capturedAt: '2026-10-16 09:35',
+  },
+  {
+    id: 'EVD-003',
+    finding: 'Multiple failed authentication attempts',
+    endpoint: '/api/login',
+    evidenceType: 'Authentication Event',
+    severity: 'Medium',
+    maskedEvidence: 'POST /api/login ? 401 × 7 from [MASKED]',
+    capturedAt: '2026-10-16 09:21',
+  },
+]
