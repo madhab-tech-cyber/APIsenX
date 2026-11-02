@@ -1,1 +1,23 @@
-aW1wb3J0IHsgZGVzY3JpYmUsIGV4cGVjdCwgaXQgfSBmcm9tICd2aXRlc3QnCmltcG9ydCB7IGFwaUVuZHBvaW50cyB9IGZyb20gJy4uL2VuZHBvaW50RGF0YScKCmRlc2NyaWJlKCdFbmRwb2ludCBzZWN1cml0eSBjb250cm9scycsICgpID0+IHsKICBpdCgnbWFya3MgcHJvdGVjdGVkIGVuZHBvaW50cyBhcyBhdXRoZW50aWNhdGlvbi1yZXF1aXJlZCcsICgpID0+IHsKICAgIGNvbnN0IHByb3RlY3RlZEVuZHBvaW50cyA9IGFwaUVuZHBvaW50cy5maWx0ZXIoCiAgICAgIChlbmRwb2ludCkgPT4gZW5kcG9pbnQuc3RhdHVzID09PSAnUHJvdGVjdGVkJywKICAgICkKCiAgICBleHBlY3QocHJvdGVjdGVkRW5kcG9pbnRzLmxlbmd0aCkudG9CZUdyZWF0ZXJUaGFuKDApCiAgICBleHBlY3QocHJvdGVjdGVkRW5kcG9pbnRzLmV2ZXJ5KChlbmRwb2ludCkgPT4gZW5kcG9pbnQuYXV0aFJlcXVpcmVkKSkudG9CZSh0cnVlKQogIH0pCgogIGl0KCdyZXF1aXJlcyBhdXRoZW50aWNhdGlvbiBmb3IgdGhlIGhpZ2gtcmlzayBhZG1pbiBlbmRwb2ludCcsICgpID0+IHsKICAgIGNvbnN0IGFkbWluRW5kcG9pbnQgPSBhcGlFbmRwb2ludHMuZmluZCgKICAgICAgKGVuZHBvaW50KSA9PiBlbmRwb2ludC5lbmRwb2ludCA9PT0gJy9hcGkvYWRtaW4nLAogICAgKQoKICAgIGV4cGVjdChhZG1pbkVuZHBvaW50KS50b0JlRGVmaW5lZCgpCiAgICBleHBlY3QoYWRtaW5FbmRwb2ludD8ucmlzaykudG9CZSgnSGlnaCcpCiAgICBleHBlY3QoYWRtaW5FbmRwb2ludD8uYXV0aFJlcXVpcmVkKS50b0JlKHRydWUpCiAgfSkKfSkK
+import { describe, expect, it } from 'vitest'
+import { apiEndpoints } from '../endpointData'
+
+describe('Endpoint security controls', () => {
+  it('marks protected endpoints as authentication-required', () => {
+    const protectedEndpoints = apiEndpoints.filter(
+      (endpoint) => endpoint.status === 'Protected',
+    )
+
+    expect(protectedEndpoints.length).toBeGreaterThan(0)
+    expect(protectedEndpoints.every((endpoint) => endpoint.authRequired)).toBe(true)
+  })
+
+  it('requires authentication for the high-risk admin endpoint', () => {
+    const adminEndpoint = apiEndpoints.find(
+      (endpoint) => endpoint.endpoint === '/api/admin',
+    )
+
+    expect(adminEndpoint).toBeDefined()
+    expect(adminEndpoint?.risk).toBe('High')
+    expect(adminEndpoint?.authRequired).toBe(true)
+  })
+})
