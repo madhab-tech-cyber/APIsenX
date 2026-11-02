@@ -1,1 +1,57 @@
-IyBDb250cmlidXRpbmcKCiMjIExvY2FsIHNldHVwCgpgYGBiYXNoCnB5dGhvbjMgLW0gdmVudiAudmVudiAmJiBzb3VyY2UgLnZlbnYvYmluL2FjdGl2YXRlCnBpcCBpbnN0YWxsIC1yIHJlcXVpcmVtZW50cy1kZXYudHh0CnB5dGhvbiAtbSB1bml0dGVzdCBkaXNjb3ZlciAtcyB0ZXN0cyAgICMgY2Fub25pY2FsIHN1aXRlICh3aGF0IENJIHJ1bnMpCnB5dGVzdCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjIGFsc28gc3VwcG9ydGVkOyBjb25maWcgaW4gcHlwcm9qZWN0LnRvbWwKcHl0aG9uIHNjcmlwdHMvY2hlY2tfbm9fYm9tLnB5ICAgICAgICAgICMgY29uZmlnIGZpbGVzIG11c3Qgbm90IHN0YXJ0IHdpdGggYSBCT00KYGBgCgpTYXZlIGZpbGVzIGFzIFVURi04ICoqd2l0aG91dCoqIEJPTSDigJQgYSBCT00gaW4gYHB5cHJvamVjdC50b21sYCBicmVha3MKUHl0aG9uJ3MgVE9NTCBwYXJzZXIgYW5kIGtpbGxzIHB5dGVzdCBiZWZvcmUgY29sbGVjdGlvbi4KCiMjIEJyYW5jaCB3b3JrZmxvdwoKMS4gV29yayBvbmx5IG9uIHRoZSBhc3NpZ25lZCBtZW1iZXIgYnJhbmNoLgoyLiBMaW5rIHRoZSB3b3JrIHRvIGEgc2NvcGVkIGlzc3VlIHdpdGggYWNjZXB0YW5jZSBldmlkZW5jZS4KMy4gU3luY2hyb25pc2UgcmV2aWV3ZWQgYG1haW5gIGJlZm9yZSBzdGFydGluZyB3b3JrLgo0LiBLZWVwIGNoYW5nZXMgc21hbGwgYW5kIGxpbWl0ZWQgdG8gdGhlIGFzc2lnbmVkIGlzc3VlLgo1LiBSdW4gcmVsZXZhbnQgdGVzdHMgYW5kIHNlY3VyaXR5IGNoZWNrcy4KNi4gSW5zcGVjdCB1bnN0YWdlZCBhbmQgc3RhZ2VkIGNoYW5nZXMgYmVmb3JlIGNvbW1pdHRpbmcuCjcuIFB1c2ggdGhlIGJyYW5jaCBhbmQgb3BlbiBvciB1cGRhdGUgYSBwdWxsIHJlcXVlc3QuCjguIE9idGFpbiB0aGUgcmVxdWlyZWQgb3duZXIgcmV2aWV3IGJlZm9yZSBtZXJnZS4KCkRvIG5vdCBmb3JjZSBwdXNoIHNoYXJlZCBicmFuY2hlcyBvciBjb21taXQgZGlyZWN0bHkgdG8gYG1haW5gLgoKVGhlIGRldGFpbGVkIHJlcXVpcmVtZW50cywgcmV2aWV3ZXIgbWF0cml4LCBhcHByb3ZhbCBzdGF0ZXMgYW5kIG1lcmdlIGJsb2NrZXJzCmFyZSBkZWZpbmVkIGluCltgZG9jcy9jb2RpbmctYW5kLXJldmlldy1zdGFuZGFyZHMubWRgXShkb2NzL2NvZGluZy1hbmQtcmV2aWV3LXN0YW5kYXJkcy5tZCkuCgojIyBDb21taXQgZm9ybWF0CgpVc2UgYHR5cGUoc2NvcGUpOiBjbGVhciByZXN1bHRgLgoKRXhhbXBsZXM6CgotIGBmZWF0KGVicGYpOiBlbWl0IGJvdW5kZWQgc29ja2V0IGV2ZW50YAotIGB0ZXN0KGFwaSk6IGRlbnkgY3Jvc3MtdXNlciBvcmRlciBhY2Nlc3NgCi0gYGZpeChtYXNraW5nKTogcmVkYWN0IGJlYXJlciB0b2tlbnNgCi0gYGRvY3ModGhyZWF0LW1vZGVsKTogYWRkIGRhc2hib2FyZCB0cnVzdCBib3VuZGFyeWAKLSBgY2hvcmUoZGVwcyk6IHBhdGNoIHZ1bG5lcmFibGUgcGFyc2VyYAoKIyMgUHVsbC1yZXF1ZXN0IGV2aWRlbmNlCgpEZXNjcmliZSB0aGUgbGlua2VkIGlzc3VlLCB3aGF0IGNoYW5nZWQsIHdoeSBpdCBjaGFuZ2VkLCBleGFjdCBjaGVja3MgYW5kIHRlc3QKY291bnRzLCBzZWN1cml0eSBpbXBhY3QsIHNjcmVlbnNob3RzIG9yIG1lYXN1cmVtZW50cyB3aGVuIHJlbGV2YW50LCByZXF1aXJlZApyZXZpZXdlcnMsIHJvbGxiYWNrIGFuZCByZW1haW5pbmcgbGltaXRhdGlvbnMuCgpBIHplcm8tdGVzdCBydW4gaXMgbm90IHBhc3NpbmcgZXZpZGVuY2UuIERvIG5vdCBtZXJnZSBzZWN1cml0eS1zZW5zaXRpdmUgd29yawp3aXRob3V0IHRoZSByZXF1aXJlZCBjb21wb25lbnQgb3duZXIgYW5kIE1lbWJlciAxIGFwcHJvdmFsLgoKIyMgU2Vuc2l0aXZlIGRhdGEKCk5ldmVyIGNvbW1pdCBjcmVkZW50aWFscywgcHJpdmF0ZSBrZXlzLCBwb3B1bGF0ZWQgYC5lbnZgIGZpbGVzLCBwZXJzb25hbCBkYXRhLCBwYWNrZXQgY2FwdHVyZXMsIHNlbnNpdGl2ZSBsb2dzLCBvciBwcm9kdWN0aW9uIGluZm9ybWF0aW9uLgoK
+# Contributing
+
+## Local setup
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+python -m unittest discover -s tests   # canonical suite (what CI runs)
+pytest                                  # also supported; config in pyproject.toml
+python scripts/check_no_bom.py          # config files must not start with a BOM
+```
+
+Save files as UTF-8 **without** BOM — a BOM in `pyproject.toml` breaks
+Python's TOML parser and kills pytest before collection.
+
+## Branch workflow
+
+1. Work only on the assigned member branch.
+2. Link the work to a scoped issue with acceptance evidence.
+3. Synchronise reviewed `main` before starting work.
+4. Keep changes small and limited to the assigned issue.
+5. Run relevant tests and security checks.
+6. Inspect unstaged and staged changes before committing.
+7. Push the branch and open or update a pull request.
+8. Obtain the required owner review before merge.
+
+Do not force push shared branches or commit directly to `main`.
+
+The detailed requirements, reviewer matrix, approval states and merge blockers
+are defined in
+[`docs/coding-and-review-standards.md`](docs/coding-and-review-standards.md).
+
+## Commit format
+
+Use `type(scope): clear result`.
+
+Examples:
+
+- `feat(ebpf): emit bounded socket event`
+- `test(api): deny cross-user order access`
+- `fix(masking): redact bearer tokens`
+- `docs(threat-model): add dashboard trust boundary`
+- `chore(deps): patch vulnerable parser`
+
+## Pull-request evidence
+
+Describe the linked issue, what changed, why it changed, exact checks and test
+counts, security impact, screenshots or measurements when relevant, required
+reviewers, rollback and remaining limitations.
+
+A zero-test run is not passing evidence. Do not merge security-sensitive work
+without the required component owner and Member 1 approval.
+
+## Sensitive data
+
+Never commit credentials, private keys, populated `.env` files, personal data, packet captures, sensitive logs, or production information.
+
