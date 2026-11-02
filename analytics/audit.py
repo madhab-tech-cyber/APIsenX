@@ -8,9 +8,16 @@ from analytics.store import MemoryStore
 
 
 class AuditWriter:
-    def __init__(self, key, capacity=1000, routes=()):
+    def __init__(self, key, capacity=1000, routes=(), store=None):
         self._key = key
-        self.store = MemoryStore(key, capacity, retention_seconds=300, routes=routes)
+        # Default remains the volatile MemoryStore. A DurableStore (issue #83)
+        # can be injected explicitly; the durable-audit design still requires
+        # its own human acceptance before becoming any default.
+        self.store = (
+            store
+            if store is not None
+            else MemoryStore(key, capacity, retention_seconds=300, routes=routes)
+        )
 
     def append(self, observation, detection, contract_version, now):
         if detection.reason_code not in REASONS or detection.rule_id not in RULES:

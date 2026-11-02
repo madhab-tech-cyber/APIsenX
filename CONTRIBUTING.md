@@ -1,5 +1,18 @@
 # Contributing
 
+## Local setup
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+python -m unittest discover -s tests   # canonical suite (what CI runs)
+pytest                                  # also supported; config in pyproject.toml
+python scripts/check_no_bom.py          # config files must not start with a BOM
+```
+
+Save files as UTF-8 **without** BOM — a BOM in `pyproject.toml` breaks
+Python's TOML parser and kills pytest before collection.
+
 ## Branch workflow
 
 1. Work only on the assigned member branch.

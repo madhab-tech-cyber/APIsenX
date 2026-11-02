@@ -1,8 +1,1 @@
-﻿[tool.ruff.lint]
-select = ["E", "F", "I", "B", "PERF"]
-
-[tool.ruff.lint.per-file-ignores]
-"mock-api/main.py" = ["B008", "E402"]
-"tests/test_authorization.py" = ["E402"]
-"tests/test_mock_api.py" = ["E402"]
-"tests/test_openapi_contract.py" = ["E402"]
+W3Rvb2wucnVmZi5saW50XQpzZWxlY3QgPSBbIkUiLCAiRiIsICJJIiwgIkIiLCAiUEVSRiJdCgpbdG9vbC5ydWZmLmxpbnQucGVyLWZpbGUtaWdub3Jlc10KIm1vY2stYXBpL21haW4ucHkiID0gWyJCMDA4IiwgIkU0MDIiXQoidGVzdHMvdGVzdF9hdXRob3JpemF0aW9uLnB5IiA9IFsiRTQwMiJdCiJ0ZXN0cy90ZXN0X21vY2tfYXBpLnB5IiA9IFsiRTQwMiJdCiJ0ZXN0cy90ZXN0X29wZW5hcGlfY29udHJhY3QucHkiID0gWyJFNDAyIl0KClt0b29sLnB5dGVzdC5pbmlfb3B0aW9uc10KdGVzdHBhdGhzID0gWyJ0ZXN0cyJdCg==
