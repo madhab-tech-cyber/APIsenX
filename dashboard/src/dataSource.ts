@@ -1,1 +1,17 @@
-Ly8gRGF0YS1zb3VyY2Ugc2VhbSBmb3IgdGhlIGRhc2hib2FyZC4KLy8KLy8gImZpeHR1cmUiICh0aGUgZGVmYXVsdCkgcmVuZGVycyB0aGUgYnVuZGxlZCBzeW50aGV0aWMgZGF0YSBtb2R1bGVzCi8vIChzZWN1cml0eURhdGEsIGVuZHBvaW50RGF0YSwgYWxlcnREYXRhLCBldmlkZW5jZURhdGEsIGhlYWx0aERhdGEpLgovLyAibGl2ZSIgaXMgcmVzZXJ2ZWQgZm9yIHRoZSBhbmFseXRpY3MgbWFuYWdlbWVudCBBUEk6IGl0IGlzIE5PVCB3aXJlZCB5ZXQsCi8vIGFuZCB0aGUgbGFiZWwgc2F5cyBzbyDigJQgZml4dHVyZSBkYXRhIG11c3QgbmV2ZXIgYmUgbWlzdGFrZW4gZm9yIGxpdmUKLy8gdGVsZW1ldHJ5IGluIGEgZGVtbyBvciBhIHJldmlldy4KZXhwb3J0IHR5cGUgRGF0YVNvdXJjZSA9ICdmaXh0dXJlJyB8ICdsaXZlJwoKY29uc3QgcmVxdWVzdGVkID0gaW1wb3J0Lm1ldGEuZW52LlZJVEVfREFUQV9TT1VSQ0UgYXMgc3RyaW5nIHwgdW5kZWZpbmVkCgpleHBvcnQgY29uc3QgREFUQV9TT1VSQ0U6IERhdGFTb3VyY2UgPSByZXF1ZXN0ZWQgPT09ICdsaXZlJyA/ICdsaXZlJyA6ICdmaXh0dXJlJwoKZXhwb3J0IGNvbnN0IERBVEFfU09VUkNFX0xBQkVMID0KICBEQVRBX1NPVVJDRSA9PT0gJ2xpdmUnCiAgICA/ICdEYXRhIHNvdXJjZTogTElWRSAobm90IHlldCB3aXJlZCDigJQgc2hvd2luZyBmaXh0dXJlcyknCiAgICA6ICdEYXRhIHNvdXJjZTogRklYVFVSRSAoc3ludGhldGljIGRlbW8gZGF0YSknCg==
+// Data-source seam for the dashboard.
+//
+// "fixture" (the default) renders the bundled synthetic data modules
+// (securityData, endpointData, alertData, evidenceData, healthData).
+// "live" is reserved for the analytics management API: it is NOT wired yet,
+// and the label says so — fixture data must never be mistaken for live
+// telemetry in a demo or a review.
+export type DataSource = 'fixture' | 'live'
+
+const requested = import.meta.env.VITE_DATA_SOURCE as string | undefined
+
+export const DATA_SOURCE: DataSource = requested === 'live' ? 'live' : 'fixture'
+
+export const DATA_SOURCE_LABEL =
+  DATA_SOURCE === 'live'
+    ? 'Data source: LIVE (not yet wired — showing fixtures)'
+    : 'Data source: FIXTURE (synthetic demo data)'
