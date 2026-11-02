@@ -1,1 +1,39 @@
-ZXhwb3J0IHR5cGUgQWxlcnRTZXZlcml0eSA9ICdMb3cnIHwgJ01lZGl1bScgfCAnSGlnaCcgfCAnQ3JpdGljYWwnCgpleHBvcnQgdHlwZSBBbGVydFN0YXR1cyA9ICdPcGVuJyB8ICdJbnZlc3RpZ2F0aW5nJyB8ICdSZXNvbHZlZCcKCmV4cG9ydCB0eXBlIFNlY3VyaXR5QWxlcnQgPSB7CiAgaWQ6IHN0cmluZwogIHNldmVyaXR5OiBBbGVydFNldmVyaXR5CiAgdGl0bGU6IHN0cmluZwogIGVuZHBvaW50OiBzdHJpbmcKICBzdGF0dXM6IEFsZXJ0U3RhdHVzCiAgZGV0ZWN0ZWRBdDogc3RyaW5nCn0KCmV4cG9ydCBjb25zdCBzZWN1cml0eUFsZXJ0czogU2VjdXJpdHlBbGVydFtdID0gWwogIHsKICAgIGlkOiAnQUxULTAwMScsCiAgICBzZXZlcml0eTogJ0NyaXRpY2FsJywKICAgIHRpdGxlOiAnUmVwZWF0ZWQgdW5hdXRob3JpemVkIGFjY2VzcyBhdHRlbXB0cycsCiAgICBlbmRwb2ludDogJy9hcGkvYWRtaW4nLAogICAgc3RhdHVzOiAnT3BlbicsCiAgICBkZXRlY3RlZEF0OiAnMjAyNi0xMC0xNiAwOTo0MicsCiAgfSwKICB7CiAgICBpZDogJ0FMVC0wMDInLAogICAgc2V2ZXJpdHk6ICdIaWdoJywKICAgIHRpdGxlOiAnU3VzcGljaW91cyByZXF1ZXN0IHBhdHRlcm4gZGV0ZWN0ZWQnLAogICAgZW5kcG9pbnQ6ICcvYXBpL3VzZXJzJywKICAgIHN0YXR1czogJ0ludmVzdGlnYXRpbmcnLAogICAgZGV0ZWN0ZWRBdDogJzIwMjYtMTAtMTYgMDk6MzUnLAogIH0sCiAgewogICAgaWQ6ICdBTFQtMDAzJywKICAgIHNldmVyaXR5OiAnTWVkaXVtJywKICAgIHRpdGxlOiAnTXVsdGlwbGUgZmFpbGVkIGF1dGhlbnRpY2F0aW9uIGF0dGVtcHRzJywKICAgIGVuZHBvaW50OiAnL2FwaS9sb2dpbicsCiAgICBzdGF0dXM6ICdPcGVuJywKICAgIGRldGVjdGVkQXQ6ICcyMDI2LTEwLTE2IDA5OjIxJywKICB9LApdCg==
+export type AlertSeverity = 'Low' | 'Medium' | 'High' | 'Critical'
+
+export type AlertStatus = 'Open' | 'Investigating' | 'Resolved'
+
+export type SecurityAlert = {
+  id: string
+  severity: AlertSeverity
+  title: string
+  endpoint: string
+  status: AlertStatus
+  detectedAt: string
+}
+
+export const securityAlerts: SecurityAlert[] = [
+  {
+    id: 'ALT-001',
+    severity: 'Critical',
+    title: 'Repeated unauthorized access attempts',
+    endpoint: '/api/admin',
+    status: 'Open',
+    detectedAt: '2026-10-16 09:42',
+  },
+  {
+    id: 'ALT-002',
+    severity: 'High',
+    title: 'Suspicious request pattern detected',
+    endpoint: '/api/users',
+    status: 'Investigating',
+    detectedAt: '2026-10-16 09:35',
+  },
+  {
+    id: 'ALT-003',
+    severity: 'Medium',
+    title: 'Multiple failed authentication attempts',
+    endpoint: '/api/login',
+    status: 'Open',
+    detectedAt: '2026-10-16 09:21',
+  },
+]
