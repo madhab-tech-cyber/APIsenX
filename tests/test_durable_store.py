@@ -1,1 +1,119 @@
-IiIiRHVyYWJsZVN0b3JlIHBhcml0eSBhbmQgcmVzdGFydC1yZWNvdmVyeSB0ZXN0cyAoaXNzdWUgIzgzIGNhbmRpZGF0ZSkuCgpUaGVzZSB0ZXN0cyBwcm92ZSB0aGUgU1FMaXRlIHN0b3JlIGtlZXBzIE1lbW9yeVN0b3JlJ3MgY29udHJhY3Qg4oCUIG1hc2tpbmcKZ2F0ZSwgZGVkdXAsIGNvbmZsaWN0IGF0b21pY2l0eSwgY2FwYWNpdHkgYW5kIHJldGVudGlvbiDigJQgd2hpbGUgc3Vydml2aW5nIGEKcHJvY2VzcyByZXN0YXJ0LiBUaGV5IGRvIG5vdCBjbGFpbSBEYXkgMjAgZHVyYWJsZS1hdWRpdCBhY2NlcHRhbmNlLCB3aGljaApzdGlsbCByZXF1aXJlcyB0aGUgZGVzaWduIHJldmlldyB0cmFja2VkIGluIGlzc3VlICM4My4KIiIiCgppbXBvcnQgdGVtcGZpbGUKaW1wb3J0IHVuaXR0ZXN0CmZyb20gZGF0ZXRpbWUgaW1wb3J0IGRhdGV0aW1lLCB0aW1lZGVsdGEsIHRpbWV6b25lCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKZnJvbSBhbmFseXRpY3MuZHVyYWJsZV9zdG9yZSBpbXBvcnQgRHVyYWJsZVN0b3JlCmZyb20gYW5hbHl0aWNzLnN0b3JlIGltcG9ydCBTdG9yZUVycm9yCgpDT05UUkFDVCA9ICJzaGEyNTY6IiArICJhIiAqIDY0CktFWSA9IGIiayIgKiAzMgoKCmRlZiBzdW1tYXJ5KHJvdXRlPSIvb3JkZXJzIik6CiAgICByZXR1cm4gewogICAgICAgICJtZXRob2QiOiAiR0VUIiwKICAgICAgICAicm91dGUiOiByb3V0ZSwKICAgICAgICAiY2xhc3NpZmljYXRpb24iOiAiZG9jdW1lbnRlZCIsCiAgICAgICAgInJlYXNvbl9jb2RlIjogIkRPQ1VNRU5URURfT1BFUkFUSU9OIiwKICAgICAgICAiY29udHJhY3RfdmVyc2lvbiI6IENPTlRSQUNULAogICAgICAgICJzdGF0dXNfY29kZSI6IDIwMCwKICAgIH0KCgpjbGFzcyBEdXJhYmxlU3RvcmVUZXN0cyh1bml0dGVzdC5UZXN0Q2FzZSk6CiAgICBkZWYgc2V0VXAoc2VsZik6CiAgICAgICAgc2VsZi5ub3cgPSBkYXRldGltZSgyMDI2LCAxMCwgMjksIDEyLCAwLCB0emluZm89dGltZXpvbmUudXRjKQogICAgICAgIHNlbGYudG1wID0gdGVtcGZpbGUuVGVtcG9yYXJ5RGlyZWN0b3J5KCkKICAgICAgICBzZWxmLmRiX3BhdGggPSBQYXRoKHNlbGYudG1wLm5hbWUpIC8gInN0b3JlLmRiIgogICAgICAgIHNlbGYuc3RvcmUgPSBEdXJhYmxlU3RvcmUoCiAgICAgICAgICAgIEtFWSwgc2VsZi5kYl9wYXRoLCBjYXBhY2l0eT0zLCByZXRlbnRpb25fc2Vjb25kcz02MCwgcm91dGVzPXsiL29yZGVycyJ9CiAgICAgICAgKQoKICAgIGRlZiB0ZWFyRG93bihzZWxmKToKICAgICAgICBzZWxmLnN0b3JlLmNsb3NlKCkKICAgICAgICBzZWxmLnRtcC5jbGVhbnVwKCkKCiAgICBkZWYgYXBwZW5kKHNlbGYsIGV2ZW50X2lkLCBpdGVtPU5vbmUsIGRpZ2VzdD1Ob25lLCBzdG9yZT1Ob25lLCBub3c9Tm9uZSk6CiAgICAgICAgdGFyZ2V0ID0gc3RvcmUgb3Igc2VsZi5zdG9yZQogICAgICAgIHRhcmdldC5hcHBlbmQoCiAgICAgICAgICAgIFsoInNvdXJjZS1hIiwgZXZlbnRfaWQsIGRpZ2VzdCBvciAoImQiICogNjQpLCBpdGVtIG9yIHN1bW1hcnkoKSldLAogICAgICAgICAgICBub3cgb3Igc2VsZi5ub3csCiAgICAgICAgKQoKICAgIGRlZiB0ZXN0X2FwcGVuZF9hbmRfc25hcHNob3Rfcm91bmR0cmlwKHNlbGYpOgogICAgICAgIHNlbGYuYXBwZW5kKCJldmVudC0xIikKICAgICAgICByb3dzID0gc2VsZi5zdG9yZS5zbmFwc2hvdChzZWxmLm5vdykKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKFtyb3dbImV2ZW50X2lkIl0gZm9yIHJvdyBpbiByb3dzXSwgWyJldmVudC0xIl0pCiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChyb3dzWzBdWyJyb3V0ZSJdLCAiL29yZGVycyIpCiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChyb3dzWzBdWyJyZWNlaXZlZF9hdCJdLCBzZWxmLm5vdykKCiAgICBkZWYgdGVzdF9yb3dzX3N1cnZpdmVfcmVzdGFydChzZWxmKToKICAgICAgICBzZWxmLmFwcGVuZCgiZXZlbnQtMSIpCiAgICAgICAgc2VsZi5hcHBlbmQoImV2ZW50LTIiKQogICAgICAgIHNlbGYuc3RvcmUuY2xvc2UoKQogICAgICAgIHJlb3BlbmVkID0gRHVyYWJsZVN0b3JlKAogICAgICAgICAgICBLRVksIHNlbGYuZGJfcGF0aCwgY2FwYWNpdHk9MywgcmV0ZW50aW9uX3NlY29uZHM9NjAsIHJvdXRlcz17Ii9vcmRlcnMifQogICAgICAgICkKICAgICAgICB0cnk6CiAgICAgICAgICAgIHJvd3MgPSByZW9wZW5lZC5zbmFwc2hvdChzZWxmLm5vdykKICAgICAgICAgICAgc2VsZi5hc3NlcnRFcXVhbCgKICAgICAgICAgICAgICAgIFtyb3dbImV2ZW50X2lkIl0gZm9yIHJvdyBpbiByb3dzXSwgWyJldmVudC0xIiwgImV2ZW50LTIiXQogICAgICAgICAgICApCiAgICAgICAgZmluYWxseToKICAgICAgICAgICAgcmVvcGVuZWQuY2xvc2UoKQogICAgICAgICAgICBzZWxmLnN0b3JlID0gRHVyYWJsZVN0b3JlKAogICAgICAgICAgICAgICAgS0VZLCBzZWxmLmRiX3BhdGgsIGNhcGFjaXR5PTMsIHJldGVudGlvbl9zZWNvbmRzPTYwLCByb3V0ZXM9eyIvb3JkZXJzIn0KICAgICAgICAgICAgKQoKICAgIGRlZiB0ZXN0X2NvbmZsaWN0aW5nX2R1cGxpY2F0ZV9yZWplY3RzX2VudGlyZV9iYXRjaChzZWxmKToKICAgICAgICBzZWxmLmFwcGVuZCgiZXhpc3RpbmciLCBkaWdlc3Q9ImEiICogNjQpCiAgICAgICAgd2l0aCBzZWxmLmFzc2VydFJhaXNlc1JlZ2V4KFN0b3JlRXJyb3IsICJFVkVOVF9JRF9DT05GTElDVCIpOgogICAgICAgICAgICBzZWxmLnN0b3JlLmFwcGVuZCgKICAgICAgICAgICAgICAgIFsKICAgICAgICAgICAgICAgICAgICAoInNvdXJjZS1hIiwgIm5ldy1iZWZvcmUtY29uZmxpY3QiLCAiYiIgKiA2NCwgc3VtbWFyeSgpKSwKICAgICAgICAgICAgICAgICAgICAoInNvdXJjZS1hIiwgImV4aXN0aW5nIiwgImMiICogNjQsIHN1bW1hcnkoKSksCiAgICAgICAgICAgICAgICBdLAogICAgICAgICAgICAgICAgc2VsZi5ub3csCiAgICAgICAgICAgICkKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKAogICAgICAgICAgICBbclsiZXZlbnRfaWQiXSBmb3IgciBpbiBzZWxmLnN0b3JlLnNuYXBzaG90KHNlbGYubm93KV0sIFsiZXhpc3RpbmciXQogICAgICAgICkKCiAgICBkZWYgdGVzdF9pZGVudGljYWxfZHVwbGljYXRlX2lzX2lkZW1wb3RlbnQoc2VsZik6CiAgICAgICAgc2VsZi5hcHBlbmQoInNhbWUiLCBkaWdlc3Q9ImEiICogNjQpCiAgICAgICAgc2VsZi5hcHBlbmQoInNhbWUiLCBkaWdlc3Q9ImEiICogNjQsIG5vdz1zZWxmLm5vdyArIHRpbWVkZWx0YShzZWNvbmRzPTEpKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwobGVuKHNlbGYuc3RvcmUuc25hcHNob3Qoc2VsZi5ub3cpKSwgMSkKCiAgICBkZWYgdGVzdF9jYXBhY2l0eV9yZWplY3RlZChzZWxmKToKICAgICAgICBzZWxmLmFwcGVuZCgiZXZlbnQtMSIpCiAgICAgICAgc2VsZi5hcHBlbmQoImV2ZW50LTIiKQogICAgICAgIHNlbGYuYXBwZW5kKCJldmVudC0zIikKICAgICAgICB3aXRoIHNlbGYuYXNzZXJ0UmFpc2VzUmVnZXgoU3RvcmVFcnJvciwgIlNUT1JFX0NBUEFDSVRZIik6CiAgICAgICAgICAgIHNlbGYuYXBwZW5kKCJldmVudC00IikKCiAgICBkZWYgdGVzdF9leHBpcmVkX2VudHJpZXNfcHVyZ2VkX2JlZm9yZV9jYXBhY2l0eV9jaGVjayhzZWxmKToKICAgICAgICBzZWxmLmFwcGVuZCgiZXZlbnQtMSIpCiAgICAgICAgc2VsZi5hcHBlbmQoImV2ZW50LTIiKQogICAgICAgIHNlbGYuYXBwZW5kKCJldmVudC0zIikKICAgICAgICBzZWxmLmFwcGVuZCgiZXZlbnQtNCIsIG5vdz1zZWxmLm5vdyArIHRpbWVkZWx0YShzZWNvbmRzPTYwKSkKICAgICAgICByb3dzID0gc2VsZi5zdG9yZS5zbmFwc2hvdChzZWxmLm5vdyArIHRpbWVkZWx0YShzZWNvbmRzPTYwKSkKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKFtyb3dbImV2ZW50X2lkIl0gZm9yIHJvdyBpbiByb3dzXSwgWyJldmVudC00Il0pCgogICAgZGVmIHRlc3RfbWFza2luZ19yZWplY3Rpb25fbGVhdmVzX25vX3BhcnRpYWxfd3JpdGUoc2VsZik6CiAgICAgICAgYmFkID0geyoqc3VtbWFyeSgpLCAicm91dGUiOiAiL25vdC1hbi1hcHByb3ZlZC1yb3V0ZSJ9CiAgICAgICAgd2l0aCBzZWxmLmFzc2VydFJhaXNlc1JlZ2V4KFN0b3JlRXJyb3IsICJNQVNLSU5HX1JFSkVDVEVEIik6CiAgICAgICAgICAgIHNlbGYuc3RvcmUuYXBwZW5kKFsoInNvdXJjZS1hIiwgImV2ZW50LXgiLCAiZCIgKiA2NCwgYmFkKV0sIHNlbGYubm93KQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoc2VsZi5zdG9yZS5zbmFwc2hvdChzZWxmLm5vdyksIFtdKQoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICB1bml0dGVzdC5tYWluKCkK
+"""DurableStore parity and restart-recovery tests (issue #83 candidate).
+
+These tests prove the SQLite store keeps MemoryStore's contract — masking
+gate, dedup, conflict atomicity, capacity and retention — while surviving a
+process restart. They do not claim Day 20 durable-audit acceptance, which
+still requires the design review tracked in issue #83.
+"""
+
+import tempfile
+import unittest
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+from analytics.durable_store import DurableStore
+from analytics.store import StoreError
+
+CONTRACT = "sha256:" + "a" * 64
+KEY = b"k" * 32
+
+
+def summary(route="/orders"):
+    return {
+        "method": "GET",
+        "route": route,
+        "classification": "documented",
+        "reason_code": "DOCUMENTED_OPERATION",
+        "contract_version": CONTRACT,
+        "status_code": 200,
+    }
+
+
+class DurableStoreTests(unittest.TestCase):
+    def setUp(self):
+        self.now = datetime(2026, 10, 29, 12, 0, tzinfo=timezone.utc)
+        self.tmp = tempfile.TemporaryDirectory()
+        self.db_path = Path(self.tmp.name) / "store.db"
+        self.store = DurableStore(
+            KEY, self.db_path, capacity=3, retention_seconds=60, routes={"/orders"}
+        )
+
+    def tearDown(self):
+        self.store.close()
+        self.tmp.cleanup()
+
+    def append(self, event_id, item=None, digest=None, store=None, now=None):
+        target = store or self.store
+        target.append(
+            [("source-a", event_id, digest or ("d" * 64), item or summary())],
+            now or self.now,
+        )
+
+    def test_append_and_snapshot_roundtrip(self):
+        self.append("event-1")
+        rows = self.store.snapshot(self.now)
+        self.assertEqual([row["event_id"] for row in rows], ["event-1"])
+        self.assertEqual(rows[0]["route"], "/orders")
+        self.assertEqual(rows[0]["received_at"], self.now)
+
+    def test_rows_survive_restart(self):
+        self.append("event-1")
+        self.append("event-2")
+        self.store.close()
+        reopened = DurableStore(
+            KEY, self.db_path, capacity=3, retention_seconds=60, routes={"/orders"}
+        )
+        try:
+            rows = reopened.snapshot(self.now)
+            self.assertEqual(
+                [row["event_id"] for row in rows], ["event-1", "event-2"]
+            )
+        finally:
+            reopened.close()
+            self.store = DurableStore(
+                KEY, self.db_path, capacity=3, retention_seconds=60, routes={"/orders"}
+            )
+
+    def test_conflicting_duplicate_rejects_entire_batch(self):
+        self.append("existing", digest="a" * 64)
+        with self.assertRaisesRegex(StoreError, "EVENT_ID_CONFLICT"):
+            self.store.append(
+                [
+                    ("source-a", "new-before-conflict", "b" * 64, summary()),
+                    ("source-a", "existing", "c" * 64, summary()),
+                ],
+                self.now,
+            )
+        self.assertEqual(
+            [r["event_id"] for r in self.store.snapshot(self.now)], ["existing"]
+        )
+
+    def test_identical_duplicate_is_idempotent(self):
+        self.append("same", digest="a" * 64)
+        self.append("same", digest="a" * 64, now=self.now + timedelta(seconds=1))
+        self.assertEqual(len(self.store.snapshot(self.now)), 1)
+
+    def test_capacity_rejected(self):
+        self.append("event-1")
+        self.append("event-2")
+        self.append("event-3")
+        with self.assertRaisesRegex(StoreError, "STORE_CAPACITY"):
+            self.append("event-4")
+
+    def test_expired_entries_purged_before_capacity_check(self):
+        self.append("event-1")
+        self.append("event-2")
+        self.append("event-3")
+        self.append("event-4", now=self.now + timedelta(seconds=60))
+        rows = self.store.snapshot(self.now + timedelta(seconds=60))
+        self.assertEqual([row["event_id"] for row in rows], ["event-4"])
+
+    def test_masking_rejection_leaves_no_partial_write(self):
+        bad = {**summary(), "route": "/not-an-approved-route"}
+        with self.assertRaisesRegex(StoreError, "MASKING_REJECTED"):
+            self.store.append([("source-a", "event-x", "d" * 64, bad)], self.now)
+        self.assertEqual(self.store.snapshot(self.now), [])
+
+
+if __name__ == "__main__":
+    unittest.main()
