@@ -1,1 +1,7 @@
-aW1wb3J0IHsgZGVzY3JpYmUsIGV4cGVjdCwgaXQgfSBmcm9tICd2aXRlc3QnCgpkZXNjcmliZSgnZGFzaGJvYXJkIHRlc3Qgc2V0dXAnLCAoKSA9PiB7CiAgaXQoJ3J1bnMgVml0ZXN0IHN1Y2Nlc3NmdWxseScsICgpID0+IHsKICAgIGV4cGVjdCh0cnVlKS50b0JlKHRydWUpCiAgfSkKfSkK
+import { describe, expect, it } from 'vitest'
+
+describe('dashboard test setup', () => {
+  it('runs Vitest successfully', () => {
+    expect(true).toBe(true)
+  })
+})
