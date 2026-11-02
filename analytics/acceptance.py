@@ -85,6 +85,7 @@ def candidate_sha(record):
     match = re.fullmatch(
         r"https://github\.com/madhab-tech-cyber/APISenX/commit/([0-9a-f]{40})",
         value,
+        re.IGNORECASE,
     )
     require(match is not None, "full candidate commit reference required")
     return match.group(1)
