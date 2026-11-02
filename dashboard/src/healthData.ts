@@ -1,1 +1,33 @@
-ZXhwb3J0IHR5cGUgSGVhbHRoU3RhdHVzID0gJ0hlYWx0aHknIHwgJ0RlZ3JhZGVkJyB8ICdVbmhlYWx0aHknCgpleHBvcnQgdHlwZSBIZWFsdGhNZXRyaWMgPSB7CiAgc2VydmljZTogc3RyaW5nCiAgc3RhdHVzOiBIZWFsdGhTdGF0dXMKICBsYXRlbmN5TXM6IG51bWJlcgogIHVwdGltZTogc3RyaW5nCiAgbGFzdENoZWNrZWQ6IHN0cmluZwp9CgpleHBvcnQgY29uc3QgaGVhbHRoTWV0cmljczogSGVhbHRoTWV0cmljW10gPSBbCiAgewogICAgc2VydmljZTogJ0FQSSBHYXRld2F5JywKICAgIHN0YXR1czogJ0hlYWx0aHknLAogICAgbGF0ZW5jeU1zOiA0MiwKICAgIHVwdGltZTogJzk5Ljk4JScsCiAgICBsYXN0Q2hlY2tlZDogJzIwMjYtMTAtMTYgMTA6NTgnLAogIH0sCiAgewogICAgc2VydmljZTogJ1RocmVhdCBEZXRlY3Rpb24nLAogICAgc3RhdHVzOiAnSGVhbHRoeScsCiAgICBsYXRlbmN5TXM6IDg2LAogICAgdXB0aW1lOiAnOTkuOTUlJywKICAgIGxhc3RDaGVja2VkOiAnMjAyNi0xMC0xNiAxMDo1NycsCiAgfSwKICB7CiAgICBzZXJ2aWNlOiAnRXZlbnQgQ29sbGVjdG9yJywKICAgIHN0YXR1czogJ0RlZ3JhZGVkJywKICAgIGxhdGVuY3lNczogMjE0LAogICAgdXB0aW1lOiAnOTkuNzElJywKICAgIGxhc3RDaGVja2VkOiAnMjAyNi0xMC0xNiAxMDo1NicsCiAgfSwKXQo=
+export type HealthStatus = 'Healthy' | 'Degraded' | 'Unhealthy'
+
+export type HealthMetric = {
+  service: string
+  status: HealthStatus
+  latencyMs: number
+  uptime: string
+  lastChecked: string
+}
+
+export const healthMetrics: HealthMetric[] = [
+  {
+    service: 'API Gateway',
+    status: 'Healthy',
+    latencyMs: 42,
+    uptime: '99.98%',
+    lastChecked: '2026-10-16 10:58',
+  },
+  {
+    service: 'Threat Detection',
+    status: 'Healthy',
+    latencyMs: 86,
+    uptime: '99.95%',
+    lastChecked: '2026-10-16 10:57',
+  },
+  {
+    service: 'Event Collector',
+    status: 'Degraded',
+    latencyMs: 214,
+    uptime: '99.71%',
+    lastChecked: '2026-10-16 10:56',
+  },
+]
