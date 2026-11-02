@@ -3,14 +3,12 @@
 import json
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "scripts"))
-from verify_day29_lab_reset import verify_fixture_hashes  # noqa: E402
+from scripts.verify_day29_lab_reset import verify_fixture_hashes
 
 MANIFEST_PATH = ROOT / "tests" / "fixtures" / "day29_lab_baseline.json"
 SCRIPT_PATH = ROOT / "scripts" / "verify_day29_lab_reset.py"
