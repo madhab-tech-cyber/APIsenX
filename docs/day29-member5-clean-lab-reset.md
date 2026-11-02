@@ -20,7 +20,7 @@ From the repository root, in PowerShell:
 
 ```powershell
 python scripts/verify_day29_lab_reset.py
-python -m unittest tests.test_day29_lab_reset -v
+python -m unittest discover -s tests -p 'test_day29_lab_reset.py' -v
 ```
 
 The verifier:
