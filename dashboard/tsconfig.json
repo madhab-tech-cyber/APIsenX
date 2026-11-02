@@ -1,1 +1,7 @@
-ewogICJmaWxlcyI6IFtdLAogICJyZWZlcmVuY2VzIjogWwogICAgeyAicGF0aCI6ICIuL3RzY29uZmlnLmFwcC5qc29uIiB9LAogICAgeyAicGF0aCI6ICIuL3RzY29uZmlnLm5vZGUuanNvbiIgfQogIF0KfQo=
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
