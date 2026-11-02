@@ -1,1 +1,124 @@
-IiIiUHVibGlzaCBtZWFzdXJlZCBkZXRlY3Rpb24gYWNjdXJhY3kgZnJvbSB0aGUgbGFiZWxsZWQgbGFiIGNvcnB1cy4KCmBweXRob24gLW0gYW5hbHl0aWNzLmV2YWx1YXRlYCBjb21wdXRlcyBwcmVjaXNpb24vcmVjYWxsIGluIENJIGxvZ3MsIGJ1dCB0aGUKbnVtYmVycyB3ZXJlIG5ldmVyIGNvbW1pdHRlZCBhbnl3aGVyZSBhIHJldmlld2VyIGNhbiByZWFkIHRoZW0uIFRoaXMgc2NyaXB0CnJlbmRlcnMgdGhlbSB0byBkb2NzL2RldGVjdGlvbi1hY2N1cmFjeS5tZCAob3ZlcmFsbCwgcGVyIGNhdGVnb3J5LCBwZXIgcnVsZSkKYW5kLCB3aXRoIC0tY2hlY2ssIGZhaWxzIGlmIHRoZSBjb21taXR0ZWQgcmVwb3J0IGRyaWZ0cyBmcm9tIGEgZnJlc2ggcnVuIG9yCmlmIGFueSBjb3JwdXMgY2FzZSBtaXNtYXRjaGVzIGl0cyBsYWJlbC4KClRoZSBjb3JwdXMgaXMgc2VsZi1sYWJlbGxlZCAoc2VlIGl0cyBsYWJlbF9wcm92ZW5hbmNlKS4gVGhlc2UgbnVtYmVycyBhcmUKZW5naW5lZXJpbmcgc2lnbmFsLCBub3QgaW5kZXBlbmRlbnQgYWNjdXJhY3kgYWNjZXB0YW5jZS4KIiIiCgppbXBvcnQgYXJncGFyc2UKaW1wb3J0IGpzb24KaW1wb3J0IHN5cwpmcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGgKClJPT1QgPSBQYXRoKF9fZmlsZV9fKS5yZXNvbHZlKCkucGFyZW50c1sxXQpzeXMucGF0aC5pbnNlcnQoMCwgc3RyKFJPT1QpKQoKZnJvbSBhbmFseXRpY3MuZXZhbHVhdGUgaW1wb3J0IENPUlBVUywgZXhlY3V0ZV9jYXNlLCBtZWFzdXJlICAjIG5vcWE6IEU0MDIKClJFUE9SVCA9IFJPT1QgLyAiZG9jcyIgLyAiZGV0ZWN0aW9uLWFjY3VyYWN5Lm1kIgpVTkFWQUlMQUJMRSA9IHsKICAgICJST1VURV9JTlZBTElEIiwKICAgICJDT05URVhUX1VOQVZBSUxBQkxFIiwKICAgICJDT05URVhUX0NPTkZMSUNUIiwKICAgICJGTE9XX1NUQVRFX1VOQVZBSUxBQkxFIiwKfQoKCmRlZiBjb2xsZWN0KCk6CiAgICBjb3JwdXMgPSBqc29uLmxvYWRzKENPUlBVUy5yZWFkX3RleHQoKSkKICAgIG92ZXJhbGwsIGNhdGVnb3JpZXMsIHJ1bGVzID0gW10sIHt9LCB7fQogICAgbWlzbWF0Y2hlcywgdmVyc2lvbiA9IFtdLCBOb25lCiAgICBmb3IgY2FzZSBpbiBjb3JwdXNbImNhc2VzIl06CiAgICAgICAgcmVzdWx0LCB2ZXJzaW9uID0gZXhlY3V0ZV9jYXNlKGNhc2UpCiAgICAgICAgdW5hdmFpbGFibGUgPSByZXN1bHQucmVhc29uX2NvZGUgaW4gVU5BVkFJTEFCTEUKICAgICAgICBhY3R1YWwgPSAiaW5kZXRlcm1pbmF0ZSIgaWYgdW5hdmFpbGFibGUgZWxzZSByZXN1bHQuZmluZGluZ19jbGFzcwogICAgICAgIGlmIGFjdHVhbCAhPSBjYXNlWyJleHBlY3RlZCJdOgogICAgICAgICAgICBtaXNtYXRjaGVzLmFwcGVuZChjYXNlWyJpZCJdKQogICAgICAgIHJvdyA9IChjYXNlWyJleHBlY3RlZCJdLCByZXN1bHQuZmluZGluZ19jbGFzcywgdW5hdmFpbGFibGUpCiAgICAgICAgb3ZlcmFsbC5hcHBlbmQocm93KQogICAgICAgIGNhdGVnb3JpZXMuc2V0ZGVmYXVsdChjYXNlWyJjYXRlZ29yeSJdLCBbXSkuYXBwZW5kKHJvdykKICAgICAgICBydWxlcy5zZXRkZWZhdWx0KHJlc3VsdC5ydWxlX2lkLCBbXSkuYXBwZW5kKHJvdykKICAgIHJldHVybiBjb3JwdXMsIHZlcnNpb24sIG92ZXJhbGwsIGNhdGVnb3JpZXMsIHJ1bGVzLCBtaXNtYXRjaGVzCgoKZGVmIHBjdCh2YWx1ZSk6CiAgICByZXR1cm4gIm4vYSIgaWYgdmFsdWUgaXMgTm9uZSBlbHNlIGYie3ZhbHVlICogMTAwOi4xZn0lIgoKCmRlZiB0YWJsZSh0aXRsZSwgZ3JvdXBzKToKICAgIGhlYWRlciA9ICgKICAgICAgICAifCBHcm91cCB8IENhc2VzIHwgVFAgfCBGUCB8IFROIHwgRk4gIgogICAgICAgICJ8IFByZWNpc2lvbiB8IFJlY2FsbCB8IEZhbHNlLXBvc2l0aXZlIHJhdGUgfCIKICAgICkKICAgIGRpdmlkZXIgPSAifC0tLXwtLS18LS0tfC0tLXwtLS18LS0tfC0tLXwtLS18LS0tfCIKICAgIGxpbmVzID0gW2YiIyMge3RpdGxlfSIsICIiLCBoZWFkZXIsIGRpdmlkZXJdCiAgICBmb3IgbmFtZSBpbiBzb3J0ZWQoZ3JvdXBzKToKICAgICAgICBtID0gbWVhc3VyZShncm91cHNbbmFtZV0pCiAgICAgICAgbGluZXMuYXBwZW5kKAogICAgICAgICAgICBmInwge25hbWV9IHwge21bJ3RvdGFsJ119IHwge21bJ3RwJ119IHwge21bJ2ZwJ119IHwge21bJ3RuJ119ICIKICAgICAgICAgICAgZiJ8IHttWydmbiddfSB8IHtwY3QobVsncHJlY2lzaW9uJ10pfSB8IHtwY3QobVsncmVjYWxsJ10pfSAiCiAgICAgICAgICAgIGYifCB7cGN0KG1bJ2ZhbHNlX3Bvc2l0aXZlX3JhdGUnXSl9IHwiCiAgICAgICAgKQogICAgbGluZXMuYXBwZW5kKCIiKQogICAgcmV0dXJuIGxpbmVzCgoKZGVmIHJlbmRlcigpOgogICAgY29ycHVzLCB2ZXJzaW9uLCBvdmVyYWxsLCBjYXRlZ29yaWVzLCBydWxlcywgbWlzbWF0Y2hlcyA9IGNvbGxlY3QoKQogICAgbGluZXMgPSBbCiAgICAgICAgIiMgRGV0ZWN0aW9uIGFjY3VyYWN5IOKAlCBtZWFzdXJlZCBvbiB0aGUgbGFiZWxsZWQgbGFiIGNvcnB1cyIsCiAgICAgICAgIiIsCiAgICAgICAgIkdlbmVyYXRlZCBieSBgcHl0aG9uIHNjcmlwdHMvYWNjdXJhY3lfcmVwb3J0LnB5YDsgQ0kgcnVucyBpdCB3aXRoIiwKICAgICAgICAiYC0tY2hlY2tgLCBzbyB0aGlzIGZpbGUgY2Fubm90IHNpbGVudGx5IGRyaWZ0IGZyb20gdGhlIGVuZ2luZS4iLAogICAgICAgICIiLAogICAgICAgICItIENvcnB1czogYHRlc3RzL2ZpeHR1cmVzL2RldGVjdGlvbl9jYXNlcy5qc29uYCAiCiAgICAgICAgZiIoe2xlbihjb3JwdXNbJ2Nhc2VzJ10pfSBjYXNlcykiLAogICAgICAgIGYiLSBMYWJlbCBwcm92ZW5hbmNlOiB7Y29ycHVzWydsYWJlbF9wcm92ZW5hbmNlJ119IiwKICAgICAgICBmIi0gTGFiZWwgdmVyc2lvbjoge2NvcnB1c1snbGFiZWxfdmVyc2lvbiddfSIsCiAgICAgICAgZiItIENvbnRyYWN0IHZlcnNpb246IHt2ZXJzaW9ufSIsCiAgICAgICAgZiItIE1pc21hdGNoZWQgY2FzZSBpZHM6IHttaXNtYXRjaGVzIGlmIG1pc21hdGNoZXMgZWxzZSAnbm9uZSd9IiwKICAgICAgICAiIiwKICAgICAgICAiVGhlc2UgYXJlIHNlbGYtbGFiZWxsZWQgc3ludGhldGljIGNhc2VzLiBUcmVhdCB0aGUgbnVtYmVycyBhcyBhIiwKICAgICAgICAicmVncmVzc2lvbiBmbG9vciBmb3IgdGhlIGRldGVjdGlvbiBydWxlcywgbm90IGFzIGluZGVwZW5kZW50IiwKICAgICAgICAiYWNjdXJhY3kgYWNjZXB0YW5jZSDigJQgdGhhdCByZXZpZXcgaXMgc3RpbGwgcGVuZGluZyAoc2VlIHRoZSBjb3JwdXMiLAogICAgICAgICJwcm92ZW5hbmNlIGxpbmUgYWJvdmUpLiIsCiAgICAgICAgIiIsCiAgICBdCiAgICBsaW5lcyArPSB0YWJsZSgiT3ZlcmFsbCIsIHsiYWxsIGNhc2VzIjogb3ZlcmFsbH0pCiAgICBsaW5lcyArPSB0YWJsZSgiQnkgY2F0ZWdvcnkiLCBjYXRlZ29yaWVzKQogICAgbGluZXMgKz0gdGFibGUoIkJ5IHJ1bGUiLCBydWxlcykKICAgIHJldHVybiAiXG4iLmpvaW4obGluZXMpLCBtaXNtYXRjaGVzCgoKZGVmIG1haW4oKToKICAgIHBhcnNlciA9IGFyZ3BhcnNlLkFyZ3VtZW50UGFyc2VyKCkKICAgIHBhcnNlci5hZGRfYXJndW1lbnQoCiAgICAgICAgIi0tY2hlY2siLAogICAgICAgIGFjdGlvbj0ic3RvcmVfdHJ1ZSIsCiAgICAgICAgaGVscD0iZmFpbCBpZiB0aGUgY29tbWl0dGVkIHJlcG9ydCBkaWZmZXJzIGZyb20gYSBmcmVzaCByZW5kZXIiLAogICAgKQogICAgYXJncyA9IHBhcnNlci5wYXJzZV9hcmdzKCkKICAgIGNvbnRlbnQsIG1pc21hdGNoZXMgPSByZW5kZXIoKQogICAgaWYgYXJncy5jaGVjazoKICAgICAgICBjdXJyZW50ID0gUkVQT1JULnJlYWRfdGV4dCgpIGlmIFJFUE9SVC5leGlzdHMoKSBlbHNlICIiCiAgICAgICAgaWYgY3VycmVudCAhPSBjb250ZW50OgogICAgICAgICAgICBwcmludCgiZG9jcy9kZXRlY3Rpb24tYWNjdXJhY3kubWQgaXMgc3RhbGU7IHJlZ2VuZXJhdGUgaXQgd2l0aDoiKQogICAgICAgICAgICBwcmludCgiICBweXRob24gc2NyaXB0cy9hY2N1cmFjeV9yZXBvcnQucHkiKQogICAgICAgICAgICByZXR1cm4gMQogICAgICAgIHByaW50KCJEZXRlY3Rpb24gYWNjdXJhY3kgcmVwb3J0IGlzIGN1cnJlbnQuIikKICAgIGVsc2U6CiAgICAgICAgUkVQT1JULndyaXRlX3RleHQoY29udGVudCkKICAgICAgICBwcmludChmIldyb3RlIHtSRVBPUlQucmVsYXRpdmVfdG8oUk9PVCl9IikKICAgIGlmIG1pc21hdGNoZXM6CiAgICAgICAgcHJpbnQoZiJMYWJlbCBtaXNtYXRjaGVzOiB7bWlzbWF0Y2hlc30iKQogICAgICAgIHJldHVybiAxCiAgICByZXR1cm4gMAoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICByYWlzZSBTeXN0ZW1FeGl0KG1haW4oKSkK
+"""Publish measured detection accuracy from the labelled lab corpus.
+
+`python -m analytics.evaluate` computes precision/recall in CI logs, but the
+numbers were never committed anywhere a reviewer can read them. This script
+renders them to docs/detection-accuracy.md (overall, per category, per rule)
+and, with --check, fails if the committed report drifts from a fresh run or
+if any corpus case mismatches its label.
+
+The corpus is self-labelled (see its label_provenance). These numbers are
+engineering signal, not independent accuracy acceptance.
+"""
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from analytics.evaluate import CORPUS, execute_case, measure  # noqa: E402
+
+REPORT = ROOT / "docs" / "detection-accuracy.md"
+UNAVAILABLE = {
+    "ROUTE_INVALID",
+    "CONTEXT_UNAVAILABLE",
+    "CONTEXT_CONFLICT",
+    "FLOW_STATE_UNAVAILABLE",
+}
+
+
+def collect():
+    corpus = json.loads(CORPUS.read_text())
+    overall, categories, rules = [], {}, {}
+    mismatches, version = [], None
+    for case in corpus["cases"]:
+        result, version = execute_case(case)
+        unavailable = result.reason_code in UNAVAILABLE
+        actual = "indeterminate" if unavailable else result.finding_class
+        if actual != case["expected"]:
+            mismatches.append(case["id"])
+        row = (case["expected"], result.finding_class, unavailable)
+        overall.append(row)
+        categories.setdefault(case["category"], []).append(row)
+        rules.setdefault(result.rule_id, []).append(row)
+    return corpus, version, overall, categories, rules, mismatches
+
+
+def pct(value):
+    return "n/a" if value is None else f"{value * 100:.1f}%"
+
+
+def table(title, groups):
+    header = (
+        "| Group | Cases | TP | FP | TN | FN "
+        "| Precision | Recall | False-positive rate |"
+    )
+    divider = "|---|---|---|---|---|---|---|---|---|"
+    lines = [f"## {title}", "", header, divider]
+    for name in sorted(groups):
+        m = measure(groups[name])
+        lines.append(
+            f"| {name} | {m['total']} | {m['tp']} | {m['fp']} | {m['tn']} "
+            f"| {m['fn']} | {pct(m['precision'])} | {pct(m['recall'])} "
+            f"| {pct(m['false_positive_rate'])} |"
+        )
+    lines.append("")
+    return lines
+
+
+def render():
+    corpus, version, overall, categories, rules, mismatches = collect()
+    lines = [
+        "# Detection accuracy — measured on the labelled lab corpus",
+        "",
+        "Generated by `python scripts/accuracy_report.py`; CI runs it with",
+        "`--check`, so this file cannot silently drift from the engine.",
+        "",
+        "- Corpus: `tests/fixtures/detection_cases.json` "
+        f"({len(corpus['cases'])} cases)",
+        f"- Label provenance: {corpus['label_provenance']}",
+        f"- Label version: {corpus['label_version']}",
+        f"- Contract version: {version}",
+        f"- Mismatched case ids: {mismatches if mismatches else 'none'}",
+        "",
+        "These are self-labelled synthetic cases. Treat the numbers as a",
+        "regression floor for the detection rules, not as independent",
+        "accuracy acceptance — that review is still pending (see the corpus",
+        "provenance line above).",
+        "",
+    ]
+    lines += table("Overall", {"all cases": overall})
+    lines += table("By category", categories)
+    lines += table("By rule", rules)
+    return "\n".join(lines), mismatches
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail if the committed report differs from a fresh render",
+    )
+    args = parser.parse_args()
+    content, mismatches = render()
+    if args.check:
+        current = REPORT.read_text() if REPORT.exists() else ""
+        if current != content:
+            print("docs/detection-accuracy.md is stale; regenerate it with:")
+            print("  python scripts/accuracy_report.py")
+            return 1
+        print("Detection accuracy report is current.")
+    else:
+        REPORT.write_text(content)
+        print(f"Wrote {REPORT.relative_to(ROOT)}")
+    if mismatches:
+        print(f"Label mismatches: {mismatches}")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
