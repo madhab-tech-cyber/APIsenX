@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "purpose": "Git blob SHA-1 baseline for the checked-in synthetic Mock API lab fixtures. Update only through reviewed fixture changes.",
+  "fixtures": {
+    "mock_data/orders.json": "b02c7ade3b5a0d9627a9c181e18181dd99ac06ec",
+    "mock_data/users.json": "fa5cb3d719d8307d3d9a885f903a45c9a4073741",
+    "mock_data/sharing_grants.json": "bd70c58ca771f55c1a7f36aca964a1da8f205650",
+    "mock_data/authorization_cases.json": "dc6fb494a92a3fc7958f73352fa5afc2c5a7ce33"
+  },
+  "expected": {
+    "orders": 3,
+    "users": 5,
+    "sharing_grants": 0,
+    "authorization_cases": 7,
+    "classification": "synthetic-test-only"
+  },
+  "algorithm": "git-blob-sha1"
+}
