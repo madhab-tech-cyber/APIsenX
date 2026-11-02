@@ -13,6 +13,10 @@ function App() {
         <p>Secure API Security Dashboard</p>
       </header>
 
+      <div className="data-boundary" role="status">
+        Synthetic fixture data - not live security status
+      </div>
+
       <main className="content">
         <h2 className="section-title">Security Overview</h2>
 
