@@ -1,1 +1,49 @@
-IiIiRGF5IDIwIGFsbG93bGlzdGVkIHZvbGF0aWxlIGF1ZGl0IHByb2plY3Rpb25zLCBub3QgYSBkdXJhYmxlIGF1ZGl0IHNlcnZpY2UuIiIiCgppbXBvcnQgaG1hYwpmcm9tIGRhdGFjbGFzc2VzIGltcG9ydCBhc2RpY3QKCmZyb20gYW5hbHl0aWNzLmRldGVjdGlvbiBpbXBvcnQgUkVBU09OUywgUlVMRV9WRVJTSU9OLCBSVUxFUwpmcm9tIGFuYWx5dGljcy5zdG9yZSBpbXBvcnQgTWVtb3J5U3RvcmUKCgpjbGFzcyBBdWRpdFdyaXRlcjoKICAgIGRlZiBfX2luaXRfXyhzZWxmLCBrZXksIGNhcGFjaXR5PTEwMDAsIHJvdXRlcz0oKSwgc3RvcmU9Tm9uZSk6CiAgICAgICAgc2VsZi5fa2V5ID0ga2V5CiAgICAgICAgIyBEZWZhdWx0IHJlbWFpbnMgdGhlIHZvbGF0aWxlIE1lbW9yeVN0b3JlLiBBIER1cmFibGVTdG9yZSAoaXNzdWUgIzgzKQogICAgICAgICMgY2FuIGJlIGluamVjdGVkIGV4cGxpY2l0bHk7IHRoZSBkdXJhYmxlLWF1ZGl0IGRlc2lnbiBzdGlsbCByZXF1aXJlcwogICAgICAgICMgaXRzIG93biBodW1hbiBhY2NlcHRhbmNlIGJlZm9yZSBiZWNvbWluZyBhbnkgZGVmYXVsdC4KICAgICAgICBzZWxmLnN0b3JlID0gKAogICAgICAgICAgICBzdG9yZQogICAgICAgICAgICBpZiBzdG9yZSBpcyBub3QgTm9uZQogICAgICAgICAgICBlbHNlIE1lbW9yeVN0b3JlKGtleSwgY2FwYWNpdHksIHJldGVudGlvbl9zZWNvbmRzPTMwMCwgcm91dGVzPXJvdXRlcykKICAgICAgICApCgogICAgZGVmIGFwcGVuZChzZWxmLCBvYnNlcnZhdGlvbiwgZGV0ZWN0aW9uLCBjb250cmFjdF92ZXJzaW9uLCBub3cpOgogICAgICAgIGlmIGRldGVjdGlvbi5yZWFzb25fY29kZSBub3QgaW4gUkVBU09OUyBvciBkZXRlY3Rpb24ucnVsZV9pZCBub3QgaW4gUlVMRVM6CiAgICAgICAgICAgIHJhaXNlIFZhbHVlRXJyb3IoIlVua25vd24gYXVkaXQgcmVhc29uL3J1bGUiKQogICAgICAgIGV2ZW50X3JlZiA9IGhtYWMubmV3KAogICAgICAgICAgICBzZWxmLl9rZXksIGIiYXVkaXQtZXZlbnRcMCIgKyBvYnNlcnZhdGlvbi5ldmVudF9pZC5ieXRlcywgInNoYTI1NiIKICAgICAgICApLmhleGRpZ2VzdCgpCiAgICAgICAgc3VtbWFyeSA9IHsKICAgICAgICAgICAgInNjaGVtYV9uYW1lIjogImFuYWx5dGljc19hdWRpdCIsCiAgICAgICAgICAgICJzY2hlbWFfdmVyc2lvbiI6ICIxLjAiLAogICAgICAgICAgICAiZXZlbnRfcmVmIjogZXZlbnRfcmVmLAogICAgICAgICAgICAicG9saWN5X3ZlcnNpb24iOiAiQVAtMS4wIiwKICAgICAgICAgICAgInJ1bGVfdmVyc2lvbiI6IFJVTEVfVkVSU0lPTiwKICAgICAgICAgICAgImNvbnRyYWN0X3ZlcnNpb24iOiBjb250cmFjdF92ZXJzaW9uLAogICAgICAgICAgICAibW9kZSI6ICJtb25pdG9yX29ubHkiLAogICAgICAgICAgICAqKmFzZGljdChkZXRlY3Rpb24pLAogICAgICAgIH0KICAgICAgICAjIE5vIHRhcmdldCwgYWN0b3IsIG9iamVjdCwgdGVuYW50LCBzb3VyY2UgY3JlZGVudGlhbCBvciByYXcgZXJyb3IgZmllbGRzLgogICAgICAgIHNlbGYuc3RvcmUuYXBwZW5kKAogICAgICAgICAgICBbCiAgICAgICAgICAgICAgICAoCiAgICAgICAgICAgICAgICAgICAgImFuYWx5dGljc19hdWRpdCIsCiAgICAgICAgICAgICAgICAgICAgb2JzZXJ2YXRpb24uZXZlbnRfaWQsCiAgICAgICAgICAgICAgICAgICAgc2VsZi5zdG9yZS5kaWdlc3Qoc3VtbWFyeSksCiAgICAgICAgICAgICAgICAgICAgc3VtbWFyeSwKICAgICAgICAgICAgICAgICkKICAgICAgICAgICAgXSwKICAgICAgICAgICAgbm93LAogICAgICAgICkK
+"""Day 20 allowlisted volatile audit projections, not a durable audit service."""
+
+import hmac
+from dataclasses import asdict
+
+from analytics.detection import REASONS, RULE_VERSION, RULES
+from analytics.store import MemoryStore
+
+
+class AuditWriter:
+    def __init__(self, key, capacity=1000, routes=(), store=None):
+        self._key = key
+        # Default remains the volatile MemoryStore. A DurableStore (issue #83)
+        # can be injected explicitly; the durable-audit design still requires
+        # its own human acceptance before becoming any default.
+        self.store = (
+            store
+            if store is not None
+            else MemoryStore(key, capacity, retention_seconds=300, routes=routes)
+        )
+
+    def append(self, observation, detection, contract_version, now):
+        if detection.reason_code not in REASONS or detection.rule_id not in RULES:
+            raise ValueError("Unknown audit reason/rule")
+        event_ref = hmac.new(
+            self._key, b"audit-event\0" + observation.event_id.bytes, "sha256"
+        ).hexdigest()
+        summary = {
+            "schema_name": "analytics_audit",
+            "schema_version": "1.0",
+            "event_ref": event_ref,
+            "policy_version": "AP-1.0",
+            "rule_version": RULE_VERSION,
+            "contract_version": contract_version,
+            "mode": "monitor_only",
+            **asdict(detection),
+        }
+        # No target, actor, object, tenant, source credential or raw error fields.
+        self.store.append(
+            [
+                (
+                    "analytics_audit",
+                    observation.event_id,
+                    self.store.digest(summary),
+                    summary,
+                )
+            ],
+            now,
+        )
