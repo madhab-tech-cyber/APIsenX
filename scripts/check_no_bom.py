@@ -1,1 +1,46 @@
-IiIiRmFpbCBpZiBhbnkgdGV4dCBzb3VyY2UvY29uZmlnIGZpbGUgc3RhcnRzIHdpdGggYSBVVEYtOCBCT00uCgpBIEJPTSBpbiBweXByb2plY3QudG9tbCBtYWtlcyBQeXRob24ncyB0b21sbGliIHJhaXNlCiJUT01MRGVjb2RlRXJyb3I6IEludmFsaWQgc3RhdGVtZW50IChhdCBsaW5lIDEsIGNvbHVtbiAxKSIsIHdoaWNoIGtpbGxzCnB5dGVzdCBiZWZvcmUgY29sbGVjdGlvbiBhbmQgYnJlYWtzIG90aGVyIHN0cmljdCBwYXJzZXJzLiBFZGl0b3JzIG9uCldpbmRvd3MgYWRkIEJPTXMgc2lsZW50bHksIHNvIHRoaXMgZ3VhcmQgcnVucyBpbiBDSS4KIiIiCgpmcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGgKClJPT1QgPSBQYXRoKF9fZmlsZV9fKS5yZXNvbHZlKCkucGFyZW50c1sxXQpTVUZGSVhFUyA9IHsKICAgICIucHkiLCAiLnRvbWwiLCAiLnR4dCIsICIueW1sIiwgIi55YW1sIiwgIi5qc29uIiwgIi5tZCIsICIuY2ZnIiwgIi5pbmkiLAogICAgIi50cyIsICIudHN4IiwgIi5qcyIsICIuanN4IiwgIi5jc3MiLCAiLmh0bWwiLAp9ClNLSVBfRElSUyA9IHsiLmdpdCIsICJub2RlX21vZHVsZXMiLCAiX19weWNhY2hlX18ifQpCT00gPSBiIlx4ZWZceGJiXHhiZiIKCgpkZWYgb2ZmZW5kZXJzKCk6CiAgICBiYWQgPSBbXQogICAgZm9yIHBhdGggaW4gc29ydGVkKFJPT1Qucmdsb2IoIioiKSk6CiAgICAgICAgaWYgbm90IHBhdGguaXNfZmlsZSgpIG9yIHBhdGguc3VmZml4IG5vdCBpbiBTVUZGSVhFUzoKICAgICAgICAgICAgY29udGludWUKICAgICAgICBpZiBhbnkocGFydCBpbiBTS0lQX0RJUlMgZm9yIHBhcnQgaW4gcGF0aC5wYXJ0cyk6CiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgd2l0aCBwYXRoLm9wZW4oInJiIikgYXMgaGFuZGxlOgogICAgICAgICAgICBpZiBoYW5kbGUucmVhZCgzKSA9PSBCT006CiAgICAgICAgICAgICAgICBiYWQuYXBwZW5kKHBhdGgucmVsYXRpdmVfdG8oUk9PVCkpCiAgICByZXR1cm4gYmFkCgoKZGVmIG1haW4oKToKICAgIGJhZCA9IG9mZmVuZGVycygpCiAgICBpZiBiYWQ6CiAgICAgICAgcHJpbnQoIlVURi04IEJPTSBmb3VuZCBhdCB0aGUgc3RhcnQgb2YgdGhlc2UgZmlsZXM6IikKICAgICAgICBmb3IgcGF0aCBpbiBiYWQ6CiAgICAgICAgICAgIHByaW50KGYiICB7cGF0aH0iKQogICAgICAgIHByaW50KCJSZXdyaXRlIGVhY2ggZmlsZSB3aXRob3V0IHRoZSBCT00gKFVURi04LCBubyBzaWduYXR1cmUpLiIpCiAgICAgICAgcmV0dXJuIDEKICAgIHByaW50KCJObyBCT00gZm91bmQgaW4gdHJhY2tlZCB0ZXh0IGZpbGVzLiIpCiAgICByZXR1cm4gMAoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICByYWlzZSBTeXN0ZW1FeGl0KG1haW4oKSkK
+"""Fail if any text source/config file starts with a UTF-8 BOM.
+
+A BOM in pyproject.toml makes Python's tomllib raise
+"TOMLDecodeError: Invalid statement (at line 1, column 1)", which kills
+pytest before collection and breaks other strict parsers. Editors on
+Windows add BOMs silently, so this guard runs in CI.
+"""
+
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SUFFIXES = {
+    ".py", ".toml", ".txt", ".yml", ".yaml", ".json", ".md", ".cfg", ".ini",
+    ".ts", ".tsx", ".js", ".jsx", ".css", ".html",
+}
+SKIP_DIRS = {".git", "node_modules", "__pycache__"}
+BOM = b"\xef\xbb\xbf"
+
+
+def offenders():
+    bad = []
+    for path in sorted(ROOT.rglob("*")):
+        if not path.is_file() or path.suffix not in SUFFIXES:
+            continue
+        if any(part in SKIP_DIRS for part in path.parts):
+            continue
+        with path.open("rb") as handle:
+            if handle.read(3) == BOM:
+                bad.append(path.relative_to(ROOT))
+    return bad
+
+
+def main():
+    bad = offenders()
+    if bad:
+        print("UTF-8 BOM found at the start of these files:")
+        for path in bad:
+            print(f"  {path}")
+        print("Rewrite each file without the BOM (UTF-8, no signature).")
+        return 1
+    print("No BOM found in tracked text files.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
