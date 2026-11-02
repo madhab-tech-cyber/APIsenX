@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "purpose": "SHA-256 baseline for the checked-in synthetic Mock API lab fixtures. Update only through reviewed fixture changes.",
+  "purpose": "Git blob SHA-1 baseline for the checked-in synthetic Mock API lab fixtures. Update only through reviewed fixture changes.",
   "fixtures": {
     "mock_data/orders.json": "b02c7ade3b5a0d9627a9c181e18181dd99ac06ec",
     "mock_data/users.json": "fa5cb3d719d8307d3d9a885f903a45c9a4073741",
