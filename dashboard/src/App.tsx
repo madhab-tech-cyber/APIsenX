@@ -1,1 +1,176 @@
-aW1wb3J0ICcuL0FwcC5jc3MnCmltcG9ydCB7IERBVEFfU09VUkNFX0xBQkVMIH0gZnJvbSAnLi9kYXRhU291cmNlJwppbXBvcnQgeyBzZWN1cml0eU1ldHJpY3MgfSBmcm9tICcuL3NlY3VyaXR5RGF0YScKaW1wb3J0IHsgYXBpRW5kcG9pbnRzIH0gZnJvbSAnLi9lbmRwb2ludERhdGEnCmltcG9ydCB7IHNlY3VyaXR5QWxlcnRzIH0gZnJvbSAnLi9hbGVydERhdGEnCmltcG9ydCB7IHNlY3VyaXR5RXZpZGVuY2UgfSBmcm9tICcuL2V2aWRlbmNlRGF0YScKaW1wb3J0IHsgaGVhbHRoTWV0cmljcyB9IGZyb20gJy4vaGVhbHRoRGF0YScKCmZ1bmN0aW9uIEFwcCgpIHsKICByZXR1cm4gKAogICAgPGRpdiBjbGFzc05hbWU9ImRhc2hib2FyZCI+CiAgICAgIDxoZWFkZXIgY2xhc3NOYW1lPSJ0b3BiYXIiPgogICAgICAgIDxoMT5BUEktU2VudGluZWw8L2gxPgogICAgICAgIDxwPlNlY3VyZSBBUEkgU2VjdXJpdHkgRGFzaGJvYXJkPC9wPgogICAgICAgIDxwIGNsYXNzTmFtZT0iZGF0YS1zb3VyY2UtYmFkZ2UiPntEQVRBX1NPVVJDRV9MQUJFTH08L3A+CiAgICAgIDwvaGVhZGVyPgoKICAgICAgPG1haW4gY2xhc3NOYW1lPSJjb250ZW50Ij4KICAgICAgICA8aDIgY2xhc3NOYW1lPSJzZWN0aW9uLXRpdGxlIj5TZWN1cml0eSBPdmVydmlldzwvaDI+CgogICAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT0ibWV0cmljcyI+CiAgICAgICAgICB7c2VjdXJpdHlNZXRyaWNzLm1hcCgobWV0cmljKSA9PiAoCiAgICAgICAgICAgIDxhcnRpY2xlIGNsYXNzTmFtZT0ibWV0cmljLWNhcmQiIGtleT17bWV0cmljLmxhYmVsfT4KICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9Im1ldHJpYy1sYWJlbCI+e21ldHJpYy5sYWJlbH08L3A+CiAgICAgICAgICAgICAgPGRpdgogICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgbWV0cmljLXZhbHVlJHttZXRyaWMubGFiZWwgPT09ICdTeXN0ZW0gSGVhbHRoJyA/ICcgbWV0cmljLXN0YXR1cycgOiAnJ31gfQogICAgICAgICAgICAgID4KICAgICAgICAgICAgICAgIHttZXRyaWMudmFsdWV9CiAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgIDwvYXJ0aWNsZT4KICAgICAgICAgICkpfQogICAgICAgIDwvc2VjdGlvbj4KCiAgICAgICAgPGgyIGNsYXNzTmFtZT0ic2VjdGlvbi10aXRsZSI+RW5kcG9pbnQgSW52ZW50b3J5PC9oMj4KCiAgICAgICAgPHNlY3Rpb24gY2xhc3NOYW1lPSJlbmRwb2ludC10YWJsZS1jYXJkIj4KICAgICAgICAgIDx0YWJsZSBjbGFzc05hbWU9ImVuZHBvaW50LXRhYmxlIj4KICAgICAgICAgICAgPHRoZWFkPgogICAgICAgICAgICAgIDx0cj4KICAgICAgICAgICAgICAgIDx0aD5NZXRob2Q8L3RoPgogICAgICAgICAgICAgICAgPHRoPkVuZHBvaW50PC90aD4KICAgICAgICAgICAgICAgIDx0aD5BdXRoZW50aWNhdGlvbjwvdGg+CiAgICAgICAgICAgICAgICA8dGg+U3RhdHVzPC90aD4KICAgICAgICAgICAgICAgIDx0aD5SaXNrPC90aD4KICAgICAgICAgICAgICA8L3RyPgogICAgICAgICAgICA8L3RoZWFkPgogICAgICAgICAgICA8dGJvZHk+CiAgICAgICAgICAgICAge2FwaUVuZHBvaW50cy5tYXAoKGVuZHBvaW50KSA9PiAoCiAgICAgICAgICAgICAgICA8dHIga2V5PXtgJHtlbmRwb2ludC5tZXRob2R9LSR7ZW5kcG9pbnQuZW5kcG9pbnR9YH0+CiAgICAgICAgICAgICAgICAgIDx0ZD4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9e2BtZXRob2QgbWV0aG9kLSR7ZW5kcG9pbnQubWV0aG9kLnRvTG93ZXJDYXNlKCl9YH0+CiAgICAgICAgICAgICAgICAgICAgICB7ZW5kcG9pbnQubWV0aG9kfQogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgPC90ZD4KICAgICAgICAgICAgICAgICAgPHRkIGNsYXNzTmFtZT0iZW5kcG9pbnQtbmFtZSI+e2VuZHBvaW50LmVuZHBvaW50fTwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZD57ZW5kcG9pbnQuYXV0aFJlcXVpcmVkID8gJ1JlcXVpcmVkJyA6ICdQdWJsaWMnfTwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZD57ZW5kcG9pbnQuc3RhdHVzfTwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZD4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9e2ByaXNrIHJpc2stJHtlbmRwb2ludC5yaXNrLnRvTG93ZXJDYXNlKCl9YH0+CiAgICAgICAgICAgICAgICAgICAgICB7ZW5kcG9pbnQucmlza30KICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgIDwvdGQ+CiAgICAgICAgICAgICAgICA8L3RyPgogICAgICAgICAgICAgICkpfQogICAgICAgICAgICA8L3Rib2R5PgogICAgICAgICAgPC90YWJsZT4KICAgICAgICA8L3NlY3Rpb24+CgogICAgICAgIDxoMiBjbGFzc05hbWU9InNlY3Rpb24tdGl0bGUiPkFsZXJ0cyAmYW1wOyBUcmlhZ2U8L2gyPgoKICAgICAgICA8c2VjdGlvbiBjbGFzc05hbWU9ImFsZXJ0cy10YWJsZS1jYXJkIj4KICAgICAgICAgIDx0YWJsZSBjbGFzc05hbWU9ImFsZXJ0cy10YWJsZSI+CiAgICAgICAgICAgIDx0aGVhZD4KICAgICAgICAgICAgICA8dHI+CiAgICAgICAgICAgICAgICA8dGg+U2V2ZXJpdHk8L3RoPgogICAgICAgICAgICAgICAgPHRoPkFsZXJ0PC90aD4KICAgICAgICAgICAgICAgIDx0aD5FbmRwb2ludDwvdGg+CiAgICAgICAgICAgICAgICA8dGg+U3RhdHVzPC90aD4KICAgICAgICAgICAgICAgIDx0aD5EZXRlY3RlZDwvdGg+CiAgICAgICAgICAgICAgPC90cj4KICAgICAgICAgICAgPC90aGVhZD4KICAgICAgICAgICAgPHRib2R5PgogICAgICAgICAgICAgIHtzZWN1cml0eUFsZXJ0cy5tYXAoKGFsZXJ0KSA9PiAoCiAgICAgICAgICAgICAgICA8dHIga2V5PXthbGVydC5pZH0+CiAgICAgICAgICAgICAgICAgIDx0ZD4KICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9e2BzZXZlcml0eSBzZXZlcml0eS0ke2FsZXJ0LnNldmVyaXR5LnRvTG93ZXJDYXNlKCl9YH0+CiAgICAgICAgICAgICAgICAgICAgICB7YWxlcnQuc2V2ZXJpdHl9CiAgICAgICAgICAgICAgICAgICAgPC9zcGFuPgogICAgICAgICAgICAgICAgICA8L3RkPgogICAgICAgICAgICAgICAgICA8dGQ+CiAgICAgICAgICAgICAgICAgICAgPHN0cm9uZz57YWxlcnQudGl0bGV9PC9zdHJvbmc+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPSJhbGVydC1pZCI+e2FsZXJ0LmlkfTwvc3Bhbj4KICAgICAgICAgICAgICAgICAgPC90ZD4KICAgICAgICAgICAgICAgICAgPHRkIGNsYXNzTmFtZT0iZW5kcG9pbnQtbmFtZSI+e2FsZXJ0LmVuZHBvaW50fTwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZD57YWxlcnQuc3RhdHVzfTwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZD57YWxlcnQuZGV0ZWN0ZWRBdH08L3RkPgogICAgICAgICAgICAgICAgPC90cj4KICAgICAgICAgICAgICApKX0KICAgICAgICAgICAgPC90Ym9keT4KICAgICAgICAgIDwvdGFibGU+CiAgICAgICAgPC9zZWN0aW9uPgoKICAgICAgICA8aDIgY2xhc3NOYW1lPSJzZWN0aW9uLXRpdGxlIj5TZWN1cml0eSBFdmlkZW5jZTwvaDI+CgogICAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT0iZXZpZGVuY2UtdGFibGUtY2FyZCI+CiAgICAgICAgICA8dGFibGUgY2xhc3NOYW1lPSJldmlkZW5jZS10YWJsZSI+CiAgICAgICAgICAgIDx0aGVhZD4KICAgICAgICAgICAgICA8dHI+CiAgICAgICAgICAgICAgICA8dGg+U2V2ZXJpdHk8L3RoPgogICAgICAgICAgICAgICAgPHRoPkZpbmRpbmc8L3RoPgogICAgICAgICAgICAgICAgPHRoPkVuZHBvaW50PC90aD4KICAgICAgICAgICAgICAgIDx0aD5FdmlkZW5jZSBUeXBlPC90aD4KICAgICAgICAgICAgICAgIDx0aD5NYXNrZWQgRXZpZGVuY2U8L3RoPgogICAgICAgICAgICAgICAgPHRoPkNhcHR1cmVkPC90aD4KICAgICAgICAgICAgICA8L3RyPgogICAgICAgICAgICA8L3RoZWFkPgogICAgICAgICAgICA8dGJvZHk+CiAgICAgICAgICAgICAge3NlY3VyaXR5RXZpZGVuY2UubWFwKChldmlkZW5jZSkgPT4gKAogICAgICAgICAgICAgICAgPHRyIGtleT17ZXZpZGVuY2UuaWR9PgogICAgICAgICAgICAgICAgICA8dGQ+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPXtgc2V2ZXJpdHkgc2V2ZXJpdHktJHtldmlkZW5jZS5zZXZlcml0eS50b0xvd2VyQ2FzZSgpfWB9PgogICAgICAgICAgICAgICAgICAgICAge2V2aWRlbmNlLnNldmVyaXR5fQogICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgPC90ZD4KICAgICAgICAgICAgICAgICAgPHRkPgogICAgICAgICAgICAgICAgICAgIDxzdHJvbmc+e2V2aWRlbmNlLmZpbmRpbmd9PC9zdHJvbmc+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPSJhbGVydC1pZCI+e2V2aWRlbmNlLmlkfTwvc3Bhbj4KICAgICAgICAgICAgICAgICAgPC90ZD4KICAgICAgICAgICAgICAgICAgPHRkIGNsYXNzTmFtZT0iZW5kcG9pbnQtbmFtZSI+e2V2aWRlbmNlLmVuZHBvaW50fTwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZD57ZXZpZGVuY2UuZXZpZGVuY2VUeXBlfTwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZCBjbGFzc05hbWU9ImV2aWRlbmNlLXZhbHVlIj57ZXZpZGVuY2UubWFza2VkRXZpZGVuY2V9PC90ZD4KICAgICAgICAgICAgICAgICAgPHRkPntldmlkZW5jZS5jYXB0dXJlZEF0fTwvdGQ+CiAgICAgICAgICAgICAgICA8L3RyPgogICAgICAgICAgICAgICkpfQogICAgICAgICAgICA8L3Rib2R5PgogICAgICAgICAgPC90YWJsZT4KICAgICAgICA8L3NlY3Rpb24+CgogICAgICAgIDxoMiBjbGFzc05hbWU9InNlY3Rpb24tdGl0bGUiPlBlcmZvcm1hbmNlICZhbXA7IEhlYWx0aDwvaDI+CgogICAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT0iaGVhbHRoLXRhYmxlLWNhcmQiPgogICAgICAgICAgPHRhYmxlIGNsYXNzTmFtZT0iaGVhbHRoLXRhYmxlIj4KICAgICAgICAgICAgPHRoZWFkPgogICAgICAgICAgICAgIDx0cj4KICAgICAgICAgICAgICAgIDx0aD5TZXJ2aWNlPC90aD4KICAgICAgICAgICAgICAgIDx0aD5TdGF0dXM8L3RoPgogICAgICAgICAgICAgICAgPHRoPkxhdGVuY3k8L3RoPgogICAgICAgICAgICAgICAgPHRoPlVwdGltZTwvdGg+CiAgICAgICAgICAgICAgICA8dGg+TGFzdCBDaGVja2VkPC90aD4KICAgICAgICAgICAgICA8L3RyPgogICAgICAgICAgICA8L3RoZWFkPgogICAgICAgICAgICA8dGJvZHk+CiAgICAgICAgICAgICAge2hlYWx0aE1ldHJpY3MubWFwKChtZXRyaWMpID0+ICgKICAgICAgICAgICAgICAgIDx0ciBrZXk9e21ldHJpYy5zZXJ2aWNlfT4KICAgICAgICAgICAgICAgICAgPHRkPgogICAgICAgICAgICAgICAgICAgIDxzdHJvbmc+e21ldHJpYy5zZXJ2aWNlfTwvc3Ryb25nPgogICAgICAgICAgICAgICAgICA8L3RkPgogICAgICAgICAgICAgICAgICA8dGQ+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPXtgaGVhbHRoLXN0YXR1cyBoZWFsdGgtJHttZXRyaWMuc3RhdHVzLnRvTG93ZXJDYXNlKCl9YH0+CiAgICAgICAgICAgICAgICAgICAgICB7bWV0cmljLnN0YXR1c30KICAgICAgICAgICAgICAgICAgICA8L3NwYW4+CiAgICAgICAgICAgICAgICAgIDwvdGQ+CiAgICAgICAgICAgICAgICAgIDx0ZD57bWV0cmljLmxhdGVuY3lNc30gbXM8L3RkPgogICAgICAgICAgICAgICAgICA8dGQ+e21ldHJpYy51cHRpbWV9PC90ZD4KICAgICAgICAgICAgICAgICAgPHRkPnttZXRyaWMubGFzdENoZWNrZWR9PC90ZD4KICAgICAgICAgICAgICAgIDwvdHI+CiAgICAgICAgICAgICAgKSl9CiAgICAgICAgICAgIDwvdGJvZHk+CiAgICAgICAgICA8L3RhYmxlPgogICAgICAgIDwvc2VjdGlvbj4KICAgICAgPC9tYWluPgogICAgPC9kaXY+CiAgKQp9CgpleHBvcnQgZGVmYXVsdCBBcHAK
+import './App.css'
+import { DATA_SOURCE_LABEL } from './dataSource'
+import { securityMetrics } from './securityData'
+import { apiEndpoints } from './endpointData'
+import { securityAlerts } from './alertData'
+import { securityEvidence } from './evidenceData'
+import { healthMetrics } from './healthData'
+
+function App() {
+  return (
+    <div className="dashboard">
+      <header className="topbar">
+        <h1>API-Sentinel</h1>
+        <p>Secure API Security Dashboard</p>
+        <p className="data-source-badge">{DATA_SOURCE_LABEL}</p>
+      </header>
+
+      <main className="content">
+        <h2 className="section-title">Security Overview</h2>
+
+        <section className="metrics">
+          {securityMetrics.map((metric) => (
+            <article className="metric-card" key={metric.label}>
+              <p className="metric-label">{metric.label}</p>
+              <div
+                className={`metric-value${metric.label === 'System Health' ? ' metric-status' : ''}`}
+              >
+                {metric.value}
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <h2 className="section-title">Endpoint Inventory</h2>
+
+        <section className="endpoint-table-card">
+          <table className="endpoint-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Authentication</th>
+                <th>Status</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apiEndpoints.map((endpoint) => (
+                <tr key={`${endpoint.method}-${endpoint.endpoint}`}>
+                  <td>
+                    <span className={`method method-${endpoint.method.toLowerCase()}`}>
+                      {endpoint.method}
+                    </span>
+                  </td>
+                  <td className="endpoint-name">{endpoint.endpoint}</td>
+                  <td>{endpoint.authRequired ? 'Required' : 'Public'}</td>
+                  <td>{endpoint.status}</td>
+                  <td>
+                    <span className={`risk risk-${endpoint.risk.toLowerCase()}`}>
+                      {endpoint.risk}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <h2 className="section-title">Alerts &amp; Triage</h2>
+
+        <section className="alerts-table-card">
+          <table className="alerts-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Alert</th>
+                <th>Endpoint</th>
+                <th>Status</th>
+                <th>Detected</th>
+              </tr>
+            </thead>
+            <tbody>
+              {securityAlerts.map((alert) => (
+                <tr key={alert.id}>
+                  <td>
+                    <span className={`severity severity-${alert.severity.toLowerCase()}`}>
+                      {alert.severity}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{alert.title}</strong>
+                    <span className="alert-id">{alert.id}</span>
+                  </td>
+                  <td className="endpoint-name">{alert.endpoint}</td>
+                  <td>{alert.status}</td>
+                  <td>{alert.detectedAt}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <h2 className="section-title">Security Evidence</h2>
+
+        <section className="evidence-table-card">
+          <table className="evidence-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Finding</th>
+                <th>Endpoint</th>
+                <th>Evidence Type</th>
+                <th>Masked Evidence</th>
+                <th>Captured</th>
+              </tr>
+            </thead>
+            <tbody>
+              {securityEvidence.map((evidence) => (
+                <tr key={evidence.id}>
+                  <td>
+                    <span className={`severity severity-${evidence.severity.toLowerCase()}`}>
+                      {evidence.severity}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{evidence.finding}</strong>
+                    <span className="alert-id">{evidence.id}</span>
+                  </td>
+                  <td className="endpoint-name">{evidence.endpoint}</td>
+                  <td>{evidence.evidenceType}</td>
+                  <td className="evidence-value">{evidence.maskedEvidence}</td>
+                  <td>{evidence.capturedAt}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <h2 className="section-title">Performance &amp; Health</h2>
+
+        <section className="health-table-card">
+          <table className="health-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th>Uptime</th>
+                <th>Last Checked</th>
+              </tr>
+            </thead>
+            <tbody>
+              {healthMetrics.map((metric) => (
+                <tr key={metric.service}>
+                  <td>
+                    <strong>{metric.service}</strong>
+                  </td>
+                  <td>
+                    <span className={`health-status health-${metric.status.toLowerCase()}`}>
+                      {metric.status}
+                    </span>
+                  </td>
+                  <td>{metric.latencyMs} ms</td>
+                  <td>{metric.uptime}</td>
+                  <td>{metric.lastChecked}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+export default App
