@@ -36,6 +36,22 @@ jobs:
       - name: Install security and quality tools
         run: python -m pip install ruff==0.17.1 pip-audit==2.10.1 bandit==1.9.4
 
+      # Keep independent quality/security gates ahead of the full suite so
+      # their evidence is still produced when an unrelated test gate blocks.
+      - name: Lint Member 1 governance and protection tooling
+        run: >-
+          python -m ruff check scripts/check_member1_governance.py
+          scripts/manage_main_protection.py
+
+      - name: Run Ruff lint checks
+        run: python -m ruff check mock-api src tests
+
+      - name: Run Mock API and authorization-source Bandit SAST
+        run: python -m bandit -r mock-api src -q
+
+      - name: Audit dependency vulnerabilities
+        run: python -m pip_audit -r requirements.txt
+
       - name: Verify Mock API to Analytics loopback integration
         run: python scripts/check_api_analytics_loopback.py
 
@@ -44,20 +60,6 @@ jobs:
 
       - name: Validate Member 1 bookkeeping without claiming acceptance
         run: python scripts/check_member1_governance.py
-
-      - name: Lint Member 1 governance and protection tooling
-        run: >-
-          python -m ruff check scripts/check_member1_governance.py
-          scripts/manage_main_protection.py
-
-      - name: Run Ruff lint checks
-        run: python -m ruff check mock-api tests
-
-      - name: Run Mock API Bandit SAST
-        run: python -m bandit -r mock-api -q
-
-      - name: Audit dependency vulnerabilities
-        run: python -m pip_audit -r requirements.txt
 
       - name: Run bounded Day 19 local-lab load stages
         shell: bash

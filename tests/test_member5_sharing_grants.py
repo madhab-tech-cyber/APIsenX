@@ -102,6 +102,13 @@ class SharingGrantAuthorizationTests(unittest.TestCase):
         self.assertFalse(allowed)
         self.assertEqual(reason, "order_ownership_required")
 
+    def test_wrong_resource_type_grant_is_denied(self):
+        allowed, reason = self.authorize_with_grant(
+            self.make_grant(resource_type="customer")
+        )
+        self.assertFalse(allowed)
+        self.assertEqual(reason, "order_ownership_required")
+
     def test_wrong_grantee_grant_is_denied(self):
         allowed, reason = self.authorize_with_grant(
             self.make_grant(grantee_subject="user-b")

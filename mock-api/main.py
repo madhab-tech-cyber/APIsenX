@@ -978,6 +978,8 @@ def get_order(
         401: {"model": ErrorResponse},
         403: {"model": ErrorResponse},
         404: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
     },
 )
 def update_order(
@@ -1055,6 +1057,8 @@ def update_order(
         400: {"model": ErrorResponse},
         401: {"model": ErrorResponse},
         403: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
     },
 )
 def list_admin_orders(
@@ -1113,6 +1117,8 @@ def list_admin_orders(
         400: {"model": ErrorResponse},
         401: {"model": ErrorResponse},
         403: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
     },
 )
 def list_support_orders(

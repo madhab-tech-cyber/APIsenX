@@ -7,8 +7,8 @@ info:
   description: APIsenX mock API contract for the authorized lab.
 
 servers:
-  - url: http://localhost:8000
-    description: Local authorized lab
+  - url: http://127.0.0.1:8000
+    description: Loopback-only authorized lab
 
 tags:
   - name: Orders
@@ -45,6 +45,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
   /orders:
     get:
       tags:
@@ -83,6 +87,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
   /orders/{orderId}:
     parameters:
@@ -117,6 +125,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -171,6 +183,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -217,6 +233,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
 components:
   securitySchemes:
@@ -350,6 +370,8 @@ components:
                 - FORBIDDEN
                 - NOT_FOUND
                 - INVALID_REQUEST
+                - RATE_LIMITED
+                - SERVICE_UNAVAILABLE
             message:
               type: string
 
@@ -377,6 +399,20 @@ components:
 
     NotFound:
       description: Requested resource does not exist or is not disclosed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    RateLimited:
+      description: The caller exceeded a configured request-rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ServiceUnavailable:
+      description: The local service or bounded capacity gate is unavailable
       content:
         application/json:
           schema:

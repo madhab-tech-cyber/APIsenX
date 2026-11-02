@@ -130,6 +130,11 @@ def authorize(
                 ):
                     continue
 
+                # This evaluator authorizes order reads only; reject grants for
+                # other resource namespaces rather than treating IDs as interchangeable.
+                if grant.get("resource_type") != "order":
+                    continue
+
                 try:
                     expires_at = datetime.fromisoformat(grant.get("expires_at", ""))
 
