@@ -1,1 +1,106 @@
-IiIiSXNzdWUgIzEwMjogbW9uaXRvci1vbmx5IHNpZ25lZC1kZWNpc2lvbiBjb25zdW1lciBhdCB0aGUgQVBJIGJvdW5kYXJ5LgoKVGhlIGNvbnN1bWVyIG11c3QgdmVyaWZ5IHJlYWwgc2lnbmVkIHJlcGxpZXMgYW5kIHJlamVjdCB0YW1wZXJlZCwgc3RhbGUsCnJlcGxheWVkIGFuZCB3cm9uZy1rZXkgcmVwbGllcyDigJQgd2hpbGUgbmV2ZXIgcmFpc2luZyBhbmQgbmV2ZXIgZW5mb3JjaW5nLgoiIiIKCmltcG9ydCBzZWNyZXRzCmltcG9ydCBzeXMKaW1wb3J0IHVuaXR0ZXN0CmZyb20gZGF0ZXRpbWUgaW1wb3J0IGRhdGV0aW1lLCB0aW1lZGVsdGEsIHRpbWV6b25lCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aApmcm9tIHV1aWQgaW1wb3J0IHV1aWQ0Cgpmcm9tIGZhc3RhcGkudGVzdGNsaWVudCBpbXBvcnQgVGVzdENsaWVudAoKUk9PVCA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnQucGFyZW50CnN5cy5wYXRoLmluc2VydCgwLCBzdHIoUk9PVCAvICJtb2NrLWFwaSIpKQoKZnJvbSBhbmFseXRpY3MuYXBwIGltcG9ydCBTZXR0aW5ncywgY3JlYXRlX2FwcCAgIyBub3FhOiBFNDAyCmZyb20gYW5hbHl0aWNzLmRlY2lzaW9ucyBpbXBvcnQgUmVxdWVzdENvbnRleHQgICMgbm9xYTogRTQwMgpmcm9tIGFuYWx5dGljcy5kZXRlY3Rpb24gaW1wb3J0IE9ic2VydmF0aW9uICAjIG5vcWE6IEU0MDIKZnJvbSBkZWNpc2lvbl9jb25zdW1lciBpbXBvcnQgTW9uaXRvck9ubHlEZWNpc2lvbkNvbnN1bWVyICAjIG5vcWE6IEU0MDIKClRBUkdFVCA9ICgiR0VUIiwgIi9vcmRlcnMve29yZGVySWR9IikKCgpjbGFzcyBEZWNpc2lvbkNvbnN1bWVyVGVzdHModW5pdHRlc3QuVGVzdENhc2UpOgogICAgZGVmIHNldFVwKHNlbGYpOgogICAgICAgIHNlbGYubm93ID0gZGF0ZXRpbWUubm93KHRpbWV6b25lLnV0YykKICAgICAgICBzZWxmLnNldHRpbmdzID0gU2V0dGluZ3MoCiAgICAgICAgICAgIHNlY3JldHMudG9rZW5fdXJsc2FmZSgzMiksCiAgICAgICAgICAgICJzeW50aGV0aWMiLAogICAgICAgICAgICBzZWNyZXRzLnRva2VuX2J5dGVzKDMyKSwKICAgICAgICAgICAgKip7CiAgICAgICAgICAgICAgICAiZGVjaXNpb25fIiArICJ0b2tlbiI6IHNlY3JldHMudG9rZW5fdXJsc2FmZSgzMiksCiAgICAgICAgICAgICAgICAiZGVjaXNpb25fIiArICJrZXkiOiBzZWNyZXRzLnRva2VuX2J5dGVzKDMyKSwKICAgICAgICAgICAgfSwKICAgICAgICApCiAgICAgICAgc2VsZi5vYnNlcnZhdGlvbiA9IE9ic2VydmF0aW9uKAogICAgICAgICAgICB1dWlkNCgpLCBzZWxmLm5vdywgIkdFVCIsICIvb3JkZXJzL29yZGVyLTEwMDEiLCAidXNlci1hIiwgIm9yZGVyLTEwMDEiLCAyMDAKICAgICAgICApCiAgICAgICAgc2VsZi5hcHAgPSBjcmVhdGVfYXBwKAogICAgICAgICAgICBzZWxmLnNldHRpbmdzLCBsYW1iZGE6IHNlbGYubm93LCByZXNvbHZlcj1sYW1iZGEgXzogc2VsZi5vYnNlcnZhdGlvbgogICAgICAgICkKICAgICAgICBzZWxmLmNsaWVudCA9IFRlc3RDbGllbnQoc2VsZi5hcHApCiAgICAgICAgc2VsZi5yZXF1ZXN0ID0gUmVxdWVzdENvbnRleHQoCiAgICAgICAgICAgIGV2ZW50X2lkPXNlbGYub2JzZXJ2YXRpb24uZXZlbnRfaWQsIG5vbmNlPXV1aWQ0KCksIHJlcXVlc3RlZF9hdD1zZWxmLm5vdwogICAgICAgICkKICAgICAgICBzZWxmLmNvbnN1bWVyID0gTW9uaXRvck9ubHlEZWNpc2lvbkNvbnN1bWVyLmZyb21fa2V5KAogICAgICAgICAgICBzZWxmLnNldHRpbmdzLmRlY2lzaW9uX2tleSwgc2VsZi5hcHAuc3RhdGUubm9ybWFsaXplci5jb250cmFjdF92ZXJzaW9uCiAgICAgICAgKQoKICAgIGRlZiBzaWduZWRfcmVwbHkoc2VsZik6CiAgICAgICAgcmVzcG9uc2UgPSBzZWxmLmNsaWVudC5wb3N0KAogICAgICAgICAgICAiL3YxL3JlY29tbWVuZGF0aW9ucyIsCiAgICAgICAgICAgIGNvbnRlbnQ9c2VsZi5yZXF1ZXN0Lm1vZGVsX2R1bXBfanNvbigpLAogICAgICAgICAgICBoZWFkZXJzPXsKICAgICAgICAgICAgICAgICJhdXRob3JpemF0aW9uIjogIkJlYXJlciAiICsgc2VsZi5zZXR0aW5ncy5kZWNpc2lvbl90b2tlbiwKICAgICAgICAgICAgICAgICJjb250ZW50LXR5cGUiOiAiYXBwbGljYXRpb24vanNvbiIsCiAgICAgICAgICAgIH0sCiAgICAgICAgKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwocmVzcG9uc2Uuc3RhdHVzX2NvZGUsIDIwMCkKICAgICAgICByZXR1cm4gcmVzcG9uc2UuY29udGVudAoKICAgIGRlZiB0ZXN0X3ZhbGlkX3JlcGx5X3ZlcmlmaWVkX21vbml0b3Jfb25seShzZWxmKToKICAgICAgICByZWNvcmQgPSBzZWxmLmNvbnN1bWVyLmNvbnN1bWUoCiAgICAgICAgICAgIHNlbGYuc2lnbmVkX3JlcGx5KCksIHNlbGYucmVxdWVzdCwgVEFSR0VULCBzZWxmLm5vdwogICAgICAgICkKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKHJlY29yZFsib3V0Y29tZSJdLCAidmVyaWZpZWRfbW9uaXRvcl9vbmx5IikKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKHJlY29yZFsiYWN0aW9uIl0sICJhbGxvdyIpCiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChyZWNvcmRbIm1vZGUiXSwgIm1vbml0b3Jfb25seSIpCiAgICAgICAgc2VsZi5hc3NlcnRGYWxzZShyZWNvcmRbImVuZm9yY2UiXSkKCiAgICBkZWYgdGVzdF90YW1wZXJlZF9yZXBseV9yZWplY3RlZChzZWxmKToKICAgICAgICByYXcgPSBzZWxmLnNpZ25lZF9yZXBseSgpLnJlcGxhY2UoYiciYWxsb3ciJywgYiciYWxlcnQiJywgMSkKICAgICAgICByZWNvcmQgPSBzZWxmLmNvbnN1bWVyLmNvbnN1bWUocmF3LCBzZWxmLnJlcXVlc3QsIFRBUkdFVCwgc2VsZi5ub3cpCiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChyZWNvcmRbIm91dGNvbWUiXSwgInJlamVjdGVkIikKCiAgICBkZWYgdGVzdF9zdGFsZV9yZXBseV9yZWplY3RlZChzZWxmKToKICAgICAgICByYXcgPSBzZWxmLnNpZ25lZF9yZXBseSgpCiAgICAgICAgcmVjb3JkID0gc2VsZi5jb25zdW1lci5jb25zdW1lKAogICAgICAgICAgICByYXcsIHNlbGYucmVxdWVzdCwgVEFSR0VULCBzZWxmLm5vdyArIHRpbWVkZWx0YShzZWNvbmRzPTYpCiAgICAgICAgKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwocmVjb3JkWyJvdXRjb21lIl0sICJyZWplY3RlZCIpCgogICAgZGVmIHRlc3RfcmVwbGF5ZWRfcmVwbHlfcmVqZWN0ZWQoc2VsZik6CiAgICAgICAgcmF3ID0gc2VsZi5zaWduZWRfcmVwbHkoKQogICAgICAgIGZpcnN0ID0gc2VsZi5jb25zdW1lci5jb25zdW1lKHJhdywgc2VsZi5yZXF1ZXN0LCBUQVJHRVQsIHNlbGYubm93KQogICAgICAgIHNlY29uZCA9IHNlbGYuY29uc3VtZXIuY29uc3VtZShyYXcsIHNlbGYucmVxdWVzdCwgVEFSR0VULCBzZWxmLm5vdykKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKGZpcnN0WyJvdXRjb21lIl0sICJ2ZXJpZmllZF9tb25pdG9yX29ubHkiKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwoc2Vjb25kWyJvdXRjb21lIl0sICJyZWplY3RlZCIpCgogICAgZGVmIHRlc3Rfd3Jvbmdfa2V5X3JlamVjdGVkKHNlbGYpOgogICAgICAgIG90aGVyID0gTW9uaXRvck9ubHlEZWNpc2lvbkNvbnN1bWVyLmZyb21fa2V5KAogICAgICAgICAgICBzZWNyZXRzLnRva2VuX2J5dGVzKDMyKSwgc2VsZi5hcHAuc3RhdGUubm9ybWFsaXplci5jb250cmFjdF92ZXJzaW9uCiAgICAgICAgKQogICAgICAgIHJlY29yZCA9IG90aGVyLmNvbnN1bWUoc2VsZi5zaWduZWRfcmVwbHkoKSwgc2VsZi5yZXF1ZXN0LCBUQVJHRVQsIHNlbGYubm93KQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwocmVjb3JkWyJvdXRjb21lIl0sICJyZWplY3RlZCIpCgogICAgZGVmIHRlc3RfZ2FyYmFnZV9pbnB1dF9yZWplY3RlZF93aXRob3V0X3JhaXNpbmcoc2VsZik6CiAgICAgICAgcmVjb3JkID0gc2VsZi5jb25zdW1lci5jb25zdW1lKGIibm90IGpzb24iLCBzZWxmLnJlcXVlc3QsIFRBUkdFVCwgc2VsZi5ub3cpCiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChyZWNvcmRbIm91dGNvbWUiXSwgInJlamVjdGVkIikKCgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgdW5pdHRlc3QubWFpbigpCg==
+"""Issue #102: monitor-only signed-decision consumer at the API boundary.
+
+The consumer must verify real signed replies and reject tampered, stale,
+replayed and wrong-key replies — while never raising and never enforcing.
+"""
+
+import secrets
+import sys
+import unittest
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from uuid import uuid4
+
+from fastapi.testclient import TestClient
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "mock-api"))
+
+from analytics.app import Settings, create_app  # noqa: E402
+from analytics.decisions import RequestContext  # noqa: E402
+from analytics.detection import Observation  # noqa: E402
+from decision_consumer import MonitorOnlyDecisionConsumer  # noqa: E402
+
+TARGET = ("GET", "/orders/{orderId}")
+
+
+class DecisionConsumerTests(unittest.TestCase):
+    def setUp(self):
+        self.now = datetime.now(timezone.utc)
+        self.settings = Settings(
+            secrets.token_urlsafe(32),
+            "synthetic",
+            secrets.token_bytes(32),
+            **{
+                "decision_" + "token": secrets.token_urlsafe(32),
+                "decision_" + "key": secrets.token_bytes(32),
+            },
+        )
+        self.observation = Observation(
+            uuid4(), self.now, "GET", "/orders/order-1001", "user-a", "order-1001", 200
+        )
+        self.app = create_app(
+            self.settings, lambda: self.now, resolver=lambda _: self.observation
+        )
+        self.client = TestClient(self.app)
+        self.request = RequestContext(
+            event_id=self.observation.event_id, nonce=uuid4(), requested_at=self.now
+        )
+        self.consumer = MonitorOnlyDecisionConsumer.from_key(
+            self.settings.decision_key, self.app.state.normalizer.contract_version
+        )
+
+    def signed_reply(self):
+        response = self.client.post(
+            "/v1/recommendations",
+            content=self.request.model_dump_json(),
+            headers={
+                "authorization": "Bearer " + self.settings.decision_token,
+                "content-type": "application/json",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        return response.content
+
+    def test_valid_reply_verified_monitor_only(self):
+        record = self.consumer.consume(
+            self.signed_reply(), self.request, TARGET, self.now
+        )
+        self.assertEqual(record["outcome"], "verified_monitor_only")
+        self.assertEqual(record["action"], "allow")
+        self.assertEqual(record["mode"], "monitor_only")
+        self.assertFalse(record["enforce"])
+
+    def test_tampered_reply_rejected(self):
+        raw = self.signed_reply().replace(b'"allow"', b'"alert"', 1)
+        record = self.consumer.consume(raw, self.request, TARGET, self.now)
+        self.assertEqual(record["outcome"], "rejected")
+
+    def test_stale_reply_rejected(self):
+        raw = self.signed_reply()
+        record = self.consumer.consume(
+            raw, self.request, TARGET, self.now + timedelta(seconds=6)
+        )
+        self.assertEqual(record["outcome"], "rejected")
+
+    def test_replayed_reply_rejected(self):
+        raw = self.signed_reply()
+        first = self.consumer.consume(raw, self.request, TARGET, self.now)
+        second = self.consumer.consume(raw, self.request, TARGET, self.now)
+        self.assertEqual(first["outcome"], "verified_monitor_only")
+        self.assertEqual(second["outcome"], "rejected")
+
+    def test_wrong_key_rejected(self):
+        other = MonitorOnlyDecisionConsumer.from_key(
+            secrets.token_bytes(32), self.app.state.normalizer.contract_version
+        )
+        record = other.consume(self.signed_reply(), self.request, TARGET, self.now)
+        self.assertEqual(record["outcome"], "rejected")
+
+    def test_garbage_input_rejected_without_raising(self):
+        record = self.consumer.consume(b"not json", self.request, TARGET, self.now)
+        self.assertEqual(record["outcome"], "rejected")
+
+
+if __name__ == "__main__":
+    unittest.main()
