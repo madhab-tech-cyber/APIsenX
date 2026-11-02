@@ -1,1 +1,66 @@
-IiIiTW9uaXRvci1vbmx5IGNvbnN1bWVyIGZvciBzaWduZWQgYW5hbHl0aWNzIHJlY29tbWVuZGF0aW9ucyAoaXNzdWUgIzEwMikuCgpBbmFseXRpY3MgYWxyZWFkeSBzaWducyByZWNvbW1lbmRhdGlvbnMgYW5kIHNoaXBzIGFuIGluZGVwZW5kZW50IHZlcmlmaWVyCihhbmFseXRpY3MuZGVjaXNpb25zLkRlY2lzaW9uVmVyaWZpZXIpLCBidXQgbm90aGluZyBhdCB0aGUgQVBJIGJvdW5kYXJ5CmNvbnN1bWVkIHRoZW0g4oCUIHRoZSBvYnNlcnZhdGlvbiBhZGFwdGVyIGlzIHRlbGVtZXRyeS1vbmx5IGJ5IGRlc2lnbiBhbmQKc3RheXMgdGhhdCB3YXkuIFRoaXMgY29uc3VtZXIgY2xvc2VzIHRoZSB2ZXJpZmljYXRpb24gbG9vcCBpbiBtb25pdG9yLW9ubHkKbW9kZTogaXQgdmVyaWZpZXMgYSBTaWduZWRSZXBseSwgcmVjb3JkcyBhIGJvdW5kZWQgc3RydWN0dXJlZCBvdXRjb21lLCBhbmQKTkVWRVIgY2hhbmdlcyBhbiBBUEkgcmVzcG9uc2UsIGJsb2NrcyBhIHJlcXVlc3QsIG9yIHJhaXNlcyBpbnRvIHRoZSByZXF1ZXN0CnBhdGguIFRoZSBzaWduZWQgc2NoZW1hIGl0c2VsZiBwaW5zIG1vZGU9bW9uaXRvcl9vbmx5IGFuZCBlbmZvcmNlPUZhbHNlOwplbmZvcmNlbWVudCByZW1haW5zIHVuYXBwcm92ZWQgYW5kIHVuaW1wbGVtZW50ZWQuCiIiIgoKaW1wb3J0IGxvZ2dpbmcKaW1wb3J0IHN5cwpmcm9tIGRhdGV0aW1lIGltcG9ydCBkYXRldGltZSwgdGltZXpvbmUKZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpzeXMucGF0aC5pbnNlcnQoMCwgc3RyKFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnRzWzFdKSkKCmZyb20gYW5hbHl0aWNzLmRlY2lzaW9ucyBpbXBvcnQgRGVjaXNpb25FcnJvciwgRGVjaXNpb25WZXJpZmllciAgIyBub3FhOiBFNDAyCgpMT0cgPSBsb2dnaW5nLmdldExvZ2dlcigiYXBpc2VueC5kZWNpc2lvbl9jb25zdW1lciIpCk1BWF9SRUNPUkRTID0gMTAwMAoKCmNsYXNzIE1vbml0b3JPbmx5RGVjaXNpb25Db25zdW1lcjoKICAgICIiIlZlcmlmeSBzaWduZWQgcmVjb21tZW5kYXRpb25zIGF0IHRoZSBib3VuZGFyeTsgbG9nLCBuZXZlciBhY3QuIiIiCgogICAgZGVmIF9faW5pdF9fKHNlbGYsIHZlcmlmaWVyKToKICAgICAgICBzZWxmLnZlcmlmaWVyID0gdmVyaWZpZXIKICAgICAgICBzZWxmLnJlY29yZHMgPSBbXQoKICAgIEBjbGFzc21ldGhvZAogICAgZGVmIGZyb21fa2V5KGNscywga2V5LCBjb250cmFjdF92ZXJzaW9uLCByb2xlcz1Ob25lLCBmbG93X3Byb2ZpbGU9Tm9uZSk6CiAgICAgICAgcmV0dXJuIGNscygKICAgICAgICAgICAgRGVjaXNpb25WZXJpZmllcigKICAgICAgICAgICAgICAgIGtleSwgY29udHJhY3RfdmVyc2lvbiwgcm9sZXM9cm9sZXMsIGZsb3dfcHJvZmlsZT1mbG93X3Byb2ZpbGUKICAgICAgICAgICAgKQogICAgICAgICkKCiAgICBkZWYgY29uc3VtZShzZWxmLCByYXcsIHJlcXVlc3QsIHRhcmdldCwgbm93PU5vbmUpOgogICAgICAgICIiIlJldHVybiBhIGJvdW5kZWQgb3V0Y29tZSByZWNvcmQ7IG5ldmVyIHJhaXNlcywgbmV2ZXIgZW5mb3JjZXMuIiIiCiAgICAgICAgbm93ID0gbm93IG9yIGRhdGV0aW1lLm5vdyh0aW1lem9uZS51dGMpCiAgICAgICAgdHJ5OgogICAgICAgICAgICByZXBseSA9IHNlbGYudmVyaWZpZXIudmVyaWZ5KHJhdywgcmVxdWVzdCwgdGFyZ2V0LCBub3cpCiAgICAgICAgZXhjZXB0IERlY2lzaW9uRXJyb3I6CiAgICAgICAgICAgIHJlY29yZCA9IHsib3V0Y29tZSI6ICJyZWplY3RlZCIsICJyZWFzb24iOiAiVU5UUlVTVEVEX1JFQ09NTUVOREFUSU9OIn0KICAgICAgICAgICAgc2VsZi5fYXBwZW5kKHJlY29yZCkKICAgICAgICAgICAgcmV0dXJuIHJlY29yZAogICAgICAgIHJlY29yZCA9IHsKICAgICAgICAgICAgIm91dGNvbWUiOiAidmVyaWZpZWRfbW9uaXRvcl9vbmx5IiwKICAgICAgICAgICAgImFjdGlvbiI6IHJlcGx5LmRlY2lzaW9uLmFjdGlvbiwKICAgICAgICAgICAgInJlYXNvbl9jb2RlIjogcmVwbHkuZGVjaXNpb24ucmVhc29uX2NvZGUsCiAgICAgICAgICAgICJydWxlX2lkIjogcmVwbHkuZGVjaXNpb24ucnVsZV9pZCwKICAgICAgICAgICAgIm1vZGUiOiByZXBseS5kZWNpc2lvbi5tb2RlLAogICAgICAgICAgICAiZW5mb3JjZSI6IHJlcGx5LmRlY2lzaW9uLmVuZm9yY2UsCiAgICAgICAgfQogICAgICAgIHNlbGYuX2FwcGVuZChyZWNvcmQpCiAgICAgICAgcmV0dXJuIHJlY29yZAoKICAgIGRlZiBfYXBwZW5kKHNlbGYsIHJlY29yZCk6CiAgICAgICAgIyBObyByYXcgcmVwbHksIHNpZ25hdHVyZSBvciBjcmVkZW50aWFsIG1hdGVyaWFsIGlzIGV2ZXIgcmVjb3JkZWQuCiAgICAgICAgc2VsZi5yZWNvcmRzLmFwcGVuZChyZWNvcmQpCiAgICAgICAgaWYgbGVuKHNlbGYucmVjb3JkcykgPiBNQVhfUkVDT1JEUzoKICAgICAgICAgICAgZGVsIHNlbGYucmVjb3Jkc1s6LU1BWF9SRUNPUkRTXQogICAgICAgIExPRy5pbmZvKCJkZWNpc2lvbl9jb25zdW1lciBvdXRjb21lPSVzIiwgcmVjb3JkWyJvdXRjb21lIl0pCg==
+"""Monitor-only consumer for signed analytics recommendations (issue #102).
+
+Analytics already signs recommendations and ships an independent verifier
+(analytics.decisions.DecisionVerifier), but nothing at the API boundary
+consumed them — the observation adapter is telemetry-only by design and
+stays that way. This consumer closes the verification loop in monitor-only
+mode: it verifies a SignedReply, records a bounded structured outcome, and
+NEVER changes an API response, blocks a request, or raises into the request
+path. The signed schema itself pins mode=monitor_only and enforce=False;
+enforcement remains unapproved and unimplemented.
+"""
+
+import logging
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from analytics.decisions import DecisionError, DecisionVerifier  # noqa: E402
+
+LOG = logging.getLogger("apisenx.decision_consumer")
+MAX_RECORDS = 1000
+
+
+class MonitorOnlyDecisionConsumer:
+    """Verify signed recommendations at the boundary; log, never act."""
+
+    def __init__(self, verifier):
+        self.verifier = verifier
+        self.records = []
+
+    @classmethod
+    def from_key(cls, key, contract_version, roles=None, flow_profile=None):
+        return cls(
+            DecisionVerifier(
+                key, contract_version, roles=roles, flow_profile=flow_profile
+            )
+        )
+
+    def consume(self, raw, request, target, now=None):
+        """Return a bounded outcome record; never raises, never enforces."""
+        now = now or datetime.now(timezone.utc)
+        try:
+            reply = self.verifier.verify(raw, request, target, now)
+        except DecisionError:
+            record = {"outcome": "rejected", "reason": "UNTRUSTED_RECOMMENDATION"}
+            self._append(record)
+            return record
+        record = {
+            "outcome": "verified_monitor_only",
+            "action": reply.decision.action,
+            "reason_code": reply.decision.reason_code,
+            "rule_id": reply.decision.rule_id,
+            "mode": reply.decision.mode,
+            "enforce": reply.decision.enforce,
+        }
+        self._append(record)
+        return record
+
+    def _append(self, record):
+        # No raw reply, signature or credential material is ever recorded.
+        self.records.append(record)
+        if len(self.records) > MAX_RECORDS:
+            del self.records[:-MAX_RECORDS]
+        LOG.info("decision_consumer outcome=%s", record["outcome"])
