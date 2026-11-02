@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "purpose": "SHA-256 baseline for the checked-in synthetic Mock API lab fixtures. Update only through reviewed fixture changes.",
+  "fixtures": {
+    "mock_data/orders.json": "31865963b4980679d6c3de06ff6a2021d5799d3fbcb10973b3af6c84ec96589d",
+    "mock_data/users.json": "1e73646f9294571cdc537333a22d0017486497df445871994e262bad379ec14b",
+    "mock_data/sharing_grants.json": "ef58339732149617b7127749c647942f3229d8dd521170bc122e546fd53af7f1",
+    "mock_data/authorization_cases.json": "30022324674f8b0a5d1beabffee81c8eb0bf8f1586f578184b6d34df059321f5"
+  },
+  "expected": {
+    "orders": 3,
+    "users": 5,
+    "sharing_grants": 0,
+    "authorization_cases": 7,
+    "classification": "synthetic-test-only"
+  }
+}
