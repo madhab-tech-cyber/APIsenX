@@ -21,7 +21,9 @@ def verify_fixture_hashes(root: Path, manifest: dict) -> list[str]:
         if not path.is_file():
             mismatches.append(relative_path)
             continue
-        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        data = path.read_bytes()
+        git_header = f"blob {len(data)}\\0".encode("ascii")
+        actual = hashlib.sha1(git_header + data).hexdigest()
         if actual != expected:
             mismatches.append(relative_path)
     return mismatches
