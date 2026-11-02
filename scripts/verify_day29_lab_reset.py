@@ -22,7 +22,7 @@ def verify_fixture_hashes(root: Path, manifest: dict) -> list[str]:
             mismatches.append(relative_path)
             continue
         data = path.read_bytes()
-        git_header = f"blob {len(data)}\\0".encode("ascii")
+        git_header = f"blob {len(data)}\0".encode("ascii")
         actual = hashlib.sha1(git_header + data).hexdigest()
         if actual != expected:
             mismatches.append(relative_path)
