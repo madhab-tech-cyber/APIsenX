@@ -1,1 +1,3 @@
-IyBEZXZlbG9wbWVudC90ZXN0IGRlcGVuZGVuY2llcy4gUnVudGltZSBwaW5zIHN0YXkgaW4gcmVxdWlyZW1lbnRzLnR4dC4KLXIgcmVxdWlyZW1lbnRzLnR4dApweXRlc3Q9PTkuMi4wCg==
+# Development/test dependencies. Runtime pins stay in requirements.txt.
+-r requirements.txt
+pytest==9.2.0
