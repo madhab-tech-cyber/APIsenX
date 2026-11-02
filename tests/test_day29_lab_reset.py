@@ -33,7 +33,10 @@ class Day29LabResetTests(unittest.TestCase):
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(ROOT / relative_path, destination)
             changed = root / "mock_data" / "orders.json"
-            changed.write_text(changed.read_text(encoding="utf-8") + " ", encoding="utf-8")
+            changed.write_text(
+                changed.read_text(encoding="utf-8") + " ",
+                encoding="utf-8",
+            )
             self.assertEqual(
                 verify_fixture_hashes(root, self.manifest),
                 ["mock_data/orders.json"],
