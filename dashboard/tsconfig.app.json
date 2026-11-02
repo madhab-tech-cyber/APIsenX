@@ -1,1 +1,26 @@
-ewogICJjb21waWxlck9wdGlvbnMiOiB7CiAgICAidHNCdWlsZEluZm9GaWxlIjogIi4vbm9kZV9tb2R1bGVzLy50bXAvdHNjb25maWcuYXBwLnRzYnVpbGRpbmZvIiwKICAgICJ0YXJnZXQiOiAiZXMyMDIzIiwKICAgICJsaWIiOiBbIkVTMjAyMyIsICJET00iXSwKICAgICJtb2R1bGUiOiAiZXNuZXh0IiwKICAgICJ0eXBlcyI6IFsidml0ZS9jbGllbnQiXSwKICAgICJhbGxvd0FyYml0cmFyeUV4dGVuc2lvbnMiOiB0cnVlLAogICAgInNraXBMaWJDaGVjayI6IHRydWUsCgogICAgLyogQnVuZGxlciBtb2RlICovCiAgICAibW9kdWxlUmVzb2x1dGlvbiI6ICJidW5kbGVyIiwKICAgICJhbGxvd0ltcG9ydGluZ1RzRXh0ZW5zaW9ucyI6IHRydWUsCiAgICAidmVyYmF0aW1Nb2R1bGVTeW50YXgiOiB0cnVlLAogICAgIm1vZHVsZURldGVjdGlvbiI6ICJmb3JjZSIsCiAgICAibm9FbWl0IjogdHJ1ZSwKICAgICJqc3giOiAicmVhY3QtanN4IiwKCiAgICAvKiBMaW50aW5nICovCiAgICAibm9VbnVzZWRMb2NhbHMiOiB0cnVlLAogICAgIm5vVW51c2VkUGFyYW1ldGVycyI6IHRydWUsCiAgICAiZXJhc2FibGVTeW50YXhPbmx5IjogdHJ1ZSwKICAgICJub0ZhbGx0aHJvdWdoQ2FzZXNJblN3aXRjaCI6IHRydWUKICB9LAogICJpbmNsdWRlIjogWyJzcmMiXQp9Cg==
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
