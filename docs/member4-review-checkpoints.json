@@ -4,7 +4,7 @@
   "timezone": "Asia/Calcutta",
   "implementation_owner": "madhab-tech-cyber",
   "candidate_commit": "https://github.com/madhab-tech-cyber/APIsenX/commit/9fc15f0d6c61ca052d5821d359332a4f4b89f57e",
-  "candidate_rules_digest": "sha256:250aad9c6be5624932e18c4321b11b9a9a9d66726a86e74304b4090f1476bf54",
+  "candidate_rules_digest": "sha256:bb7a305b4f355ce1206a24f067a104f5a6ea403571049f470ee3cdff03d2f2ca",
   "rule_version": "DET-1.2",
   "contract_version": "sha256:4b10825c8a03629240a45520765ce8e55107f3c4e097c7e32680d660d8d7617a",
   "engineering_status": "implemented_pending_independent_acceptance",
