@@ -80,13 +80,9 @@ function App() {
           </table>
         </section>
 
-<<<<<<< HEAD
         <h2 className="section-title">
           Alerts &amp; Triage <span className="fixture-label">(Synthetic)</span>
         </h2>
-=======
-        <h2 className="section-title">Alerts &amp; Triage</h2>
->>>>>>> origin/main
 
         <section className="alerts-table-card">
           <table className="alerts-table">
@@ -120,13 +116,9 @@ function App() {
           </table>
         </section>
 
-<<<<<<< HEAD
         <h2 className="section-title">
           Security Evidence <span className="fixture-label">(Synthetic)</span>
         </h2>
-=======
-        <h2 className="section-title">Security Evidence</h2>
->>>>>>> origin/main
 
         <section className="evidence-table-card">
           <table className="evidence-table">
@@ -162,13 +154,9 @@ function App() {
           </table>
         </section>
 
-<<<<<<< HEAD
         <h2 className="section-title">
           Performance &amp; Health <span className="fixture-label">(Synthetic)</span>
         </h2>
-=======
-        <h2 className="section-title">Performance &amp; Health</h2>
->>>>>>> origin/main
 
         <section className="health-table-card">
           <table className="health-table">
