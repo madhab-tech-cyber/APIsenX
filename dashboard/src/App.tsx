@@ -1,4 +1,5 @@
 import './App.css'
+import { DATA_SOURCE_LABEL } from './dataSource'
 import { securityMetrics } from './securityData'
 import { apiEndpoints } from './endpointData'
 import { securityAlerts } from './alertData'
@@ -17,6 +18,7 @@ function App() {
       <header className="topbar">
         <h1>API-Sentinel</h1>
         <p>Secure API Security Dashboard</p>
+        <p className="data-source-badge">{DATA_SOURCE_LABEL}</p>
       </header>
 
       <div className="data-boundary" role="status">

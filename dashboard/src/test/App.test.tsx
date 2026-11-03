@@ -1,4 +1,4 @@
-﻿import { render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import App from '../App'
 
@@ -11,6 +11,12 @@ describe('API-Sentinel dashboard', () => {
     expect(screen.getByText('Alerts & Triage')).toBeInTheDocument()
     expect(screen.getByText('Security Evidence')).toBeInTheDocument()
     expect(screen.getByText('Performance & Health')).toBeInTheDocument()
+  })
+
+  it('labels the configured data source honestly', () => {
+    render(<App />)
+
+    expect(screen.getAllByText('Data source: FIXTURE (synthetic demo data)').length).toBeGreaterThan(0)
   })
 
   it('clearly identifies unavailable management API and synthetic data', () => {
