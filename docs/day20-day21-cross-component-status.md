@@ -180,3 +180,60 @@ reviewer decision are not evidenced.
 Keep AP-1.0 `monitor_only`, active rules at zero, and release
 **NOT APPROVED**. Passing PR CI, synthetic tests, or requested reviews do not
 close these human, administrative, durable-storage or integrated-runtime gates.
+
+
+## 2026-11-03 verified-main reconciliation and scoped hardening
+
+**Verified baseline:** `main` at `b522952927290d7cd0621fa0bde43a26d8d88dad`.
+The latest exact-main workflows observed before this branch were all green:
+[Mock API Security Tests #41502130599](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41502130599),
+[Analytics Security Tests #41502130655](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41502130655),
+and [Member 3 Loopback Integration #41502130586](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41502130586).
+These runs validate the repository at that main SHA; they do not supply human approval or prove the outstanding Day 20/21 gates.
+
+### Day 20 — candidate storage is not acceptance
+
+PR [#121](https://github.com/madhab-tech-cyber/APIsenX/pull/121) added
+`analytics/durable_store.py` and `tests/test_durable_store.py`. The implementation
+is an opt-in local SQLite candidate. `AuditWriter` still defaults to
+`MemoryStore`; a caller must explicitly inject the candidate. Its current
+retention bound is at most seven days, so it cannot satisfy RT-05's 90-day
+maximum as written, and it does not implement per-class retention, authenticated
+database roles, deletion receipts, export/backup expiry, restore-time re-purge,
+case-scoped RBAC, audited reads/exports, or protected integrity checkpoints.
+SQLite is not the proposed PostgreSQL/KMS architecture and is not treated as
+service-owner approval.
+
+This branch hardens only the candidate's local contract: it rejects SQLite
+in-memory/URI paths, requires timezone-aware clocks, normalizes timestamps to
+UTC before expiry comparisons, and explicitly requests SQLite FULL synchronous
+commit behavior. These changes do not turn the candidate into an accepted
+audit service or make it the runtime default.
+
+### Day 21 — optional observer isolation
+
+The Mock API's optional monitor-only observer is not an authorization boundary.
+This branch catches unexpected observer exceptions at the API middleware
+boundary, logs only a fixed outcome, and preserves the already-produced API
+response. A deterministic regression injects a synthetic failing observer and
+checks successful API behavior, unchanged order state, and absence of exception
+text from diagnostics.
+
+The observer still sends telemetry only. No signed-decision consumer,
+enforcement adapter, route-specific enforcement circuit breaker, or active
+rule is introduced. Integrated failure/recovery, durable-audit outage,
+restart-safe behavior and human-led acceptance remain pending.
+
+### Governance correction and release safety
+
+Issues [#83](https://github.com/madhab-tech-cyber/APIsenX/issues/83),
+[#102](https://github.com/madhab-tech-cyber/APIsenX/issues/102) and
+[#89](https://github.com/madhab-tech-cyber/APIsenX/issues/89) were found closed
+by the repository owner on 2026-11-02 even though the approval record remains
+blank and their own evidence bodies retain outstanding requirements. They are
+being reopened with corrected, evidence-based status; closure state alone is
+not evidence of implementation, administrator action or human acceptance.
+
+Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release
+**NOT APPROVED**. No production deployment, branch-protection change, human
+sign-off or enforcement activation is claimed.
