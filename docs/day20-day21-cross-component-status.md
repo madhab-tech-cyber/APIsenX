@@ -295,3 +295,69 @@ requested but no review decision is recorded. Service-owner architecture
 approval and independent approval remain absent. Day 20/21 and release gates
 remain BLOCKED; AP-1.0 stays `monitor_only`, active rules stay zero, and
 release remains **NOT APPROVED**.
+
+
+## 2026-11-03 post-merge verification — main at b0e4c704da7d3eeaa2beb0724150d6b10cadb6a9
+
+This section supersedes earlier candidate/pending-PR descriptions above where
+they conflict with the verified post-merge state.
+
+### Exact-main CI
+
+All three workflows completed successfully on the exact current main SHA:
+
+- Mock API Security and Quality Gates:
+  https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41629873808
+  Steps passed: Ruff, Bandit, dependency audit, loopback integration, API and
+  OpenAPI tests, and bounded Day 19 load stages.
+- Analytics Security and Quality Gates:
+  https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41629873988
+  Steps passed: API/contract/analytics regressions, detection corpus and review
+  demo, frozen candidate verification/build, Ruff, Bandit, secret scan and
+  dependency audit.
+- Rust/Python Loopback Contract:
+  https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41629873851
+  Steps passed: locked Rust library checks and real loopback Rust/Python batch
+  handoff.
+
+### Day 20 — what changed and what remains blocked
+
+PR #123 is merged. The opt-in SQLite candidate now rejects in-memory/URI paths,
+requires timezone-aware clocks, normalizes timestamps to UTC, requests FULL
+synchronous commits, and has a mid-batch SQLite failure rollback regression.
+It remains opt-in; `AuditWriter` still defaults to volatile `MemoryStore`.
+
+Still missing: service-owner approval of storage architecture and key ownership;
+independent architecture review; authenticated role separation; RT-01–RT-08
+runtime retention (including RT-05 90-day maximum); deletion receipts and
+derivative/export/backup expiry; restore-time re-purge; case-scoped RBAC and
+audited reads/exports; protected integrity checkpoints; and approved runtime
+integration tests. Issue #83 remains OPEN.
+
+### Day 21 — what changed and what remains blocked
+
+PR #123 is merged. The optional monitor-only observer is now isolated from API
+responses when it raises unexpectedly; diagnostics use a fixed failure outcome.
+The API correlation UUID is reused as the Sentinel event UUID, and tests cover
+mocked analytics HTTP 503, observer exceptions, and RF-01–RF-04 API authority
+under observer failure.
+
+These tests do not simulate a live durable-database outage. The observer remains
+telemetry-only: no signed-decision consumer, enforcement adapter, or active
+enforcement rule exists. Integrated route-specific dependency failure,
+durable-audit append failure, restart-safe recovery, approved-environment
+evidence and separate dated owner/independent decisions remain pending. Issue
+#102 remains OPEN.
+
+### Release and governance
+
+Issue #89 remains OPEN. The branch object previously reported
+`protected: false`; the detailed protection endpoint returns HTTP 403 to this
+connection, so effective protection cannot be verified or changed here. No
+administrator action, human-led demonstration, service-owner approval or
+independent-reviewer approval is claimed.
+
+Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release
+**NOT APPROVED**. Passing CI validates the tested code at this SHA; it does not
+satisfy the outstanding architecture, operational, administrative or human
+acceptance gates.
