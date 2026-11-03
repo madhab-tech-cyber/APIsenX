@@ -361,3 +361,16 @@ Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release
 **NOT APPROVED**. Passing CI validates the tested code at this SHA; it does not
 satisfy the outstanding architecture, operational, administrative or human
 acceptance gates.
+
+## 2026-11-03 post-merge reconciliation — main at 936a32bf0466bf87ba4f5d2df9995100abb7fba1
+
+This section supersedes the older October baseline and candidate/pending-PR notes above where they conflict with the verified current main state.
+
+- PR #123 is merged at b0e4c704da7d3eeaa2beb0724150d6b10cadb6a9. Its opt-in SQLite candidate hardening and Day 21 observer-outage isolation are now on main. The observer remains telemetry-only; the audit writer still defaults to volatile MemoryStore.
+- The documentation reconciliation commits are 111096c8b820310aba0f4b44c19a21947fb07611 and 936a32bf0466bf87ba4f5d2df9995100abb7fba1.
+- All three required workflows passed on the exact current main SHA 936a32bf0466bf87ba4f5d2df9995100abb7fba1: [Mock API](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41630125926), [Analytics](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41630125818), and [Member 3 Loopback](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41630125949).
+- Day 8 runtime normalizer and executable regression tests are present and CI-validated; the full 53-case normative baseline, fuzz/property coverage and producer/consumer/independent acceptance remain outstanding.
+
+Day 20 remains BLOCKED: no approved durable architecture, owner approval, independent review, complete RT-01–RT-08 runtime retention, deletion/backup/restore controls, case-scoped RBAC, audited exports or protected integrity checkpoints. Day 21 remains IN PROGRESS: component tests are merged, but integrated dependency-failure/recovery, approved durable-audit outage behavior and dated owner/independent acceptance are not evidenced. Day 22 integrated acceptance and Days 14–18 human/governance gates also remain open.
+
+The main branch is currently reported unprotected; detailed branch-protection readback is unavailable to this connection. No administrator action, human demonstration, or human approval is claimed. Keep AP-1.0 monitor_only, active enforcement rules at zero, and release **NOT APPROVED**.
