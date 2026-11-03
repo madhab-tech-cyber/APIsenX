@@ -266,3 +266,9 @@ remain denied, and an authorized PATCH completes without being rolled back by
 optional telemetry failure. Correlation IDs remain present and exception text
 is not exposed. This is a deterministic mock-only test; it does not simulate a
 live analytics/database outage or implement signed-decision enforcement.
+
+The Day 20 candidate test suite now also injects a deterministic SQLite trigger
+failure on the second row of a batch and verifies that the first row is rolled
+back. This checks the candidate's transaction atomicity under a mid-write
+storage error only; it does not supply the missing retention, authorization,
+backup/restore, checkpoint or human-approval controls.
