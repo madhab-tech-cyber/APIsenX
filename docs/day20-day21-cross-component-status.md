@@ -237,3 +237,21 @@ not evidence of implementation, administrator action or human acceptance.
 Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release
 **NOT APPROVED**. No production deployment, branch-protection change, human
 sign-off or enforcement activation is claimed.
+
+
+### Member 5 Day 20/21 log and outage follow-up — 2026-11-03 branch candidate
+
+The API request correlation UUID is now passed as the optional observation event
+UUID. This lets the application audit line's `correlation_id` be joined to the
+Sentinel event's `event_id` without adding user identity, raw URL, query, body
+or credentials to the event. The adapter validates a caller-supplied UUID and
+continues to generate one when used independently. A deterministic API test
+uses a synthetic analytics HTTP 503 and checks that the event UUID matches the
+response correlation header and application log, while the API still returns
+its successful result and order state remains unchanged.
+
+This is a mocked service-unavailable test, not a live database outage. The
+analytics service currently uses volatile storage by default; no production
+database is configured in this lab. Existing analytics audit-append failure
+tests exercise the bounded 503 path at the analytics component boundary. A
+real approved database outage/recovery demonstration remains pending.
