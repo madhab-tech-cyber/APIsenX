@@ -167,7 +167,7 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
 
         cases = (
             ("RF-01", "GET", "/orders", USER_A, None, 200),
-            ("RF-02", "GET", "/orders/order-1002", USER_A, None, 403),
+            ("RF-02", "GET", "/orders/order-1002", USER_A, None, 404),
             (
                 "RF-03",
                 "PATCH",
@@ -194,6 +194,8 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
                 diagnostics = "\\n".join(captured.output)
                 correlation_id = response.headers.get("X-Correlation-ID")
                 self.assertEqual(response.status_code, expected_status)
+                if route_id == "RF-02":
+                    self.assertNotIn("order-1002", response.text)
                 self.assertIsNotNone(correlation_id)
                 self.assertIn(correlation_id, diagnostics)
                 self.assertIn("sentinel_observation outcome=unavailable", diagnostics)
