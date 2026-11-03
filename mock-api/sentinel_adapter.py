@@ -11,7 +11,7 @@ import os
 import re
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import httpx
 
@@ -86,7 +86,7 @@ class SentinelObservationAdapter:
             raise ValueError("Incomplete Sentinel observation configuration")
         return cls(endpoint, token, source_id)
 
-    async def publish(self, method, route_template, status_code):
+    async def publish(self, method, route_template, status_code, event_id=None):
         """Publish a privacy-minimized event; failures are bounded and fail-open."""
         if not route_template or len(route_template) > 128:
             return False
@@ -100,10 +100,18 @@ class SentinelObservationAdapter:
         )
         if "{" in request_target or "}" in request_target:
             return False
+        if event_id is None:
+            normalized_event_id = str(uuid4())
+        else:
+            try:
+                normalized_event_id = str(UUID(str(event_id)))
+            except (TypeError, ValueError, AttributeError):
+                return False
+
         event = {
             "schema_name": "application_event",
             "schema_version": "1.0",
-            "event_id": str(uuid4()),
+            "event_id": normalized_event_id,
             "source_id": self.source_id,
             "observed_at": datetime.now(timezone.utc).isoformat(),
             "method": method,
