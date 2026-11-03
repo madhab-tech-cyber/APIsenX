@@ -28,7 +28,9 @@ class DurableStore:
         try:
             raw_db_path = os.fspath(db_path)
         except TypeError:
-            raise ValueError("DurableStore requires a filesystem database path") from None
+            raise ValueError(
+                "DurableStore requires a filesystem database path"
+            ) from None
         if (
             not isinstance(raw_db_path, str)
             or not raw_db_path.strip()
