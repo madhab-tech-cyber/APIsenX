@@ -231,3 +231,29 @@ cases must assert the actual byte and segment counts. Acceptance requires:
 This Day 8 specification establishes expected behavior only. It does not claim
 that a normalizer, keyed fingerprint service or executable corpus currently
 exists, and it does not close R-011 or R-013.
+
+
+## 7. 2026-11-03 implementation-state reconciliation
+
+The original status above describes the approved acceptance baseline and its
+then-pending implementation. It is not the current implementation status.
+
+Current main at
+`b0e4c704da7d3eeaa2beb0724150d6b10cadb6a9` contains
+`analytics/normalization.py` and the executable regression corpus in
+`tests/test_analytics_normalization.py`. The runtime implementation includes
+strict OpenAPI contract loading, method/path validation, one-pass decoding,
+parameter validation, privacy-safe unknown-route HMAC tokens, and contract
+fingerprinting. The test suite covers documented operations, method mismatch,
+invalid methods, unknown paths, query equivalence, encoding and bounds.
+
+The exact-main Analytics Security and Quality Gates workflow passed on this SHA:
+https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41629873988
+
+**Current disposition:** runtime implementation and component regression
+coverage are present and CI-validated. This does not by itself establish
+producer/consumer acceptance, independent security review, exhaustive fuzz or
+property-based testing, or closure of the linked discovery/acceptance issues.
+The original 53-case specification remains the normative acceptance baseline;
+do not describe the implementation as wholly pending, and do not mark the
+cross-team acceptance gate complete without the required owner reviews.
