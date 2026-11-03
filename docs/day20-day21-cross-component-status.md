@@ -255,3 +255,14 @@ analytics service currently uses volatile storage by default; no production
 database is configured in this lab. Existing analytics audit-append failure
 tests exercise the bounded 503 path at the analytics component boundary. A
 real approved database outage/recovery demonstration remains pending.
+
+### Additional 2026-11-03 route-authority regression
+
+The same candidate branch extends the observer-outage regression across RF-01
+through RF-04 API operations. A synthetic observer exception is injected after
+the API has produced its response. The test checks that owner reads and
+authorized admin reads still succeed, cross-owner and unauthorized admin reads
+remain denied, and an authorized PATCH completes without being rolled back by
+optional telemetry failure. Correlation IDs remain present and exception text
+is not exposed. This is a deterministic mock-only test; it does not simulate a
+live analytics/database outage or implement signed-decision enforcement.
