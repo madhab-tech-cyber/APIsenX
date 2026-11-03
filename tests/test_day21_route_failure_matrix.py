@@ -142,7 +142,7 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
 
     def test_unexpected_observer_exception_does_not_change_api_response(self):
         class FailingObserver:
-            async def publish(self, *_args):
+            async def publish(self, *_args, **_kwargs):
                 raise RuntimeError("SYNTHETIC_OBSERVER_FAILURE_MARKER")
 
         before = deepcopy(main.ORDERS)
