@@ -418,9 +418,14 @@ async def observe_request(request: Request, call_next):
     elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
 
     if SENTINEL_ADAPTER is not None and route_template != "unmatched":
-        await SENTINEL_ADAPTER.publish(
-            request.method, route_template, response.status_code
-        )
+        try:
+            await SENTINEL_ADAPTER.publish(
+                request.method, route_template, response.status_code
+            )
+        except Exception:
+            # Optional monitor-only telemetry must never change an API result.
+            # Keep diagnostics fixed and do not expose exception text or data.
+            logger.info("sentinel_observation outcome=unavailable")
 
     logger.info(
         "observation correlation_id=%s method=%s route=%s status=%s elapsed_ms=%s",
