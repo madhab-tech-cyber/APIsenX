@@ -272,3 +272,26 @@ failure on the second row of a batch and verifies that the first row is rolled
 back. This checks the candidate's transaction atomicity under a mid-write
 storage error only; it does not supply the missing retention, authorization,
 backup/restore, checkpoint or human-approval controls.
+
+### Exact candidate validation — 2026-11-03
+
+PR [#123](https://github.com/madhab-tech-cyber/APIsenX/pull/123) candidate
+head `7c391ece7d31ac30992abd4d29d63a116a39fca4` passed all three exact-head
+workflows:
+
+- [Mock API Security Tests #41574896563](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41574896563):
+  451 tests, Ruff, Bandit, dependency audit, loopback integration and bounded
+  Day 19 load stages passed.
+- [Analytics Security Tests #41574896521](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41574896521):
+  451 tests, detection corpus/review demo, frozen candidate verification/build,
+  Ruff, Bandit, secret scan and dependency audit passed.
+- [Member 3 Loopback Integration #41574896577](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41574896577):
+  Rust library checks and real loopback Rust/Python batch handoff passed.
+
+The candidate includes the observer-outage RF-01–RF-04 API authority matrix and
+the SQLite mid-batch rollback regression. These are synthetic/component-level
+tests, not live database outage or production acceptance. PR review is
+requested but no review decision is recorded. Service-owner architecture
+approval and independent approval remain absent. Day 20/21 and release gates
+remain BLOCKED; AP-1.0 stays `monitor_only`, active rules stay zero, and
+release remains **NOT APPROVED**.
