@@ -4,6 +4,12 @@ import { apiEndpoints } from './endpointData'
 import { securityAlerts } from './alertData'
 import { securityEvidence } from './evidenceData'
 import { healthMetrics } from './healthData'
+import type { DashboardSource } from './sourceState'
+
+const dashboardSource: DashboardSource = {
+  state: 'unavailable',
+  message: 'Management API unavailable; dashboard is showing synthetic fixture data.',
+}
 
 function App() {
   return (
@@ -15,6 +21,10 @@ function App() {
 
       <div className="data-boundary" role="status">
         Synthetic fixture data - not live security status
+      </div>
+
+      <div className="data-boundary" role="status">
+        Source state: {dashboardSource.state}. {dashboardSource.message}
       </div>
 
       <main className="content">
@@ -68,7 +78,9 @@ function App() {
           </table>
         </section>
 
-        <h2 className="section-title">Alerts &amp; Triage <span className="fixture-label">(Synthetic)</span></h2>
+        <h2 className="section-title">
+          Alerts &amp; Triage <span className="fixture-label">(Synthetic)</span>
+        </h2>
 
         <section className="alerts-table-card">
           <table className="alerts-table">
@@ -102,7 +114,9 @@ function App() {
           </table>
         </section>
 
-        <h2 className="section-title">Security Evidence <span className="fixture-label">(Synthetic)</span></h2>
+        <h2 className="section-title">
+          Security Evidence <span className="fixture-label">(Synthetic)</span>
+        </h2>
 
         <section className="evidence-table-card">
           <table className="evidence-table">
@@ -138,7 +152,9 @@ function App() {
           </table>
         </section>
 
-        <h2 className="section-title">Performance &amp; Health <span className="fixture-label">(Synthetic)</span></h2>
+        <h2 className="section-title">
+          Performance &amp; Health <span className="fixture-label">(Synthetic)</span>
+        </h2>
 
         <section className="health-table-card">
           <table className="health-table">

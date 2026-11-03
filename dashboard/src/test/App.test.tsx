@@ -12,4 +12,25 @@ describe('API-Sentinel dashboard', () => {
     expect(screen.getByText('Security Evidence')).toBeInTheDocument()
     expect(screen.getByText('Performance & Health')).toBeInTheDocument()
   })
+
+  it('clearly identifies unavailable management API and synthetic data', () => {
+    render(<App />)
+
+    const statusMessages = screen.getAllByRole('status')
+
+    expect(
+      statusMessages.some(
+        (element) =>
+          element.textContent === 'Synthetic fixture data - not live security status',
+      ),
+    ).toBe(true)
+
+    expect(
+      statusMessages.some(
+        (element) =>
+          element.textContent ===
+          'Source state: unavailable. Management API unavailable; dashboard is showing synthetic fixture data.',
+      ),
+    ).toBe(true)
+  })
 })
