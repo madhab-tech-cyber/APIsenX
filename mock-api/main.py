@@ -420,7 +420,10 @@ async def observe_request(request: Request, call_next):
     if SENTINEL_ADAPTER is not None and route_template != "unmatched":
         try:
             await SENTINEL_ADAPTER.publish(
-                request.method, route_template, response.status_code
+                request.method,
+                route_template,
+                response.status_code,
+                event_id=correlation_id,
             )
         except Exception:
             # Optional monitor-only telemetry must never change an API result.
