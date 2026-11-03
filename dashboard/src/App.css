@@ -327,3 +327,11 @@ select {
   font-family: Consolas, "Courier New", monospace;
   white-space: nowrap;
 }
+.fixture-label {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
