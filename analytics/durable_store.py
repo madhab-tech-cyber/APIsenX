@@ -1,18 +1,20 @@
-"""Durable SQLite-backed store with the same contract as MemoryStore.
+"""Opt-in local SQLite candidate; not an accepted durable-audit service.
 
-Issue #83 asks for audit retention and investigation storage that survives a
-restart. This store is an opt-in candidate for that design, not a replacement
-default: it persists only the masked summaries MemoryStore would hold, with
-the same dedup, conflict, capacity and retention semantics, and the same
-masking gate before anything is written. Analytics keeps using MemoryStore
-unless a caller explicitly injects this store (e.g. AuditWriter(store=...)).
+This candidate persists only masked summaries and preserves basic append,
+deduplication, capacity and TTL behavior across restarts. It does not provide
+authenticated database roles, per-class retention, deletion receipts,
+derivative/backup expiry, restore-time re-purge or protected integrity
+checkpoints. Analytics keeps using MemoryStore unless a caller explicitly
+injects this candidate. Do not treat SQLite as approval of the proposed
+PostgreSQL/KMS operating model or as Day 20 acceptance.
 """
 
 import hashlib
 import hmac
 import json
+import os
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from threading import RLock
 
 from analytics.masking import MaskingError, StorageMasker
@@ -23,12 +25,30 @@ class DurableStore:
     def __init__(self, key, db_path, capacity=1000, retention_seconds=300, routes=()):
         if not 1 <= capacity <= 10000 or not 1 <= retention_seconds <= 604800:
             raise ValueError("Invalid store bounds")
+        try:
+            raw_db_path = os.fspath(db_path)
+        except TypeError:
+            raise ValueError(
+                "DurableStore requires a filesystem database path"
+            ) from None
+        if (
+            not isinstance(raw_db_path, str)
+            or not raw_db_path.strip()
+            or raw_db_path == ":memory:"
+            or raw_db_path.startswith("file:")
+        ):
+            raise ValueError("DurableStore requires a filesystem database path")
+
         self._key = key
         self.capacity = capacity
         self.retention = timedelta(seconds=retention_seconds)
         self._lock = RLock()
         self.masker = StorageMasker(routes)
-        self._db = sqlite3.connect(str(db_path), check_same_thread=False)
+        self._db = sqlite3.connect(
+            raw_db_path, check_same_thread=False, timeout=5.0
+        )
+        # Make the intended commit durability explicit for this local candidate.
+        self._db.execute("PRAGMA synchronous = FULL")
         self._db.execute(
             "CREATE TABLE IF NOT EXISTS store_rows ("
             " source TEXT NOT NULL,"
@@ -45,6 +65,17 @@ class DurableStore:
         with self._lock:
             self._db.close()
 
+    @staticmethod
+    def _normalize_now(now):
+        """Require a timezone-aware clock and store all timestamps as UTC."""
+        if (
+            not isinstance(now, datetime)
+            or now.tzinfo is None
+            or now.utcoffset() is None
+        ):
+            raise ValueError("now must be a timezone-aware datetime")
+        return now.astimezone(timezone.utc)
+
     def digest(self, value):
         canonical = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
         return hmac.new(
@@ -57,6 +88,7 @@ class DurableStore:
         )
 
     def purge(self, now):
+        now = self._normalize_now(now)
         with self._lock:
             self._purge(now)
             self._db.commit()
@@ -73,6 +105,7 @@ class DurableStore:
 
     def append(self, items, now):
         """Preflight under a lock; reject conflicts without a partial append."""
+        now = self._normalize_now(now)
         with self._lock:
             try:
                 self._purge(now)
@@ -127,6 +160,7 @@ class DurableStore:
 
     def snapshot(self, now):
         # Internal test/investigation seam, deliberately not an HTTP read API.
+        now = self._normalize_now(now)
         with self._lock:
             self._purge(now)
             self._db.commit()

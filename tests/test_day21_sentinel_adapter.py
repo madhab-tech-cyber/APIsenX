@@ -1,10 +1,13 @@
 """Day 21 tests for bounded, privacy-minimized monitor-only API telemetry."""
 
 import asyncio
+import copy
 import json
 import unittest
+from unittest.mock import patch
 
 import httpx
+from fastapi.testclient import TestClient
 
 import sys
 from pathlib import Path
@@ -12,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mock-api"))
 
+import main  # noqa: E402
 from sentinel_adapter import (  # noqa: E402
     SentinelObservationAdapter,
     SentinelObservationMiddleware,
@@ -133,6 +137,68 @@ class SentinelObservationAdapterTests(unittest.TestCase):
                 "short",
                 "mock_api",
             )
+
+
+
+    def test_supplied_application_correlation_id_is_used_as_event_id(self):
+        captured = {}
+
+        def handler(request):
+            captured["body"] = json.loads(request.content)
+            return httpx.Response(200, json={"accepted_event_ids": []})
+
+        adapter = self.make_adapter(handler)
+        correlation_id = "6c3a6f9e-2f3b-4a6d-9f1d-8a8f2b8e4c01"
+        delivered = asyncio.run(
+            adapter.publish("GET", "/orders", 200, event_id=correlation_id)
+        )
+
+        self.assertTrue(delivered)
+        self.assertEqual(captured["body"]["event_id"], correlation_id)
+
+    def test_invalid_supplied_event_id_is_not_published(self):
+        calls = []
+
+        def handler(request):
+            calls.append(request)
+            return httpx.Response(200)
+
+        adapter = self.make_adapter(handler)
+        delivered = asyncio.run(
+            adapter.publish("GET", "/orders", 200, event_id="not-a-uuid")
+        )
+        self.assertFalse(delivered)
+        self.assertEqual(calls, [])
+
+    def test_analytics_503_preserves_api_response_and_log_correlation(self):
+        captured = {}
+        failure_marker = "SYNTHETIC_ANALYTICS_STORAGE_FAILURE"
+
+        def handler(request):
+            captured["body"] = json.loads(request.content)
+            return httpx.Response(503, json={"detail": failure_marker})
+
+        adapter = self.make_adapter(handler)
+        before = copy.deepcopy(main.ORDERS)
+        headers = {
+            "Authorization": "Bearer lab-user-a-token",
+            "X-Policy-Version": "AP-1.0",
+        }
+
+        with patch.object(main, "SENTINEL_ADAPTER", adapter):
+            with self.assertLogs("apisenx.audit", level="INFO") as logged:
+                response = TestClient(main.app).get("/orders", headers=headers)
+
+        correlation_id = response.headers["X-Correlation-ID"]
+        diagnostics = "\\n".join(logged.output)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(captured["body"]["event_id"], correlation_id)
+        self.assertIn(correlation_id, diagnostics)
+        self.assertEqual(captured["body"]["method"], "GET")
+        self.assertEqual(captured["body"]["request_target"], "/orders")
+        self.assertEqual(captured["body"]["status_code"], 200)
+        self.assertNotIn(failure_marker, response.text + diagnostics)
+        self.assertEqual(main.ORDERS, before)
 
 
 if __name__ == "__main__":

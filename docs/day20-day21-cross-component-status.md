@@ -180,3 +180,118 @@ reviewer decision are not evidenced.
 Keep AP-1.0 `monitor_only`, active rules at zero, and release
 **NOT APPROVED**. Passing PR CI, synthetic tests, or requested reviews do not
 close these human, administrative, durable-storage or integrated-runtime gates.
+
+
+## 2026-11-03 verified-main reconciliation and scoped hardening
+
+**Verified baseline:** `main` at `b522952927290d7cd0621fa0bde43a26d8d88dad`.
+The latest exact-main workflows observed before this branch were all green:
+[Mock API Security Tests #41502130599](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41502130599),
+[Analytics Security Tests #41502130655](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41502130655),
+and [Member 3 Loopback Integration #41502130586](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41502130586).
+These runs validate the repository at that main SHA; they do not supply human approval or prove the outstanding Day 20/21 gates.
+
+### Day 20 — candidate storage is not acceptance
+
+PR [#121](https://github.com/madhab-tech-cyber/APIsenX/pull/121) added
+`analytics/durable_store.py` and `tests/test_durable_store.py`. The implementation
+is an opt-in local SQLite candidate. `AuditWriter` still defaults to
+`MemoryStore`; a caller must explicitly inject the candidate. Its current
+retention bound is at most seven days, so it cannot satisfy RT-05's 90-day
+maximum as written, and it does not implement per-class retention, authenticated
+database roles, deletion receipts, export/backup expiry, restore-time re-purge,
+case-scoped RBAC, audited reads/exports, or protected integrity checkpoints.
+SQLite is not the proposed PostgreSQL/KMS architecture and is not treated as
+service-owner approval.
+
+This branch hardens only the candidate's local contract: it rejects SQLite
+in-memory/URI paths, requires timezone-aware clocks, normalizes timestamps to
+UTC before expiry comparisons, and explicitly requests SQLite FULL synchronous
+commit behavior. These changes do not turn the candidate into an accepted
+audit service or make it the runtime default.
+
+### Day 21 — optional observer isolation
+
+The Mock API's optional monitor-only observer is not an authorization boundary.
+This branch catches unexpected observer exceptions at the API middleware
+boundary, logs only a fixed outcome, and preserves the already-produced API
+response. A deterministic regression injects a synthetic failing observer and
+checks successful API behavior, unchanged order state, and absence of exception
+text from diagnostics.
+
+The observer still sends telemetry only. No signed-decision consumer,
+enforcement adapter, route-specific enforcement circuit breaker, or active
+rule is introduced. Integrated failure/recovery, durable-audit outage,
+restart-safe behavior and human-led acceptance remain pending.
+
+### Governance correction and release safety
+
+Issues [#83](https://github.com/madhab-tech-cyber/APIsenX/issues/83),
+[#102](https://github.com/madhab-tech-cyber/APIsenX/issues/102) and
+[#89](https://github.com/madhab-tech-cyber/APIsenX/issues/89) were found closed
+by the repository owner on 2026-11-02 even though the approval record remains
+blank and their own evidence bodies retain outstanding requirements. They are
+being reopened with corrected, evidence-based status; closure state alone is
+not evidence of implementation, administrator action or human acceptance.
+
+Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release
+**NOT APPROVED**. No production deployment, branch-protection change, human
+sign-off or enforcement activation is claimed.
+
+
+### Member 5 Day 20/21 log and outage follow-up — 2026-11-03 branch candidate
+
+The API request correlation UUID is now passed as the optional observation event
+UUID. This lets the application audit line's `correlation_id` be joined to the
+Sentinel event's `event_id` without adding user identity, raw URL, query, body
+or credentials to the event. The adapter validates a caller-supplied UUID and
+continues to generate one when used independently. A deterministic API test
+uses a synthetic analytics HTTP 503 and checks that the event UUID matches the
+response correlation header and application log, while the API still returns
+its successful result and order state remains unchanged.
+
+This is a mocked service-unavailable test, not a live database outage. The
+analytics service currently uses volatile storage by default; no production
+database is configured in this lab. Existing analytics audit-append failure
+tests exercise the bounded 503 path at the analytics component boundary. A
+real approved database outage/recovery demonstration remains pending.
+
+### Additional 2026-11-03 route-authority regression
+
+The same candidate branch extends the observer-outage regression across RF-01
+through RF-04 API operations. A synthetic observer exception is injected after
+the API has produced its response. The test checks that owner reads and
+authorized admin reads still succeed, cross-owner and unauthorized admin reads
+remain denied, and an authorized PATCH completes without being rolled back by
+optional telemetry failure. Correlation IDs remain present and exception text
+is not exposed. This is a deterministic mock-only test; it does not simulate a
+live analytics/database outage or implement signed-decision enforcement.
+
+The Day 20 candidate test suite now also injects a deterministic SQLite trigger
+failure on the second row of a batch and verifies that the first row is rolled
+back. This checks the candidate's transaction atomicity under a mid-write
+storage error only; it does not supply the missing retention, authorization,
+backup/restore, checkpoint or human-approval controls.
+
+### Exact candidate validation — 2026-11-03
+
+PR [#123](https://github.com/madhab-tech-cyber/APIsenX/pull/123) candidate
+head `7c391ece7d31ac30992abd4d29d63a116a39fca4` passed all three exact-head
+workflows:
+
+- [Mock API Security Tests #41574896563](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41574896563):
+  451 tests, Ruff, Bandit, dependency audit, loopback integration and bounded
+  Day 19 load stages passed.
+- [Analytics Security Tests #41574896521](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41574896521):
+  451 tests, detection corpus/review demo, frozen candidate verification/build,
+  Ruff, Bandit, secret scan and dependency audit passed.
+- [Member 3 Loopback Integration #41574896577](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41574896577):
+  Rust library checks and real loopback Rust/Python batch handoff passed.
+
+The candidate includes the observer-outage RF-01–RF-04 API authority matrix and
+the SQLite mid-batch rollback regression. These are synthetic/component-level
+tests, not live database outage or production acceptance. PR review is
+requested but no review decision is recorded. Service-owner architecture
+approval and independent approval remain absent. Day 20/21 and release gates
+remain BLOCKED; AP-1.0 stays `monitor_only`, active rules stay zero, and
+release remains **NOT APPROVED**.
