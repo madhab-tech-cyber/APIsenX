@@ -6,6 +6,7 @@ process restart. They do not claim Day 20 durable-audit acceptance, which
 still requires the design review tracked in issue #83.
 """
 
+import sqlite3
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
@@ -137,6 +138,33 @@ class DurableStoreTests(unittest.TestCase):
         bad = {**summary(), "route": "/not-an-approved-route"}
         with self.assertRaisesRegex(StoreError, "MASKING_REJECTED"):
             self.store.append([("source-a", "event-x", "d" * 64, bad)], self.now)
+        self.assertEqual(self.store.snapshot(self.now), [])
+
+
+    def test_sqlite_write_failure_rolls_back_the_entire_batch(self):
+        self.store._db.execute(
+            """
+            CREATE TRIGGER fail_on_marker
+            BEFORE INSERT ON store_rows
+            WHEN NEW.event_id = 'trigger-failure'
+            BEGIN
+                SELECT RAISE(ABORT, 'SYNTHETIC_SQLITE_WRITE_FAILURE');
+            END;
+            """
+        )
+        self.store._db.commit()
+
+        with self.assertRaisesRegex(
+            sqlite3.IntegrityError, "SYNTHETIC_SQLITE_WRITE_FAILURE"
+        ):
+            self.store.append(
+                [
+                    ("source-a", "first-in-batch", "a" * 64, summary()),
+                    ("source-a", "trigger-failure", "b" * 64, summary()),
+                ],
+                self.now,
+            )
+
         self.assertEqual(self.store.snapshot(self.now), [])
 
 
