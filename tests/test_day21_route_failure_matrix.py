@@ -140,6 +140,26 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         self.assertEqual(main.ORDERS, before)
 
 
+    def test_unexpected_observer_exception_does_not_change_api_response(self):
+        class FailingObserver:
+            async def publish(self, *_args):
+                raise RuntimeError("SYNTHETIC_OBSERVER_FAILURE_MARKER")
+
+        before = deepcopy(main.ORDERS)
+        with patch.object(main, "SENTINEL_ADAPTER", FailingObserver()):
+            with self.assertLogs("apisenx.audit", level="INFO") as captured:
+                response = self.client.get("/orders", headers=USER_A)
+
+        diagnostics = "\n".join(captured.output)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(
+            "SYNTHETIC_OBSERVER_FAILURE_MARKER",
+            response.text + diagnostics,
+        )
+        self.assertIn("sentinel_observation outcome=unavailable", diagnostics)
+        self.assertEqual(main.ORDERS, before)
+
+
 if __name__ == "__main__":
     unittest.main()
 
