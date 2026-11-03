@@ -1,0 +1,116 @@
+{
+  "lab_environment": {
+    "kernel": "5.15.0-89-generic",
+    "architecture": "x86_64",
+    "compiler": "clang version 14.0.0",
+    "btf_support": true,
+    "ringbuf_support": true,
+    "user_privilege": "apisentinel (UID 998, CAP_BPF+CAP_NET_ADMIN)"
+  },
+  "receipt_summary": {
+    "total_events_received": 3,
+    "schema_version": 1,
+    "schema_violations": 0,
+    "total_drops_detected": 0,
+    "privacy_violations": 0,
+    "status": "VERIFIED_ACCORDING_TO_CONTRACT"
+  },
+  "events": [
+    {
+      "schema_version": 1,
+      "event_id": 1,
+      "timestamp_ns": 412891002341,
+      "pid": 1042,
+      "tgid": 1042,
+      "uid": 998,
+      "flow": {
+        "src_ip": "10.0.0.1",
+        "dst_ip": "10.0.0.2",
+        "src_port": 54322,
+        "dst_port": 80,
+        "protocol": 6,
+        "ip_version": 4,
+        "flow_hash": 1829471928471
+      },
+      "http_method": "GET",
+      "direction": "INGRESS",
+      "status_code": 0,
+      "payload_bytes": 142,
+      "latency_us": 0,
+      "flags": {
+        "raw": 16777232,
+        "route_truncated": false,
+        "ipv6": false,
+        "query_stripped": false,
+        "drop_occurred": false,
+        "monitor_only": true
+      },
+      "route_marker": "/api/v1/users",
+      "dropped_in_gap": 0
+    },
+    {
+      "schema_version": 1,
+      "event_id": 2,
+      "timestamp_ns": 412892150119,
+      "pid": 1042,
+      "tgid": 1042,
+      "uid": 998,
+      "flow": {
+        "src_ip": "10.0.0.1",
+        "dst_ip": "10.0.0.2",
+        "src_port": 54324,
+        "dst_port": 80,
+        "protocol": 6,
+        "ip_version": 4,
+        "flow_hash": 1829471928472
+      },
+      "http_method": "POST",
+      "direction": "INGRESS",
+      "status_code": 0,
+      "payload_bytes": 288,
+      "latency_us": 0,
+      "flags": {
+        "raw": 16777236,
+        "route_truncated": false,
+        "ipv6": false,
+        "query_stripped": true,
+        "drop_occurred": false,
+        "monitor_only": true
+      },
+      "route_marker": "/api/v1/orders",
+      "dropped_in_gap": 0
+    },
+    {
+      "schema_version": 1,
+      "event_id": 3,
+      "timestamp_ns": 412893501004,
+      "pid": 1042,
+      "tgid": 1042,
+      "uid": 998,
+      "flow": {
+        "src_ip": "2001:db8::1",
+        "dst_ip": "2001:db8::2",
+        "src_port": 49152,
+        "dst_port": 8080,
+        "protocol": 6,
+        "ip_version": 6,
+        "flow_hash": 8928374910283
+      },
+      "http_method": "GET",
+      "direction": "INGRESS",
+      "status_code": 0,
+      "payload_bytes": 110,
+      "latency_us": 0,
+      "flags": {
+        "raw": 16777234,
+        "route_truncated": false,
+        "ipv6": true,
+        "query_stripped": false,
+        "drop_occurred": false,
+        "monitor_only": true
+      },
+      "route_marker": "/api/v1/health",
+      "dropped_in_gap": 0
+    }
+  ]
+}

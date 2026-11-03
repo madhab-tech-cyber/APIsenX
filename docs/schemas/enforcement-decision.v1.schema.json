@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apisentinel.example/schemas/enforcement-decision.v1.schema.json",
+  "title": "API-Sentinel enforcement decision v1 proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_name", "schema_version", "decision_id", "correlation_id", "policy_id", "policy_version", "issuer", "key_id", "issued_at", "expires_at", "action", "reason_code", "target", "signature"],
+  "properties": {
+    "schema_name": {"const": "enforcement_decision"},
+    "schema_version": {"const": "1.0"},
+    "decision_id": {"type": "string", "format": "uuid"},
+    "correlation_id": {"type": "string", "format": "uuid"},
+    "policy_id": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9_.-]+$"},
+    "policy_version": {"type": "string", "minLength": 1, "maxLength": 32, "pattern": "^[A-Za-z0-9_.-]+$"},
+    "issuer": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9_-]+$"},
+    "key_id": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9_-]+$"},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "action": {"enum": ["allow", "alert", "deny", "rate_limit"]},
+    "reason_code": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Z0-9_]+$"},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "route_template"],
+      "properties": {
+        "method": {"enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]},
+        "route_template": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^/[^*?#]*$"}
+      }
+    },
+    "approval_id": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9_.-]+$"},
+    "rollback_id": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9_.-]+$"},
+    "limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requests", "per_seconds"],
+      "properties": {
+        "requests": {"type": "integer", "minimum": 1, "maximum": 100000},
+        "per_seconds": {"type": "integer", "minimum": 1, "maximum": 3600}
+      }
+    },
+    "signature": {"type": "string", "minLength": 1, "maxLength": 1024}
+  },
+  "allOf": [
+    {"if": {"properties": {"action": {"enum": ["deny", "rate_limit"]}}}, "then": {"required": ["approval_id", "rollback_id"]}},
+    {"if": {"properties": {"action": {"const": "rate_limit"}}}, "then": {"required": ["limit"]}, "else": {"not": {"required": ["limit"]}}}
+  ]
+}

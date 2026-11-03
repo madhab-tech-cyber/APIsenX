@@ -129,3 +129,11 @@ Member 6 owns the dashboard implementation and dashboard-related tests.
 Member 1 reviews security-sensitive dashboard changes.
 
 Changes must follow the repository contribution and security policies.
+
+## Data source (fixture vs live)
+
+The dashboard renders bundled synthetic fixture data by default. The seam is
+`src/dataSource.ts`, controlled by `VITE_DATA_SOURCE` (see `.env.example`):
+`fixture` is the only wired source today; `live` is reserved for the
+analytics management API and is deliberately labelled in the header as not
+yet wired, so fixture numbers are never presented as live telemetry.
