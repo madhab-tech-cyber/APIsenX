@@ -49,6 +49,31 @@ class DurableStoreTests(unittest.TestCase):
             now or self.now,
         )
 
+    def test_in_memory_database_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "filesystem database path"):
+            DurableStore(KEY, ":memory:")
+
+    def test_naive_clock_is_rejected_without_persisting(self):
+        naive_now = datetime(2026, 10, 29, 12, 0)
+        with self.assertRaisesRegex(ValueError, "timezone-aware"):
+            self.append("naive-event", now=naive_now)
+        self.assertEqual(self.store.snapshot(self.now), [])
+
+    def test_offset_clock_is_normalized_to_utc_for_retention(self):
+        offset_now = datetime(
+            2026, 10, 29, 14, 0, tzinfo=timezone(timedelta(hours=2))
+        )
+        self.append("offset-event", now=offset_now)
+        rows = self.store.snapshot(self.now)
+        self.assertEqual(rows[0]["received_at"], self.now)
+        self.assertEqual(rows[0]["expires_at"], self.now + timedelta(seconds=60))
+        self.assertEqual(
+            len(self.store.snapshot(self.now + timedelta(seconds=59))), 1
+        )
+        self.assertEqual(
+            self.store.snapshot(self.now + timedelta(seconds=60)), []
+        )
+
     def test_append_and_snapshot_roundtrip(self):
         self.append("event-1")
         rows = self.store.snapshot(self.now)
