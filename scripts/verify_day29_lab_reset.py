@@ -90,7 +90,16 @@ print("fresh-process reset: PASS")
     main.ORDERS["order-1001"]["status"] = "shipped"
     main.REVOKED_TOKENS.add("lab-user-a-token")
     main.USED_NONCES["day29-reset-probe"] = main.utc_now()
-    main.SERVICE_LIMITER.consume(("day29-probe",), 1.0, 1.0)
+    limiter_probes = (
+        (main.SERVICE_LIMITER, ("service", "day29-probe")),
+        (main.SUBJECT_LIMITER, ("subject", "day29-probe")),
+        (main.ROUTE_COST_LIMITER, ("route-cost", "day29-probe")),
+        (main.SOURCE_LIMITER, ("source", "day29-probe")),
+    )
+    for limiter, key in limiter_probes:
+        allowed, _, _ = limiter.consume(key, 1.0, 1.0)
+        if not allowed or key not in limiter.buckets:
+            raise SystemExit("Unable to dirty every volatile rate-limit bucket")
     main.SUBJECT_SEMAPHORES[("day29-probe", "read")] = (
         threading.BoundedSemaphore(1)
     )
