@@ -28,4 +28,18 @@ The test captures the application logger `apisenx.audit`; it does not treat HTTP
 
 ## Verification
 
-The exact-head Mock API workflow is the required execution evidence. Do not mark Day 25 accepted until the test passes on the PR head and the reviewer confirms the scope and privacy boundary.
+The Day 25 regression is implemented in `tests/test_day25_source_log_alignment.py`. PR #116 added the test and evidence, and was merged to `main` at `99bc4a3a1600ef47427a5acccf65937af0d3ae17` on 2026-11-01.
+
+The exact PR-head workflows passed:
+- [API Security and Quality Gates — run 41282832329](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41282832329): PASS.
+- [Analytics Security and Quality Gates — run 41282832465](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41282832465): PASS.
+
+The exact merge-commit workflows also passed:
+- [API Security and Quality Gates — run 41282903128](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41282903128): PASS.
+- [Analytics Security and Quality Gates — run 41282903172](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41282903172): PASS.
+
+**Member 5 engineering disposition:** source-log correlation implementation, four synthetic scenarios, privacy assertions, documentation and required CI verification are complete and merged.
+
+**Independent acceptance remains pending:** PR #116 has no submitted review. A reviewer must still confirm the scope and privacy boundary before Day 25 is described as independently accepted. This documentation closeout does not manufacture reviewer approval.
+
+**Safety boundary:** synthetic lab only. No production credentials or real personal data. This work does not prove durable/cross-process audit, tamper evidence, production log retention, or live sensor-to-API correlation. AP-1.0 remains `monitor_only`, active enforcement rules remain zero, and release remains **NOT APPROVED**.
