@@ -29,18 +29,21 @@ class Day30DemoRunbookTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-        for case_id in (
-            "DEMO-01 owner read",
-            "DEMO-02 cross-owner read",
-            "DEMO-03 missing identity",
-            "DEMO-04 customer admin list",
-            "DEMO-05 permitted admin list",
-            "DEMO-06 customer patch",
-            "DEMO-07 admin patch",
-            "DEMO-08 protected field",
-        ):
-            self.assertIn(f"{case_id}", result.stdout)
-        self.assertIn("DEMO-02 cross-owner read expected=404 actual=404 PASS", result.stdout)
+        expected_statuses = {
+            "DEMO-01 owner read": 200,
+            "DEMO-02 cross-owner read": 404,
+            "DEMO-03 missing identity": 401,
+            "DEMO-04 customer admin list": 403,
+            "DEMO-05 permitted admin list": 200,
+            "DEMO-06 customer patch": 403,
+            "DEMO-07 admin patch": 200,
+            "DEMO-08 protected field": 400,
+        }
+        for case_id, status in expected_statuses.items():
+            self.assertIn(
+                f"{case_id}: expected={status} actual={status} PASS",
+                result.stdout,
+            )
         self.assertIn(
             "Inventory restored; all JSON fixture digests unchanged: PASS",
             result.stdout,
