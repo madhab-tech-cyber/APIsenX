@@ -47,8 +47,9 @@ import main
 logging.disable(logging.CRITICAL)
 original_inventory = main.ORDERS
 saved_inventory = deepcopy(original_inventory)
-customer = {"Authorization": "Bearer lab-user-a-token"}
-admin = {"Authorization": "Bearer lab-admin-token"}
+policy = {"X-Policy-Version": "AP-1.0"}
+customer = {"Authorization": "Bearer lab-user-a-token", **policy}
+admin = {"Authorization": "Bearer lab-admin-token", **policy}
 
 def expect(case_id, response, expected):
     assert response.status_code == expected, (case_id, response.status_code, expected)
@@ -57,20 +58,34 @@ def expect(case_id, response, expected):
 with patch.object(main, "ORDERS", deepcopy(saved_inventory)):
     with TestClient(main.app) as client:
         expect("DEMO-01 owner read", client.get("/orders/order-1001", headers=customer), 200)
-        expect("DEMO-02 cross-owner read", client.get("/orders/order-1002", headers=customer), 403)
+        cross_owner = client.get("/orders/order-1002", headers=customer)
+        expect("DEMO-02 cross-owner read", cross_owner, 404)
+        assert "order-1002" not in cross_owner.text
+        assert "user-b" not in cross_owner.text
         expect("DEMO-03 missing identity", client.get("/orders"), 401)
         expect("DEMO-04 customer admin list", client.get("/admin/orders", headers=customer), 403)
         expect("DEMO-05 permitted admin list", client.get("/admin/orders", headers=admin), 200)
         before_denied = deepcopy(main.ORDERS)
-        denied = client.patch("/orders/order-1001", headers=customer, json={"status": "shipped"})
+        denied = client.patch(
+            "/orders/order-1001",
+            headers={**customer, "X-Request-Nonce": "day30-customer-0001"},
+            json={"status": "shipped"},
+        )
         expect("DEMO-06 customer patch", denied, 403)
         assert main.ORDERS == before_denied, "Denied patch mutated inventory"
-        allowed = client.patch("/orders/order-1001", headers=admin, json={"status": "shipped"})
+        allowed = client.patch(
+            "/orders/order-1001",
+            headers={**admin, "X-Request-Nonce": "day30-admin-0001"},
+            json={"status": "shipped"},
+        )
         expect("DEMO-07 admin patch", allowed, 200)
         assert main.ORDERS["order-1001"]["status"] == "shipped"
         before_invalid = deepcopy(main.ORDERS)
-        invalid = client.patch("/orders/order-1001", headers=admin,
-                               json={"status": "shipped", "owner_id": "user-b"})
+        invalid = client.patch(
+            "/orders/order-1001",
+            headers={**admin, "X-Request-Nonce": "day30-admin-0002"},
+            json={"status": "shipped", "owner_id": "user-b"},
+        )
         expect("DEMO-08 protected field", invalid, 400)
         assert main.ORDERS == before_invalid, "Invalid update mutated inventory"
 
@@ -79,8 +94,20 @@ assert digests == {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in fixtur
 print("Inventory restored; all JSON fixture digests unchanged: PASS")
 ```
 
-Recorded result on this branch: DEMO-01 through DEMO-08 PASS; denial/invalid-write
-state assertions PASS; original inventory and fixture digests unchanged PASS.
+The request headers above match the current AP-1.0 contract: every authenticated
+request supplies the policy version, and PATCH requests carry unique nonces.
+Cross-owner reads use the privacy-preserving generic 404 response (not 403),
+with assertions that the target order and owner identifiers are absent.
+
+The documented Python block is executed by
+`tests/test_day30_demo_runbook.py` in a fresh interpreter. CI therefore checks
+that the runbook remains executable against the current API rather than merely
+checking that the Markdown example looks plausible.
+
+Recorded result on the original rehearsal snapshot: DEMO-01 through DEMO-08
+PASS; denial/invalid-write state assertions PASS; original inventory and
+fixture digests unchanged PASS. The current CI test is the evidence for the
+corrected AP-1.0 headers and current 404 contract on its exact commit.
 These eight overlapping API checks are a rehearsal, not eight new independent
 detector cases or additions to the 53 test-method count. The nine-inventory
 D11-F01 diagnostic in [the baseline](member1-oct19-verification.md) separately
