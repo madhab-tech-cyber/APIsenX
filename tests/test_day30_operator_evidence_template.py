@@ -33,16 +33,33 @@ class Day30OperatorEvidenceTemplateTests(unittest.TestCase):
         document = TEMPLATE.read_text(encoding="utf-8")
         for required in (
             "Current execution status: NOT RUN",
-            "Operator: NOT RECORDED",
-            "Independent witness/reviewer: NOT RECORDED",
-            "Service-owner decision and date: PENDING",
-            "Independent-reviewer decision and date: PENDING",
-            "Release decision:** NOT APPROVED",
-            "durable-store outage",
+            "**Operator:** NOT RECORDED",
+            "**Independent witness/reviewer:** NOT RECORDED",
+            "**Service-owner decision and date:** PENDING",
+            "**Independent-reviewer decision and date:** PENDING",
+            "**Release decision:** NOT APPROVED",
+            "Durable-store outage",
             "Restore/re-purge",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, document)
+
+        integrated_rows = [
+            line for line in document.splitlines()
+            if line.startswith("| End-to-end normal event |")
+            or line.startswith("| BOLA/BFLA denial |")
+            or line.startswith("| Tenant separation |")
+            or line.startswith("| Masking/leak markers |")
+            or line.startswith("| Durable-store outage |")
+            or line.startswith("| Route-specific recovery |")
+            or line.startswith("| Retention/deletion |")
+            or line.startswith("| Restore/re-purge |")
+            or line.startswith("| Emergency disable/rollback |")
+        ]
+        self.assertEqual(len(integrated_rows), 9)
+        for row in integrated_rows:
+            with self.subTest(row=row):
+                self.assertTrue(row.endswith("| NOT RUN |"), row)
 
 
 if __name__ == "__main__":
