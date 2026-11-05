@@ -4,14 +4,17 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TEMPLATE = (
-    ROOT / "docs" / "day30-member5-operator-evidence-checklist.md"
-)
+TEMPLATE = ROOT / "docs" / "day30-member5-operator-evidence-checklist.md"
 
 
 class Day30OperatorEvidenceTemplateTests(unittest.TestCase):
     def test_template_contains_all_eight_expected_local_cases(self):
         document = TEMPLATE.read_text(encoding="utf-8")
+        rows = {
+            line.split("|", 2)[1].strip(): line
+            for line in document.splitlines()
+            if line.startswith("| DEMO-")
+        }
         for case_id in (
             "DEMO-01",
             "DEMO-02",
@@ -23,8 +26,8 @@ class Day30OperatorEvidenceTemplateTests(unittest.TestCase):
             "DEMO-08",
         ):
             with self.subTest(case_id=case_id):
-                self.assertIn(f"| {case_id} |", document)
-                self.assertIn("| NOT RUN |", document)
+                self.assertIn(case_id, rows)
+                self.assertTrue(rows[case_id].endswith("| NOT RUN |"), rows[case_id])
 
     def test_integrated_scenarios_and_human_decisions_remain_pending(self):
         document = TEMPLATE.read_text(encoding="utf-8")
