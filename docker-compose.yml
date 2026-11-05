@@ -1,0 +1,39 @@
+# APIsenX lab stack: mock API + analytics + dashboard.
+# The collector is a library (see docker/Dockerfile.collector for its
+# build/test image) and the eBPF sensor runs on a Linux host, not in
+# compose. All services publish on host loopback only.
+#
+# Required environment for analytics (generate lab-only values, never
+# commit them):
+#   APISENTINEL_INGEST_TOKEN, APISENTINEL_HMAC_KEY,
+#   APISENTINEL_SOURCE_ID, APISENTINEL_KEY_VERSION
+services:
+  mock-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mock-api
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  analytics:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.analytics
+    environment:
+      APISENTINEL_INGEST_TOKEN: "${APISENTINEL_INGEST_TOKEN:?set a lab-only ingest token}"
+      APISENTINEL_HMAC_KEY: "${APISENTINEL_HMAC_KEY:?set a lab-only HMAC key}"
+      APISENTINEL_SOURCE_ID: "${APISENTINEL_SOURCE_ID:-lab_application}"
+      APISENTINEL_KEY_VERSION: "${APISENTINEL_KEY_VERSION:-lab-v1}"
+    ports:
+      - "127.0.0.1:8001:8001"
+    depends_on:
+      - mock-api
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      - analytics

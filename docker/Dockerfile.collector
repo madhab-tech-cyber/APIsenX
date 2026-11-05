@@ -1,0 +1,16 @@
+# Collector (Member 3) — build/test image for the Rust crate.
+# The collector is a tested library, not a deployed daemon
+# (collector/README.md), so this image's job is a reproducible locked
+# build: the crate's test suite runs during the image build and fails it
+# on any regression. The runtime stage carries the baseline example.
+FROM rust:1-bookworm AS build
+WORKDIR /src
+COPY collector/ ./collector/
+RUN cargo test --locked --manifest-path collector/Cargo.toml \
+ && cargo build --release --locked --examples \
+      --manifest-path collector/Cargo.toml
+
+FROM debian:bookworm-slim
+COPY --from=build /src/collector/target/release/examples/baseline \
+     /usr/local/bin/collector-baseline
+CMD ["collector-baseline"]

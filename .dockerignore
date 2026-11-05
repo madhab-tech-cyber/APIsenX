@@ -1,0 +1,8 @@
+.git
+.github
+**/__pycache__
+**/node_modules
+dashboard/dist
+*.md
+tests
+evidence
