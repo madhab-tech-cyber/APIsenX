@@ -1,0 +1,13 @@
+# Dashboard (Member 6) — React app built with Vite, served as static files.
+# The app currently renders labelled synthetic fixtures (see
+# dashboard/src/dataSource.ts); the image serves exactly that build.
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY dashboard/package.json dashboard/package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY dashboard/ ./
+RUN npm run build
+
+FROM nginx:1.27-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80

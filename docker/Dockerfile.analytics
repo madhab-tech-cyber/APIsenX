@@ -1,0 +1,23 @@
+# Analytics service (Member 4) — detection, decisions, audit store.
+# Run command mirrors analytics/README.md. Runtime secrets are supplied by
+# the environment (see docker-compose.yml); none are baked into the image.
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY analytics/ ./analytics/
+COPY src/ ./src/
+# The analytics app loads the approved contract at runtime
+# (analytics/app.py: ROOT / "docs/openapi.yaml").
+COPY docs/openapi.yaml ./docs/openapi.yaml
+
+RUN useradd --create-home lab && chown -R lab:lab /app
+USER lab
+
+EXPOSE 8001
+CMD ["python", "-m", "uvicorn", "analytics.app:create_app", "--factory", \
+     "--host", "0.0.0.0", "--port", "8001", "--no-access-log"]
