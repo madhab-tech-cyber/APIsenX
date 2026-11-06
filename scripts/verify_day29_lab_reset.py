@@ -134,6 +134,7 @@ def verify_loopback_http_process_restart() -> None:
         raise SystemExit("Loopback HTTP process-restart verification failed")
     if "Day 29 HTTP process restart and nonce reset: PASS" not in result.stdout:
         raise SystemExit("Loopback HTTP process-restart evidence missing")
+    print("Day 29 HTTP process restart and nonce reset: PASS")
 
 
 def main_cli() -> int:
