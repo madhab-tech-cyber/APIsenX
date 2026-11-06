@@ -88,9 +88,13 @@ def http_request(
     )
     try:
         with LOOPBACK_OPENER.open(request, timeout=3) as response:
-            return response.status, response.read(), dict(response.headers.items())
+            return response.status, response.read(), {
+                key.lower(): value for key, value in response.headers.items()
+            }
     except HTTPError as error:
-        return error.code, error.read(), dict(error.headers.items())
+        return error.code, error.read(), {
+            key.lower(): value for key, value in error.headers.items()
+        }
 
 
 def expect_status(
@@ -103,7 +107,7 @@ def expect_status(
         raise AssertionError(
             f"{label}: expected HTTP {expected}, received HTTP {status}"
         )
-    correlation_id = headers.get("X-Correlation-ID")
+    correlation_id = headers.get("x-correlation-id")
     try:
         uuid.UUID(correlation_id or "")
     except (ValueError, AttributeError):
