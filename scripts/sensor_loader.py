@@ -121,7 +121,7 @@ def cleanup_sensor(interface="lo"):
     )
 
     if os.name != "posix":
-        print(f"[+] Cleanup completed (simulated on non-Linux platform).")
+        print("[+] Cleanup completed (simulated on non-Linux platform).")
         return True
 
     # 1. Remove only API-Sentinel specific filter (prio 1 handle 1)
@@ -133,7 +133,7 @@ def cleanup_sensor(interface="lo"):
     if res.returncode == 0:
         print(f"[+] Removed API-Sentinel TC filter from '{interface}'.")
     else:
-        print(f"[*] Note: Filter prio 1 handle 1 not present or already detached.")
+        print("[*] Note: Filter prio 1 handle 1 not present or already detached.")
 
     # 2. Unpin only API-Sentinel maps under /sys/fs/bpf/api_sentinel
     if os.path.isdir(PIN_BASE_DIR):
