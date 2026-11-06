@@ -46,6 +46,9 @@ jobs:
       - name: Run Ruff lint checks
         run: python -m ruff check mock-api src tests
 
+      - name: Run Ruff lint checks for repository scripts
+        run: python -m ruff check scripts
+
       - name: Run Mock API and authorization-source Bandit SAST
         run: python -m bandit -r mock-api src -q
 

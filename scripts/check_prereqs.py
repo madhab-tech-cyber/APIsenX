@@ -8,13 +8,13 @@ eBPF capture layer, including kernel version checks, required CONFIG_* flags,
 BTF support, ring buffer compatibility, and least-privilege capability requirements.
 """
 
-import sys
-import os
-import re
-import platform
-import json
 import argparse
-from typing import Dict, List, Tuple, Any
+import json
+import os
+import platform
+import re
+import sys
+from typing import Any, Dict, Tuple
 
 # Minimum and Recommended Requirements
 MIN_KERNEL_VERSION = (5, 8, 0)
@@ -66,10 +66,16 @@ def evaluate_kernel_version(version_tuple: Tuple[int, int, int]) -> Dict[str, An
         msg = f"Kernel {ver_str} exceeds recommended threshold ({rec_str}+)."
     elif meets_min:
         status = "COMPLIANT"
-        msg = f"Kernel {ver_str} satisfies minimum threshold ({min_str}+ for RingBuffer & CAP_BPF)."
+        msg = (
+            f"Kernel {ver_str} satisfies minimum threshold "
+            f"({min_str}+ for RingBuffer & CAP_BPF)."
+        )
     else:
         status = "NON_COMPLIANT"
-        msg = f"Kernel {ver_str} is below minimum threshold ({min_str}+). BPF_MAP_TYPE_RINGBUF & CAP_BPF unavailable."
+        msg = (
+            f"Kernel {ver_str} is below minimum threshold ({min_str}+). "
+            "BPF_MAP_TYPE_RINGBUF & CAP_BPF unavailable."
+        )
 
     return {
         "version": ver_str,
@@ -192,11 +198,17 @@ def run_prerequisite_audit(
     # 4. Ring Buffer Capability Check
     k_check = report["checks"].get("kernel_version", {})
     cfg_check = report["checks"].get("kernel_configs", {})
-    ringbuf_supported = k_check.get("meets_minimum", False) and cfg_check.get("passed", False)
+    ringbuf_supported = (
+        k_check.get("meets_minimum", False)
+        and cfg_check.get("passed", False)
+    )
     report["checks"]["ring_buffer_support"] = {
         "supported": ringbuf_supported,
         "status": "PASS" if ringbuf_supported else "FAIL",
-        "rationale": "Kernel >= 5.8 and CONFIG_BPF_SYSCALL=y verified for BPF_MAP_TYPE_RINGBUF",
+        "rationale": (
+            "Kernel >= 5.8 and CONFIG_BPF_SYSCALL=y verified "
+            "for BPF_MAP_TYPE_RINGBUF"
+        ),
     }
 
     # Overall Audit Result
@@ -210,10 +222,21 @@ def run_prerequisite_audit(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="API-Sentinel eBPF Prerequisites Auditor")
-    parser.add_argument("--json", action="store_true", help="Output audit report as JSON")
-    parser.add_argument("--kernel-version", type=str, default=None, help="Override kernel version for validation")
-    parser.add_argument("--config-file", type=str, default=None, help="Path to kernel config file")
+    parser = argparse.ArgumentParser(
+        description="API-Sentinel eBPF Prerequisites Auditor"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Output audit report as JSON"
+    )
+    parser.add_argument(
+        "--kernel-version",
+        type=str,
+        default=None,
+        help="Override kernel version for validation",
+    )
+    parser.add_argument(
+        "--config-file", type=str, default=None, help="Path to kernel config file"
+    )
     args = parser.parse_args()
 
     kconfig_text = None
@@ -234,9 +257,15 @@ def main():
         print("=" * 60)
         print(f"Platform: {report['os']} ({report['platform_release']})")
         k_res = report["checks"]["kernel_version"]
-        print(f"Kernel Version: {k_res.get('version', 'N/A')} [{k_res.get('status')}] - {k_res.get('message')}")
+        print(
+            f"Kernel Version: {k_res.get('version', 'N/A')} "
+            f"[{k_res.get('status')}] - {k_res.get('message')}"
+        )
         cfg_res = report["checks"]["kernel_configs"]
-        print(f"Mandatory Kernel Configs: {'PASS' if cfg_res.get('passed') else 'FAIL'}")
+        print(
+            "Mandatory Kernel Configs: "
+            f"{'PASS' if cfg_res.get('passed') else 'FAIL'}"
+        )
         if not cfg_res.get("passed"):
             print(f"  Missing: {', '.join(cfg_res.get('missing_mandatory', []))}")
         btf_res = report["checks"]["btf_support"]
@@ -244,7 +273,10 @@ def main():
         ring_res = report["checks"]["ring_buffer_support"]
         print(f"RingBuffer Support: [{ring_res['status']}] - {ring_res['rationale']}")
         print("=" * 60)
-        print(f"Overall Prerequisite Readiness: {'READY' if report['audit_passed'] else 'NOT READY'}")
+        print(
+            "Overall Prerequisite Readiness: "
+            f"{'READY' if report['audit_passed'] else 'NOT READY'}"
+        )
         print("=" * 60)
 
     sys.exit(0 if report["audit_passed"] else 1)

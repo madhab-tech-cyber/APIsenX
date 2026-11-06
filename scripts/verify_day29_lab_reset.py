@@ -147,7 +147,10 @@ def main_cli() -> int:
     verify_fresh_process_reset()
     verify_loopback_http_process_restart()
     print("Day 29 clean synthetic lab reset: PASS")
-    print("Fixture hashes, record counts, fresh-interpreter state, and live HTTP process restart verified.")
+    print(
+        "Fixture hashes, record counts, fresh-interpreter state, "
+        "and live HTTP process restart verified."
+    )
     print("No checked-in fixture was modified; only 127.0.0.1 was contacted.")
     return 0
 

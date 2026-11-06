@@ -8,12 +8,11 @@ Manages loading, attaching, verifier inspection, monitor-only enforcement,
 and scoped cleanup of the API-Sentinel Linux eBPF sensor.
 """
 
-import os
-import sys
 import argparse
-import subprocess
 import json
-import ctypes
+import os
+import subprocess
+import sys
 
 PIN_BASE_DIR = "/sys/fs/bpf/api_sentinel"
 PROJECT_MAPS = [
@@ -26,7 +25,10 @@ PROJECT_MAPS = [
 def check_privileges():
     """Verify minimum capabilities without requiring monolithic root."""
     if os.name != "posix":
-        return {"status": "simulated", "reason": "Non-Linux environment (Windows/macOS)"}
+        return {
+            "status": "simulated",
+            "reason": "Non-Linux environment (Windows/macOS)",
+        }
 
     uid = os.getuid()
     if uid == 0:
@@ -58,7 +60,9 @@ def verify_bytecode(obj_path):
                 return False, "Not an ELF binary"
 
         # Check sections using readelf or llvm-objdump if available
-        proc = subprocess.run(["readelf", "-S", obj_path], capture_output=True, text=True)
+        proc = subprocess.run(
+            ["readelf", "-S", obj_path], capture_output=True, text=True
+        )
         if proc.returncode == 0:
             output = proc.stdout
             has_ingress = "classifier/ingress" in output or "tc" in output
@@ -78,17 +82,26 @@ def verify_bytecode(obj_path):
 
 def attach_sensor(interface="lo", obj_path="ebpf/build/api_sentinel_sensor.o"):
     """Attach the eBPF sensor to clsact qdisc in monitor-only mode."""
-    print(f"[*] Attaching API-Sentinel sensor to interface '{interface}' (monitor-only mode)...")
+    print(
+        f"[*] Attaching API-Sentinel sensor to interface '{interface}' "
+        "(monitor-only mode)..."
+    )
 
     if os.name != "posix":
-        print(f"[!] Warning: Non-POSIX platform. Attachment simulated for lab test harness.")
+        print(
+            "[!] Warning: Non-POSIX platform. "
+            "Attachment simulated for lab test harness."
+        )
         return True
 
     # 1. Ensure /sys/fs/bpf/api_sentinel pin directory exists
     os.makedirs(PIN_BASE_DIR, exist_ok=True)
 
     # 2. Add clsact qdisc if not already present
-    subprocess.run(["tc", "qdisc", "add", "dev", interface, "clsact"], capture_output=True)
+    subprocess.run(
+        ["tc", "qdisc", "add", "dev", interface, "clsact"],
+        capture_output=True,
+    )
 
     # 3. Attach ingress classifier
     cmd = [
@@ -110,10 +123,13 @@ def cleanup_sensor(interface="lo"):
     Cleans ONLY API-Sentinel pinned maps and attached filters.
     Leaves unrelated host filters, qdiscs, and processes untouched.
     """
-    print(f"[*] Starting scoped cleanup of API-Sentinel resources on interface '{interface}'...")
+    print(
+        "[*] Starting scoped cleanup of API-Sentinel resources "
+        f"on interface '{interface}'..."
+    )
 
     if os.name != "posix":
-        print(f"[+] Cleanup completed (simulated on non-Linux platform).")
+        print("[+] Cleanup completed (simulated on non-Linux platform).")
         return True
 
     # 1. Remove only API-Sentinel specific filter (prio 1 handle 1)
@@ -125,7 +141,7 @@ def cleanup_sensor(interface="lo"):
     if res.returncode == 0:
         print(f"[+] Removed API-Sentinel TC filter from '{interface}'.")
     else:
-        print(f"[*] Note: Filter prio 1 handle 1 not present or already detached.")
+        print("[*] Note: Filter prio 1 handle 1 not present or already detached.")
 
     # 2. Unpin only API-Sentinel maps under /sys/fs/bpf/api_sentinel
     if os.path.isdir(PIN_BASE_DIR):
@@ -143,7 +159,10 @@ def cleanup_sensor(interface="lo"):
         except OSError:
             pass
 
-    print("[+] Scoped cleanup successfully completed. Unrelated system state untouched.")
+    print(
+        "[+] Scoped cleanup successfully completed. "
+        "Unrelated system state untouched."
+    )
     return True
 
 def get_status(interface="lo"):
@@ -162,21 +181,46 @@ def get_status(interface="lo"):
                 path = os.path.join(PIN_BASE_DIR, m)
                 status["pinned_maps"][m] = os.path.exists(path)
 
-        proc = subprocess.run(["tc", "filter", "show", "dev", interface, "ingress"], capture_output=True, text=True)
+        proc = subprocess.run(
+            ["tc", "filter", "show", "dev", interface, "ingress"],
+            capture_output=True,
+            text=True,
+        )
         if proc.returncode == 0:
-            status["tc_filters"] = [line.strip() for line in proc.stdout.splitlines() if "bpf" in line]
+            status["tc_filters"] = [
+                line.strip()
+                for line in proc.stdout.splitlines()
+                if "bpf" in line
+            ]
 
     print(json.dumps(status, indent=2))
     return status
 
 def main():
-    parser = argparse.ArgumentParser(description="API-Sentinel eBPF Sensor Lifecycle Manager")
-    parser.add_argument("--attach", action="store_true", help="Attach sensor to interface")
-    parser.add_argument("--cleanup", action="store_true", help="Perform scoped cleanup")
-    parser.add_argument("--status", action="store_true", help="Report sensor and map status")
-    parser.add_argument("--verify", type=str, help="Verify compiled bytecode object")
-    parser.add_argument("--interface", type=str, default="lo", help="Network interface (default: lo)")
-    parser.add_argument("--obj", type=str, default="ebpf/build/api_sentinel_sensor.o", help="Path to BPF object")
+    parser = argparse.ArgumentParser(
+        description="API-Sentinel eBPF Sensor Lifecycle Manager"
+    )
+    parser.add_argument(
+        "--attach", action="store_true", help="Attach sensor to interface"
+    )
+    parser.add_argument(
+        "--cleanup", action="store_true", help="Perform scoped cleanup"
+    )
+    parser.add_argument(
+        "--status", action="store_true", help="Report sensor and map status"
+    )
+    parser.add_argument(
+        "--verify", type=str, help="Verify compiled bytecode object"
+    )
+    parser.add_argument(
+        "--interface", type=str, default="lo", help="Network interface (default: lo)"
+    )
+    parser.add_argument(
+        "--obj",
+        type=str,
+        default="ebpf/build/api_sentinel_sensor.o",
+        help="Path to BPF object",
+    )
 
     args = parser.parse_args()
 
