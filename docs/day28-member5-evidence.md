@@ -50,13 +50,13 @@ These are exact PR-head checks for the earlier Day 28 implementation, not valida
 
 ### PR #130 exact-head validation — 2026-11-06
 
-Validated final PR head `5c1686556b723ce98ccce7e51e33f015e00772ad`:
+The executable Day 28/29 changes were introduced at code commit `5c1686556b723ce98ccce7e51e33f015e00772ad`. The subsequent documentation-only follow-up at PR head `34304d89c0d7964f22aa0f462e3798b468b6d28b` also passed all three exact-head workflows:
 
-- [Mock API Security and Quality Gates — run 42162945203](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945203): PASS. Full discovery **461 tests passed in 15.953s**; Ruff, Bandit, pip-audit, API/Analytics loopback, governance bookkeeping and bounded Day 19 stages passed. The new Day 28 loopback HTTP and Day 29 reset tests passed.
-- [Analytics Security and Quality Gates — run 42162945555](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945555): PASS. Full discovery **461 tests passed in 12.706s**, plus detection/review demos, frozen-candidate verification/build, Ruff, Bandit, secret scan and dependency audit.
-- [Rust/Python Loopback Contract — run 42162945135](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945135): PASS. **28 Rust tests passed** and the real Rust/Python loopback handoff passed.
+- [Mock API Security and Quality Gates — run 42163140142](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140142): PASS. Full discovery **461 tests passed in 12.909s**; Ruff, Bandit, pip-audit, API/Analytics loopback, governance bookkeeping and bounded Day 19 stages passed. The new Day 28 loopback HTTP and Day 29 reset tests passed.
+- [Analytics Security and Quality Gates — run 42163140161](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140161): PASS. Full discovery **461 tests passed in 10.409s**, plus detection/review demos, frozen-candidate verification/build, Ruff, Bandit, secret scan and dependency audit.
+- [Rust/Python Loopback Contract — run 42163140164](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140164): PASS. **28 Rust tests passed** and the real Rust/Python loopback handoff passed.
 
-The repeated 461-test counts are separate workflow executions, not 922 unique tests. The first exact-head attempts exposed two harness/evidence defects: HTTP response header names were treated as case-sensitive, and the Day 29 wrapper did not surface the nested reset-pass line. Both were corrected before the final successful head above. No local test execution is claimed; GitHub Actions is the validation source.
+The repeated 461-test counts are separate workflow executions, not 922 unique tests. The first exact-head attempts exposed two harness/evidence defects: HTTP response header names were treated as case-sensitive, and the Day 29 wrapper did not surface the nested reset-pass line. Both were corrected before the successful code and documentation-head runs above. No local test execution is claimed; GitHub Actions is the validation source.
 
 ## Manual operator evidence still required
 

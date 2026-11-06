@@ -39,11 +39,11 @@ a failing check green.
 
 ## Exact-head validation — 2026-11-06
 
-PR #130 final head `5c1686556b723ce98ccce7e51e33f015e00772ad` passed all required workflows:
+The executable Day 28/29 changes were introduced at code commit `5c1686556b723ce98ccce7e51e33f015e00772ad`. The documentation-only follow-up at PR head `34304d89c0d7964f22aa0f462e3798b468b6d28b` also passed all three exact-head workflows:
 
-- [Mock API Security and Quality Gates — run 42162945203](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945203): PASS; 461 tests passed, including the real loopback HTTP rehearsal and the extended Day 29 verifier; Ruff, Bandit, pip-audit, loopback and bounded load stages passed.
-- [Analytics Security and Quality Gates — run 42162945555](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945555): PASS; 461 tests passed, with analytics candidate, Ruff, Bandit, secret and dependency checks.
-- [Rust/Python Loopback Contract — run 42162945135](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945135): PASS; 28 Rust tests and the real loopback handoff passed.
+- [Mock API Security and Quality Gates — run 42163140142](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140142): PASS; 461 tests passed, including the real loopback HTTP rehearsal and the extended Day 29 verifier; Ruff, Bandit, pip-audit, loopback and bounded load stages passed.
+- [Analytics Security and Quality Gates — run 42163140161](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140161): PASS; 461 tests passed, with analytics candidate, Ruff, Bandit, secret and dependency checks.
+- [Rust/Python Loopback Contract — run 42163140164](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140164): PASS; 28 Rust tests and the real loopback handoff passed.
 
 Two earlier attempts caught and corrected a case-sensitive response-header lookup and a missing surfaced reset-pass line. These are final exact-head results, not a claim that a human operator ran the lab.
 
