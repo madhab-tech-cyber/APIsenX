@@ -37,6 +37,16 @@ change intentionally fails the verifier until the change is reviewed and the
 baseline is updated in the same PR. Do not update expected hashes merely to make
 a failing check green.
 
+## Exact-head validation — 2026-11-06
+
+PR #130 final head `5c1686556b723ce98ccce7e51e33f015e00772ad` passed all required workflows:
+
+- [Mock API Security and Quality Gates — run 42162945203](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945203): PASS; 461 tests passed, including the real loopback HTTP rehearsal and the extended Day 29 verifier; Ruff, Bandit, pip-audit, loopback and bounded load stages passed.
+- [Analytics Security and Quality Gates — run 42162945555](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945555): PASS; 461 tests passed, with analytics candidate, Ruff, Bandit, secret and dependency checks.
+- [Rust/Python Loopback Contract — run 42162945135](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945135): PASS; 28 Rust tests and the real loopback handoff passed.
+
+Two earlier attempts caught and corrected a case-sensitive response-header lookup and a missing surfaced reset-pass line. These are final exact-head results, not a claim that a human operator ran the lab.
+
 ## Evidence and limits
 
 The new process-level checks are pending exact-head CI. After they pass, record the exact tested SHA and Mock API Security workflow URL; do not reuse earlier baseline CI as evidence for these new checks.

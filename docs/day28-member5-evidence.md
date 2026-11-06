@@ -48,6 +48,16 @@ The latest complete PR-head validation available for the Day 28 implementation i
 
 These are exact PR-head checks for the earlier Day 28 implementation, not validation of the new process-level harness. The repeated 452-test counts are separate workflow executions, not 904 unique tests. The new Day 28/29 harness is pending exact-head CI; do not reuse these historical runs as evidence for it.
 
+### PR #130 exact-head validation — 2026-11-06
+
+Validated final PR head `5c1686556b723ce98ccce7e51e33f015e00772ad`:
+
+- [Mock API Security and Quality Gates — run 42162945203](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945203): PASS. Full discovery **461 tests passed in 15.953s**; Ruff, Bandit, pip-audit, API/Analytics loopback, governance bookkeeping and bounded Day 19 stages passed. The new Day 28 loopback HTTP and Day 29 reset tests passed.
+- [Analytics Security and Quality Gates — run 42162945555](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945555): PASS. Full discovery **461 tests passed in 12.706s**, plus detection/review demos, frozen-candidate verification/build, Ruff, Bandit, secret scan and dependency audit.
+- [Rust/Python Loopback Contract — run 42162945135](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42162945135): PASS. **28 Rust tests passed** and the real Rust/Python loopback handoff passed.
+
+The repeated 461-test counts are separate workflow executions, not 922 unique tests. The first exact-head attempts exposed two harness/evidence defects: HTTP response header names were treated as case-sensitive, and the Day 29 wrapper did not surface the nested reset-pass line. Both were corrected before the final successful head above. No local test execution is claimed; GitHub Actions is the validation source.
+
 ## Manual operator evidence still required
 
 A human operator must execute the commands in sections 2–5 of the runbook against the local synthetic service and retain the actual date/time, tested commit SHA, command/response status, sanitized output, and reset confirmation. In particular:
