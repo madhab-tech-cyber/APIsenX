@@ -127,7 +127,19 @@ those runtime-only values. Do not edit or delete the checked-in JSON fixtures
 to reset the lab. No database, durable audit store, backup or restore mechanism
 is provided by this Mock API.
 
-## 6. Validation commands
+## 6. Automated loopback HTTP rehearsal
+
+Run the deterministic process-level rehearsal from the repository root:
+
+```powershell
+python scripts/day28_loopback_api_rehearsal.py --mode full
+```
+
+The harness selects an unused loopback port, starts its own Uvicorn child process on `127.0.0.1`, disables access logging, strips optional Sentinel endpoint/credential settings from the child environment, and bypasses proxy/redirect handling. It runs the owner, BOLA, BFLA, missing-auth, missing-policy, masked-support, denied-PATCH/non-mutation, authorized-admin-PATCH and duplicate-nonce cases over HTTP. It then terminates only its own child process, restarts the API on the same port, and verifies fixture restoration plus nonce-cache reset. The harness never contacts a non-loopback target and checks that synthetic credentials and object identifiers do not appear in captured API logs.
+
+This is automated loopback evidence, not human attendance, an independent witness, or a sensor-to-dashboard integrated demonstration. Keep the separate manual operator record pending until a person executes and records the lab.
+
+## 7. Validation commands
 
 From the repository root:
 
@@ -144,7 +156,7 @@ Tests and required integration workflows. Record the tested SHA and actual CI
 run URLs; do not infer a pass from a local command, an earlier commit, or a
 documentation-only check.
 
-## 7. Release boundary
+## 8. Release boundary
 
 This is a synthetic local demonstration guide, not a production deployment
 runbook. The API's application-side authorization remains authoritative;

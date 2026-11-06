@@ -27,7 +27,10 @@ The verifier:
 - Checks Git blob SHA-1 identifiers for orders, users, sharing grants and authorization cases.
 - Checks the expected synthetic record counts and confirms the sharing-grant fixture is empty.
 - Dirties volatile state in an isolated parent interpreter, starts a separate fresh Python process, and verifies original order state plus empty revoked-token, nonce, rate-limit and subject-semaphore state.
-- Never contacts a network target and never edits checked-in fixture files.
+- Starts the actual Mock API on an OS-selected loopback port, applies a synthetic admin PATCH, terminates only that child process, and starts a fresh API process on the same port.
+- Verifies the fresh HTTP process restores the original order fixture and accepts the same nonce again, proving the process-local replay cache was reset.
+- Removes optional Sentinel endpoint/credential settings from the harness child environment, disables Uvicorn access logging, bypasses proxies/redirects, and never contacts an external target.
+- Never edits checked-in fixture files.
 
 The reviewed digests live in `tests/fixtures/day29_lab_baseline.json`. A fixture
 change intentionally fails the verifier until the change is reviewed and the
@@ -36,8 +39,9 @@ a failing check green.
 
 ## Evidence and limits
 
-Record the exact commit and exact-head Mock API Security Tests workflow result.
-The verifier demonstrates process-local reset and fixture reproducibility only;
+The new process-level checks are pending exact-head CI. After they pass, record the exact tested SHA and Mock API Security workflow URL; do not reuse earlier baseline CI as evidence for these new checks.
+
+The verifier demonstrates fixture integrity, process-local reset, HTTP restart and nonce-cache reset only;
 it does not prove durable audit deletion, backup/restore, database reset,
 multi-worker state reset or production data sanitization.
 
