@@ -195,7 +195,9 @@ def start_server(port: int | None = None) -> tuple[subprocess.Popen, int]:
 def assert_log_privacy(logs: str) -> None:
     for marker in SENSITIVE_LOG_MARKERS:
         if marker in logs:
-            raise AssertionError("A synthetic credential or object marker appeared in API logs")
+            raise AssertionError(
+                "A synthetic credential or object marker appeared in API logs"
+            )
 
 
 def run_reset_probe() -> None:
