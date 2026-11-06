@@ -28,8 +28,6 @@
 | Customer PATCH | 403 | Denied mutation leaves state unchanged |
 | Authorized lab-admin PATCH | 200 | Explicit lab permission; run last because state is process-local |
 
-Every authenticated request uses `X-Policy-Version: AP-1.0`. PATCH requests use unique `X-Request-Nonce` values. The lab must remain bound to `127.0.0.1`; synthetic tokens are not production credentials.
-
 The automated loopback rehearsal also verifies:
 - A valid `X-Correlation-ID` accompanies each response.
 - BOLA denials do not echo the protected order or owner identifiers.
