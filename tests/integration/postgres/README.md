@@ -26,12 +26,11 @@ The bootstrap grants:
 From repository root:
 
 ```powershell
-python -m unittest tests.integration.postgres.test_postgres_roles -v
-python -m unittest tests.integration.postgres.test_retention_contract -v
+python -m unittest discover -s tests/integration/postgres -p 'test_*.py' -v
 ```
 
 Tests are skipped when optional psycopg or the required environment is absent. A skip is **not** a pass or evidence of database integration.
 
 ## What this harness proves — and does not prove
 
-It checks isolated role boundaries and a case-scoped reader view against a disposable PostgreSQL schema. The retention contract tests validate the policy's UTC boundary arithmetic only; they do not prove a running retention worker. Deletion receipts, derivative/export/backup deletion, hold/release, restore-time re-purge, external signed checkpoints, outage/recovery and the approved service's exact schema still require implementation-specific integration tests after the service owner approves the architecture.
+It checks isolated role boundaries and a case-filtered reader-view query shape against a disposable PostgreSQL schema. The test session variable is caller-settable, so this view is deliberately NOT an authorization control. The retention contract tests validate the policy's UTC boundary arithmetic only; they do not prove a running retention worker. Deletion receipts, derivative/export/backup deletion, hold/release, restore-time re-purge, external signed checkpoints, outage/recovery and the approved service's exact schema still require implementation-specific integration tests after the service owner approves the architecture.
