@@ -1,4 +1,4 @@
-﻿export type DashboardSourceState =
+export type DashboardSourceState =
   | 'loading'
   | 'empty'
   | 'error'
