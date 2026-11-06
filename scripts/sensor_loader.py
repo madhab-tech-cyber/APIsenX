@@ -25,7 +25,10 @@ PROJECT_MAPS = [
 def check_privileges():
     """Verify minimum capabilities without requiring monolithic root."""
     if os.name != "posix":
-        return {"status": "simulated", "reason": "Non-Linux environment (Windows/macOS)"}
+        return {
+            "status": "simulated",
+            "reason": "Non-Linux environment (Windows/macOS)",
+        }
 
     uid = os.getuid()
     if uid == 0:
@@ -57,7 +60,9 @@ def verify_bytecode(obj_path):
                 return False, "Not an ELF binary"
 
         # Check sections using readelf or llvm-objdump if available
-        proc = subprocess.run(["readelf", "-S", obj_path], capture_output=True, text=True)
+        proc = subprocess.run(
+            ["readelf", "-S", obj_path], capture_output=True, text=True
+        )
         if proc.returncode == 0:
             output = proc.stdout
             has_ingress = "classifier/ingress" in output or "tc" in output
@@ -93,7 +98,10 @@ def attach_sensor(interface="lo", obj_path="ebpf/build/api_sentinel_sensor.o"):
     os.makedirs(PIN_BASE_DIR, exist_ok=True)
 
     # 2. Add clsact qdisc if not already present
-    subprocess.run(["tc", "qdisc", "add", "dev", interface, "clsact"], capture_output=True)
+    subprocess.run(
+        ["tc", "qdisc", "add", "dev", interface, "clsact"],
+        capture_output=True,
+    )
 
     # 3. Attach ingress classifier
     cmd = [
@@ -151,7 +159,10 @@ def cleanup_sensor(interface="lo"):
         except OSError:
             pass
 
-    print("[+] Scoped cleanup successfully completed. Unrelated system state untouched.")
+    print(
+        "[+] Scoped cleanup successfully completed. "
+        "Unrelated system state untouched."
+    )
     return True
 
 def get_status(interface="lo"):
@@ -170,21 +181,46 @@ def get_status(interface="lo"):
                 path = os.path.join(PIN_BASE_DIR, m)
                 status["pinned_maps"][m] = os.path.exists(path)
 
-        proc = subprocess.run(["tc", "filter", "show", "dev", interface, "ingress"], capture_output=True, text=True)
+        proc = subprocess.run(
+            ["tc", "filter", "show", "dev", interface, "ingress"],
+            capture_output=True,
+            text=True,
+        )
         if proc.returncode == 0:
-            status["tc_filters"] = [line.strip() for line in proc.stdout.splitlines() if "bpf" in line]
+            status["tc_filters"] = [
+                line.strip()
+                for line in proc.stdout.splitlines()
+                if "bpf" in line
+            ]
 
     print(json.dumps(status, indent=2))
     return status
 
 def main():
-    parser = argparse.ArgumentParser(description="API-Sentinel eBPF Sensor Lifecycle Manager")
-    parser.add_argument("--attach", action="store_true", help="Attach sensor to interface")
-    parser.add_argument("--cleanup", action="store_true", help="Perform scoped cleanup")
-    parser.add_argument("--status", action="store_true", help="Report sensor and map status")
-    parser.add_argument("--verify", type=str, help="Verify compiled bytecode object")
-    parser.add_argument("--interface", type=str, default="lo", help="Network interface (default: lo)")
-    parser.add_argument("--obj", type=str, default="ebpf/build/api_sentinel_sensor.o", help="Path to BPF object")
+    parser = argparse.ArgumentParser(
+        description="API-Sentinel eBPF Sensor Lifecycle Manager"
+    )
+    parser.add_argument(
+        "--attach", action="store_true", help="Attach sensor to interface"
+    )
+    parser.add_argument(
+        "--cleanup", action="store_true", help="Perform scoped cleanup"
+    )
+    parser.add_argument(
+        "--status", action="store_true", help="Report sensor and map status"
+    )
+    parser.add_argument(
+        "--verify", type=str, help="Verify compiled bytecode object"
+    )
+    parser.add_argument(
+        "--interface", type=str, default="lo", help="Network interface (default: lo)"
+    )
+    parser.add_argument(
+        "--obj",
+        type=str,
+        default="ebpf/build/api_sentinel_sensor.o",
+        help="Path to BPF object",
+    )
 
     args = parser.parse_args()
 
