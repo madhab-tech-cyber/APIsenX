@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "tests" / "fixtures" / "day29_lab_baseline.json"
+LOOPBACK_REHEARSAL = ROOT / "scripts" / "day28_loopback_api_rehearsal.py"
 
 
 def verify_fixture_hashes(root: Path, manifest: dict) -> list[str]:
@@ -59,7 +60,7 @@ def verify_fixture_shape(root: Path, manifest: dict) -> None:
 
 
 def verify_fresh_process_reset() -> None:
-    """Prove a new API process reloads fixtures and clears volatile runtime state."""
+    """Prove a new API interpreter reloads fixtures and clears volatile state."""
     child = r"""
 import sys
 from pathlib import Path
@@ -116,6 +117,24 @@ print("fresh-process reset: PASS")
         raise SystemExit("Fresh-process reset verification failed")
     if "fresh-process reset: PASS" not in result.stdout:
         raise SystemExit("Fresh-process reset evidence missing")
+    print("fresh-process reset: PASS")
+
+
+def verify_loopback_http_process_restart() -> None:
+    """Prove the real API process reloads fixture state and clears PATCH nonces."""
+    result = subprocess.run(
+        [sys.executable, str(LOOPBACK_REHEARSAL), "--mode", "reset-only"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise SystemExit("Loopback HTTP process-restart verification failed")
+    if "Day 29 HTTP process restart and nonce reset: PASS" not in result.stdout:
+        raise SystemExit("Loopback HTTP process-restart evidence missing")
+    print("Day 29 HTTP process restart and nonce reset: PASS")
 
 
 def main_cli() -> int:
@@ -126,9 +145,10 @@ def main_cli() -> int:
         raise SystemExit("Fixture baseline mismatch: " + ", ".join(mismatches))
     verify_fixture_shape(ROOT, manifest)
     verify_fresh_process_reset()
+    verify_loopback_http_process_restart()
     print("Day 29 clean synthetic lab reset: PASS")
-    print("Fixture hashes, record counts and fresh-process reset verified.")
-    print("No checked-in fixture was modified; no external target was contacted.")
+    print("Fixture hashes, record counts, fresh-interpreter state, and live HTTP process restart verified.")
+    print("No checked-in fixture was modified; only 127.0.0.1 was contacted.")
     return 0
 
 

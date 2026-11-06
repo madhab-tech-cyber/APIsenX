@@ -42,16 +42,20 @@ class Day29LabResetTests(unittest.TestCase):
                 ["mock_data/orders.json"],
             )
 
-    def test_fresh_interpreter_reloads_clean_baseline(self):
+    def test_fresh_interpreter_and_http_process_reset(self):
         result = subprocess.run(
             [sys.executable, str(SCRIPT_PATH)],
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=90,
             check=False,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("fresh-process reset: PASS", result.stdout)
+        self.assertIn(
+            "Day 29 HTTP process restart and nonce reset: PASS", result.stdout
+        )
         self.assertIn("Day 29 clean synthetic lab reset: PASS", result.stdout)
 
 

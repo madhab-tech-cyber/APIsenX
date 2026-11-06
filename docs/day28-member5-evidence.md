@@ -2,12 +2,14 @@
 
 **Owner:** Member 5 — Mock API and OpenAPI Engineer  
 **Scope:** Synthetic, loopback-only Mock API; no production identity, data, or target.  
-**Engineering disposition:** Documentation and automated regression evidence are present.  
+**Engineering disposition:** Documentation, automated regression, and loopback HTTP rehearsal are present.  
 **Human lab execution:** Pending; no operator session, attendance, or manual response capture is claimed.
 
 ## Delivered artifacts
 
 - [Day 28 lab runbook](day28-member5-lab-runbook.md): Python 3.13 setup, loopback-only launch, synthetic credentials, API/OpenAPI inspection, attack commands, expected outcomes, and process restart reset.
+- [Loopback HTTP rehearsal](../scripts/day28_loopback_api_rehearsal.py): starts a real Uvicorn child process on an OS-selected `127.0.0.1` port, disables access logging, and runs the attack matrix over HTTP.
+- [Loopback HTTP regression](../tests/test_day28_loopback_http_rehearsal.py): executes the rehearsal in a bounded subprocess and pins observed status, correlation-ID, privacy, and reset outcomes.
 - [Mock API README](../mock-api/README.md): quick start, link to the runbook, process-local state boundary, and validation commands.
 - [OpenAPI contract](openapi.yaml): operation set, operation IDs, auth, policy-version and nonce requirements, request constraints, generic error schemas, and 429/503 response references.
 - [OpenAPI contract tests](../tests/test_openapi_contract.py): runtime/contract operation-set and operation-ID parity, authentication and required headers, schema constraints, response/error-code parity, tenant documentation, and process-local behavior.
@@ -26,7 +28,15 @@
 | Customer PATCH | 403 | Denied mutation leaves state unchanged |
 | Authorized lab-admin PATCH | 200 | Explicit lab permission; run last because state is process-local |
 
-Every authenticated request uses `X-Policy-Version: AP-1.0`. PATCH requests use unique `X-Request-Nonce` values. The lab must remain bound to `127.0.0.1`; synthetic tokens are not production credentials.
+The automated loopback rehearsal also verifies:
+- A valid `X-Correlation-ID` accompanies each response.
+- BOLA denials do not echo the protected order or owner identifiers.
+- Support output contains exactly `id` and `status`.
+- A denied customer PATCH leaves the order unchanged.
+- Reusing a PATCH nonce in the same process is rejected without a second mutation.
+- Restarting the actual API process restores the checked-in order fixture and clears the process-local nonce cache; the same nonce is accepted by the fresh process.
+
+Every authenticated request uses `X-Policy-Version: AP-1.0`. PATCH requests use unique `X-Request-Nonce` values. The harness strips optional Sentinel environment settings from its child process, binds only to `127.0.0.1`, bypasses proxies and redirects, and starts Uvicorn with `--no-access-log`. Synthetic tokens are not production credentials.
 
 ## Exact-head automated validation evidence
 
@@ -36,7 +46,17 @@ The latest complete PR-head validation available for the Day 28 implementation i
 - [Analytics Security Tests — run 41773396244](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41773396244): PASS; 452 tests passed in 12.969s, plus detection/candidate checks, Ruff, Bandit, secret scan and dependency audit.
 - [Member 3 Loopback Integration — run 41773396257](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/41773396257): PASS; Rust library checks and Rust/Python loopback handoff passed.
 
-These are exact PR-head checks, not a claim that post-merge workflows were observed on the later merge commit. The repeated 452-test counts are separate workflow executions, not 904 unique tests.
+These are exact PR-head checks for the earlier Day 28 implementation, not validation of the new process-level harness. The repeated 452-test counts are separate workflow executions, not 904 unique tests. The new Day 28/29 harness is pending exact-head CI; do not reuse these historical runs as evidence for it.
+
+### PR #130 exact-head validation — 2026-11-06
+
+The executable Day 28/29 changes were introduced at code commit `5c1686556b723ce98ccce7e51e33f015e00772ad`. The subsequent documentation-only follow-up at PR head `34304d89c0d7964f22aa0f462e3798b468b6d28b` also passed all three exact-head workflows:
+
+- [Mock API Security and Quality Gates — run 42163140142](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140142): PASS. Full discovery **461 tests passed in 12.909s**; Ruff, Bandit, pip-audit, API/Analytics loopback, governance bookkeeping and bounded Day 19 stages passed. The new Day 28 loopback HTTP and Day 29 reset tests passed.
+- [Analytics Security and Quality Gates — run 42163140161](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140161): PASS. Full discovery **461 tests passed in 10.409s**, plus detection/review demos, frozen-candidate verification/build, Ruff, Bandit, secret scan and dependency audit.
+- [Rust/Python Loopback Contract — run 42163140164](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140164): PASS. **28 Rust tests passed** and the real Rust/Python loopback handoff passed.
+
+The repeated 461-test counts are separate workflow executions, not 922 unique tests. The first exact-head attempts exposed two harness/evidence defects: HTTP response header names were treated as case-sensitive, and the Day 29 wrapper did not surface the nested reset-pass line. Both were corrected before the successful code and documentation-head runs above. No local test execution is claimed; GitHub Actions is the validation source.
 
 ## Manual operator evidence still required
 

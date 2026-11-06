@@ -27,17 +27,31 @@ The verifier:
 - Checks Git blob SHA-1 identifiers for orders, users, sharing grants and authorization cases.
 - Checks the expected synthetic record counts and confirms the sharing-grant fixture is empty.
 - Dirties volatile state in an isolated parent interpreter, starts a separate fresh Python process, and verifies original order state plus empty revoked-token, nonce, rate-limit and subject-semaphore state.
-- Never contacts a network target and never edits checked-in fixture files.
+- Starts the actual Mock API on an OS-selected loopback port, applies a synthetic admin PATCH, terminates only that child process, and starts a fresh API process on the same port.
+- Verifies the fresh HTTP process restores the original order fixture and accepts the same nonce again, proving the process-local replay cache was reset.
+- Removes optional Sentinel endpoint/credential settings from the harness child environment, disables Uvicorn access logging, bypasses proxies/redirects, and never contacts an external target.
+- Never edits checked-in fixture files.
 
 The reviewed digests live in `tests/fixtures/day29_lab_baseline.json`. A fixture
 change intentionally fails the verifier until the change is reviewed and the
 baseline is updated in the same PR. Do not update expected hashes merely to make
 a failing check green.
 
+## Exact-head validation — 2026-11-06
+
+The executable Day 28/29 changes were introduced at code commit `5c1686556b723ce98ccce7e51e33f015e00772ad`. The documentation-only follow-up at PR head `34304d89c0d7964f22aa0f462e3798b468b6d28b` also passed all three exact-head workflows:
+
+- [Mock API Security and Quality Gates — run 42163140142](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140142): PASS; 461 tests passed, including the real loopback HTTP rehearsal and the extended Day 29 verifier; Ruff, Bandit, pip-audit, loopback and bounded load stages passed.
+- [Analytics Security and Quality Gates — run 42163140161](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140161): PASS; 461 tests passed, with analytics candidate, Ruff, Bandit, secret and dependency checks.
+- [Rust/Python Loopback Contract — run 42163140164](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42163140164): PASS; 28 Rust tests and the real loopback handoff passed.
+
+Two earlier attempts caught and corrected a case-sensitive response-header lookup and a missing surfaced reset-pass line. These are final exact-head results, not a claim that a human operator ran the lab.
+
 ## Evidence and limits
 
-Record the exact commit and exact-head Mock API Security Tests workflow result.
-The verifier demonstrates process-local reset and fixture reproducibility only;
+The new process-level checks are pending exact-head CI. After they pass, record the exact tested SHA and Mock API Security workflow URL; do not reuse earlier baseline CI as evidence for these new checks.
+
+The verifier demonstrates fixture integrity, process-local reset, HTTP restart and nonce-cache reset only;
 it does not prove durable audit deletion, backup/restore, database reset,
 multi-worker state reset or production data sanitization.
 
