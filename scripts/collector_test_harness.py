@@ -77,7 +77,7 @@ class IngestContractValidator:
         raw_dst_port = unpacked[8]
         protocol = unpacked[9]
         ip_version = unpacked[10]
-        _padding = unpacked[11]
+        # unpacked[11] is the reserved two-byte wire-format padding slot.
         flow_hash = unpacked[12]
 
         # Explicit Endianness Conversion
@@ -177,4 +177,4 @@ if __name__ == "__main__":
         "[*] Initialized Ingest Contract Validator "
         f"(Expected Wire Size: {WIRE_RECORD_SIZE} bytes)"
     )
-    print(f"[*] Ready to validate ring buffer events from Member 2 sensor.")
+    print("[*] Ready to validate ring buffer events from Member 2 sensor.")
