@@ -9,16 +9,15 @@ Validates wire format, schema version, field offsets, endianness decoding,
 sequence tracking, and drop semantics.
 """
 
-import sys
-import os
-import struct
 import socket
-import json
+import struct
 
 # Wire struct layout matching ebpf/include/api_sentinel_types.h (192 bytes)
 # Header: timestamp_ns (Q), event_id (I), pid (I), tgid (I), uid (I) -> 24 bytes
-# Flow: src_ip (I - BE), dst_ip (I - BE), src_port (H - BE), dst_port (H - BE), protocol (B), ip_version (B), pad (2s), flow_hash (Q) -> 24 bytes
-# Metadata: http_method (B), direction (B), status_code (H), payload_bytes (I), latency_us (I), flags (I) -> 16 bytes
+# Flow: src_ip (I - BE), dst_ip (I - BE), src_port (H - BE), dst_port (H - BE),
+# protocol (B), ip_version (B), pad (2s), flow_hash (Q) -> 24 bytes
+# Metadata: http_method (B), direction (B), status_code (H), payload_bytes (I),
+# latency_us (I), flags (I) -> 16 bytes
 # Route marker: 128 bytes (128s)
 # Total: 24 + 24 + 16 + 128 = 192 bytes
 
@@ -55,9 +54,12 @@ class IngestContractValidator:
         self.events = []
 
     def decode_raw_event(self, raw_bytes):
-        """Decode raw binary event from BPF ring buffer adhering to exact wire contract."""
+        """Decode a raw event from the BPF ring buffer using the exact wire contract."""
         if len(raw_bytes) != WIRE_RECORD_SIZE:
-            raise ValueError(f"Record size mismatch: expected {WIRE_RECORD_SIZE} bytes, got {len(raw_bytes)}")
+            raise ValueError(
+                f"Record size mismatch: expected {WIRE_RECORD_SIZE} bytes, "
+                f"got {len(raw_bytes)}"
+            )
 
         unpacked = struct.unpack(WIRE_FORMAT, raw_bytes)
 
@@ -75,11 +77,11 @@ class IngestContractValidator:
         raw_dst_port = unpacked[8]
         protocol = unpacked[9]
         ip_version = unpacked[10]
-        padding = unpacked[11]
+        _padding = unpacked[11]
         flow_hash = unpacked[12]
 
         # Explicit Endianness Conversion
-        # In the wire format, IP and ports were stored in network byte order (Big Endian)
+        # IP addresses and ports are stored in network byte order (Big Endian).
         src_ip_str = socket.inet_ntoa(struct.pack("!I", socket.ntohl(raw_src_ip)))
         dst_ip_str = socket.inet_ntoa(struct.pack("!I", socket.ntohl(raw_dst_ip)))
         src_port = socket.ntohs(raw_src_port)
@@ -97,17 +99,25 @@ class IngestContractValidator:
         schema_version = (flags & SCHEMA_VERSION_MASK) >> SCHEMA_VERSION_SHIFT
         if schema_version != EXPECTED_SCHEMA_VERSION:
             self.schema_violations += 1
-            raise ValueError(f"Incompatible schema version: got {schema_version}, expected {EXPECTED_SCHEMA_VERSION}")
+            raise ValueError(
+                f"Incompatible schema version: got {schema_version}, "
+                f"expected {EXPECTED_SCHEMA_VERSION}"
+            )
 
         # 4. Route marker (ASCII string, null-terminated)
         raw_route = unpacked[19]
         route_marker = raw_route.split(b"\x00", 1)[0].decode("ascii", errors="replace")
 
-        # Check for privacy violations: route MUST NOT contain query parameters '?' or secret keywords
+        # Check for privacy violations: routes must not contain query parameters
+        # ('?') or secret keywords.
         if "?" in route_marker:
-            raise ValueError(f"Privacy boundary failure: unstripped query parameter detected in route: {route_marker}")
+            raise ValueError(
+                "Privacy boundary failure: unstripped query parameter "
+                f"detected in route: {route_marker}"
+            )
 
-        # Sequence gaps are diagnostic only; aggregate kernel drop counters are authoritative.
+        # Sequence gaps are diagnostic only; aggregate kernel drop counters
+        # are authoritative.
         # Use modulo-2^32 arithmetic and ignore ambiguous backward/restart jumps.
         dropped_in_gap = 0
         if self.last_seq is not None:
@@ -163,5 +173,8 @@ class IngestContractValidator:
 
 if __name__ == "__main__":
     validator = IngestContractValidator()
-    print(f"[*] Initialized Ingest Contract Validator (Expected Wire Size: {WIRE_RECORD_SIZE} bytes)")
+    print(
+        "[*] Initialized Ingest Contract Validator "
+        f"(Expected Wire Size: {WIRE_RECORD_SIZE} bytes)"
+    )
     print(f"[*] Ready to validate ring buffer events from Member 2 sensor.")
