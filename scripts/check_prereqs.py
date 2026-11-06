@@ -222,10 +222,21 @@ def run_prerequisite_audit(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="API-Sentinel eBPF Prerequisites Auditor")
-    parser.add_argument("--json", action="store_true", help="Output audit report as JSON")
-    parser.add_argument("--kernel-version", type=str, default=None, help="Override kernel version for validation")
-    parser.add_argument("--config-file", type=str, default=None, help="Path to kernel config file")
+    parser = argparse.ArgumentParser(
+        description="API-Sentinel eBPF Prerequisites Auditor"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Output audit report as JSON"
+    )
+    parser.add_argument(
+        "--kernel-version",
+        type=str,
+        default=None,
+        help="Override kernel version for validation",
+    )
+    parser.add_argument(
+        "--config-file", type=str, default=None, help="Path to kernel config file"
+    )
     args = parser.parse_args()
 
     kconfig_text = None
@@ -251,7 +262,10 @@ def main():
             f"[{k_res.get('status')}] - {k_res.get('message')}"
         )
         cfg_res = report["checks"]["kernel_configs"]
-        print(f"Mandatory Kernel Configs: {'PASS' if cfg_res.get('passed') else 'FAIL'}")
+        print(
+            "Mandatory Kernel Configs: "
+            f"{'PASS' if cfg_res.get('passed') else 'FAIL'}"
+        )
         if not cfg_res.get("passed"):
             print(f"  Missing: {', '.join(cfg_res.get('missing_mandatory', []))}")
         btf_res = report["checks"]["btf_support"]
