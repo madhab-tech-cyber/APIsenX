@@ -4,8 +4,8 @@ export type SecurityMetric = {
 }
 
 export const securityMetrics: SecurityMetric[] = [
-  { label: 'Protected Endpoints', value: 0 },
-  { label: 'Open Alerts', value: 0 },
-  { label: 'Critical Findings', value: 0 },
-  { label: 'System Health', value: 'Healthy' },
+  { label: 'Protected Endpoints', value: 'Unavailable' },
+  { label: 'Open Alerts', value: 'Unavailable' },
+  { label: 'Critical Findings', value: 'Unavailable' },
+  { label: 'System Health', value: 'Unmeasured' },
 ]

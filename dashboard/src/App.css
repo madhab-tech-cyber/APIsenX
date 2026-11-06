@@ -1,4 +1,6 @@
 #root {
+  width: 100%;
+  text-align: left;
   min-height: 100vh;
 }
 
@@ -57,6 +59,44 @@ select {
   margin-bottom: 32px;
 }
 
+.owasp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.owasp-card {
+  min-width: 0;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  background: #111827;
+  padding: 16px;
+}
+
+.owasp-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.owasp-id { color: #93c5fd; font: 700 12px Consolas, monospace; }
+.owasp-card h3 { margin: 12px 0 8px; font-size: 15px; }
+.owasp-card p,
+.mapping-disclaimer { color: #9ca3af; font-size: 13px; line-height: 1.5; }
+.mapping-disclaimer { margin: 0 0 32px; }
+.inventory-note {
+  margin: -20px 0 32px;
+  color: #9ca3af;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.coverage { border-radius: 999px; padding: 4px 8px; font-size: 11px; text-transform: capitalize; }
+.coverage-regression_tested { color: #6ee7b7; background: #064e3b; }
+.coverage-partial { color: #fcd34d; background: #78350f; }
+.coverage-not_assessed { color: #cbd5e1; background: #334155; }
+
 .metric-card {
   border: 1px solid #1f2937;
   border-radius: 10px;
@@ -76,7 +116,7 @@ select {
 }
 
 .metric-status {
-  color: #34d399;
+  color: #9ca3af;
 }
 
 .views {
@@ -106,7 +146,8 @@ select {
 
 @media (max-width: 900px) {
   .metrics,
-  .views {
+  .views,
+  .owasp-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -121,7 +162,8 @@ select {
   }
 
   .metrics,
-  .views {
+  .views,
+  .owasp-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -141,11 +183,12 @@ select {
 .endpoint-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 720px;
+  min-width: 900px;
 }
 
 .endpoint-table th,
-.endpoint-table td {
+.endpoint-table td,
+.endpoint-table caption {
   padding: 16px 18px;
   text-align: left;
   border-bottom: 1px solid #1f2937;
@@ -209,6 +252,49 @@ select {
   background: #111827;
 }
 
+.alert-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 18px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.alert-filters label {
+  display: grid;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.alert-filters select {
+  min-height: 40px;
+  min-width: 160px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  background: #0b1020;
+  color: #e5e7eb;
+  padding: 8px 10px;
+}
+
+.alert-filters select:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.alert-result-count {
+  margin: 0 0 10px auto;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.empty-state {
+  padding: 24px !important;
+  color: #9ca3af !important;
+  text-align: center !important;
+}
+
 .alerts-table {
   width: 100%;
   border-collapse: collapse;
@@ -216,7 +302,8 @@ select {
 }
 
 .alerts-table th,
-.alerts-table td {
+.alerts-table td,
+.alerts-table caption {
   padding: 16px 18px;
   text-align: left;
   border-bottom: 1px solid #1f2937;
@@ -294,7 +381,8 @@ select {
 }
 
 .evidence-table th,
-.evidence-table td {
+.evidence-table td,
+.evidence-table caption {
   padding: 16px 18px;
   text-align: left;
   border-bottom: 1px solid #1f2937;
@@ -305,6 +393,16 @@ select {
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
+}
+
+.endpoint-table caption,
+.alerts-table caption,
+.evidence-table caption,
+.health-table caption {
+  padding: 12px 18px;
+  color: #9ca3af;
+  font-size: 13px;
+  text-align: left;
 }
 
 .evidence-table td {
@@ -327,3 +425,51 @@ select {
   font-family: Consolas, "Courier New", monospace;
   white-space: nowrap;
 }
+
+.health-table-card {
+  overflow-x: auto;
+  margin-bottom: 32px;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  background: #111827;
+}
+
+.health-table {
+  width: 100%;
+  min-width: 750px;
+  border-collapse: collapse;
+}
+
+.health-table th,
+.health-table td {
+  padding: 16px 18px;
+  text-align: left;
+  border-bottom: 1px solid #1f2937;
+}
+
+.health-table th {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.health-table td {
+  color: #d1d5db;
+  font-size: 14px;
+}
+
+.health-table tbody tr:last-child td { border-bottom: none; }
+
+.fixture-label {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.health-healthy { color: #6ee7b7; }
+.health-degraded { color: #fcd34d; }
+.health-unhealthy { color: #fca5a5; }
