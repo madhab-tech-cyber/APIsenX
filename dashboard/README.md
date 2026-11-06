@@ -137,3 +137,63 @@ The dashboard renders bundled synthetic fixture data by default. The seam is
 `fixture` is the only wired source today; `live` is reserved for the
 analytics management API and is deliberately labelled in the header as not
 yet wired, so fixture numbers are never presented as live telemetry.
+
+## Current implementation and verification
+
+The current dashboard renders synthetic endpoint inventory, alerts/triage,
+masked evidence, and fixture health/performance. Inventory, alert, evidence,
+and health sections are labelled as fixtures; unavailable aggregate values are
+shown as `Unavailable` or `Unmeasured`, not as zero or healthy. The OWASP API
+Security Top 10 (2023) view reads `docs/owasp-api-security-mapping.json`
+directly and displays each category's documented coverage and example result.
+That mapping is a traceability aid, not an assessment or certification.
+
+The alert view filters the synthetic fixture rows by severity and triage status,
+shows the matching count, and reports when a filter has no matches. These are
+local view filters only; the dashboard does not mutate triage status. Inventory
+classification is explicitly unavailable in the fixture. The documented
+management inventory contract supports `documented`, `method_not_documented`,
+`path_not_documented`, and `visibility_unavailable`; it does not define a
+deprecated classification.
+
+Responsive tables use horizontal scrolling on narrow screens, and native
+selects are keyboard accessible. Evidence is rendered from the bundled masked
+fixture projection only. The dashboard has no management API client,
+authentication/session integration, server-side RBAC, case scoping, or live
+loading/error/empty response handling. The local alert filter has an empty
+state; it is not a network response state. `sourceState.ts` documents supported
+source states, while the app deliberately reports the management source as
+unavailable.
+
+The documented `MGT-LAB-1.0` read endpoints require a case-scoped reader Bearer
+grant. The contract explicitly prohibits putting that credential in a Vite
+bundle or browser storage, and there is no reviewed browser session bridge.
+The dashboard therefore stays fixture-only; never treat client-side UI state
+as an authorization boundary or infer live system health.
+
+From the repository root, dashboard checks are:
+
+```powershell
+npm.cmd --prefix dashboard ci
+npm.cmd --prefix dashboard run dev
+npm.cmd --prefix dashboard run lint
+npm.cmd --prefix dashboard test
+npm.cmd --prefix dashboard run build
+npm.cmd --prefix dashboard audit --audit-level=high
+npm.cmd --prefix dashboard sbom --package-lock-only --sbom-format=cyclonedx
+```
+
+The `API-Sentinel CI` workflow runs the dashboard checks and the pinned Python
+unittest suite. The separate Analytics Security Tests workflow also runs
+repository tests and analytics-specific scans/evidence checks. A local pass
+does not establish remote workflow success, branch protection, production
+readiness, or release approval. The dashboard CI generates a CycloneDX SBOM
+from the lockfile and retains it as a 30-day review artifact. No container
+exists yet, so container scanning is not applicable.
+
+The dashboard workflow's dependency check is `npm audit --audit-level=high`;
+it requires registry access. Repository security regression tests scan text
+files for configured secret patterns and check sensitive-file exclusions. This
+is a bounded repository check, not a claim of comprehensive secret detection.
+CI validates the generated SBOM's CycloneDX format, 1.x specification version,
+and non-empty component list before uploading the artifact.
