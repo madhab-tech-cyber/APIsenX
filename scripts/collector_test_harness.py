@@ -144,7 +144,9 @@ class IngestContractValidator:
                 "ip_version": ip_version,
                 "flow_hash": flow_hash,
             },
-            "http_method": HTTP_METHODS.get(http_method_id, f"UNKNOWN({http_method_id})"),
+            "http_method": HTTP_METHODS.get(
+                http_method_id, f"UNKNOWN({http_method_id})"
+            ),
             "direction": "INGRESS" if direction == 0 else "EGRESS",
             "status_code": status_code,
             "payload_bytes": payload_bytes,
