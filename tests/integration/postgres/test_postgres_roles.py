@@ -29,7 +29,8 @@ def dsn(name):
     psycopg is not None
     and os.environ.get("APISENX_PG_TEST_ACK") == ACK
     and all(dsn(role) for role in ("WRITER", "READER", "RETENTION", "MIGRATION")),
-    "requires optional psycopg, four isolated role DSNs and explicit disposable-DB acknowledgement",
+    "requires optional psycopg, four isolated role DSNs and explicit "
+    "disposable-DB acknowledgement",
 )
 class PostgreSQLRoleBoundaryTests(unittest.TestCase):
     def connect(self, role):
@@ -68,7 +69,8 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
                 conn.execute(
                     f"INSERT INTO {TABLE} "
                     "(record_id, case_id, received_at, expires_at, summary) "
-                    "VALUES ('forbidden', 'case-a', now(), now() + interval '1 day', '{}')"
+                    "VALUES ('forbidden', 'case-a', now(), "
+                    "now() + interval '1 day', '{}')"
                 )
 
     def test_retention_worker_can_delete_and_append_receipt_but_not_read(self):
@@ -77,13 +79,15 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
             conn.execute(
                 f"INSERT INTO {TABLE} "
                 "(record_id, case_id, received_at, expires_at, summary) "
-                "VALUES (%s, %s, now() - interval '2 days', now() - interval '1 day', %s)",
+                "VALUES (%s, %s, now() - interval '2 days', "
+                "now() - interval '1 day', %s)",
                 (record_id, "case-a", psycopg.types.json.Jsonb({"kind": "synthetic"})),
             )
         with self.connect("RETENTION") as conn:
             conn.execute(f"DELETE FROM {TABLE} WHERE record_id = %s", (record_id,))
             conn.execute(
-                f"INSERT INTO {RECEIPTS} (receipt_id, record_id, deleted_at, reason_code) "
+                f"INSERT INTO {RECEIPTS} "
+                "(receipt_id, record_id, deleted_at, reason_code) "
                 "VALUES (%s, %s, now(), 'RETENTION_EXPIRED')",
                 (f"receipt-{uuid.uuid4()}", record_id),
             )
