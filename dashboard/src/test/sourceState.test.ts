@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { DashboardSource, DashboardSourceState } from '../sourceState'
 
 describe('Dashboard source state model', () => {
