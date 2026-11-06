@@ -117,6 +117,7 @@ print("fresh-process reset: PASS")
         raise SystemExit("Fresh-process reset verification failed")
     if "fresh-process reset: PASS" not in result.stdout:
         raise SystemExit("Fresh-process reset evidence missing")
+    print("fresh-process reset: PASS")
 
 
 def verify_loopback_http_process_restart() -> None:
