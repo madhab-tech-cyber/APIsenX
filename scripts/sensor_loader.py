@@ -8,12 +8,11 @@ Manages loading, attaching, verifier inspection, monitor-only enforcement,
 and scoped cleanup of the API-Sentinel Linux eBPF sensor.
 """
 
-import os
-import sys
 import argparse
-import subprocess
 import json
-import ctypes
+import os
+import subprocess
+import sys
 
 PIN_BASE_DIR = "/sys/fs/bpf/api_sentinel"
 PROJECT_MAPS = [
@@ -78,10 +77,16 @@ def verify_bytecode(obj_path):
 
 def attach_sensor(interface="lo", obj_path="ebpf/build/api_sentinel_sensor.o"):
     """Attach the eBPF sensor to clsact qdisc in monitor-only mode."""
-    print(f"[*] Attaching API-Sentinel sensor to interface '{interface}' (monitor-only mode)...")
+    print(
+        f"[*] Attaching API-Sentinel sensor to interface '{interface}' "
+        "(monitor-only mode)..."
+    )
 
     if os.name != "posix":
-        print(f"[!] Warning: Non-POSIX platform. Attachment simulated for lab test harness.")
+        print(
+            "[!] Warning: Non-POSIX platform. "
+            "Attachment simulated for lab test harness."
+        )
         return True
 
     # 1. Ensure /sys/fs/bpf/api_sentinel pin directory exists
@@ -110,7 +115,10 @@ def cleanup_sensor(interface="lo"):
     Cleans ONLY API-Sentinel pinned maps and attached filters.
     Leaves unrelated host filters, qdiscs, and processes untouched.
     """
-    print(f"[*] Starting scoped cleanup of API-Sentinel resources on interface '{interface}'...")
+    print(
+        "[*] Starting scoped cleanup of API-Sentinel resources "
+        f"on interface '{interface}'..."
+    )
 
     if os.name != "posix":
         print(f"[+] Cleanup completed (simulated on non-Linux platform).")
