@@ -80,8 +80,8 @@ class Day20PreparationContractTests(unittest.TestCase):
             "grant insert on apisenx_audit_it.audit_records to apisenx_it_writer;",
             "grant select on apisenx_audit_it.case_records to apisenx_it_reader;",
             "grant delete on apisenx_audit_it.audit_records to apisenx_it_retention;",
-            "grant insert on apisenx_audit_it.deletion_receipts "
-            "to apisenx_it_retention;",
+            "grant insert on apisenx_audit_it.deletion_receipts to "
+            "apisenx_it_retention;",
         )
         self.assertIn(
             "revoke all on schema apisenx_audit_it from public;", self.bootstrap
