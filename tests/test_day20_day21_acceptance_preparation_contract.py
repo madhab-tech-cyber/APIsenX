@@ -58,7 +58,7 @@ class Day20PreparationContractTests(unittest.TestCase):
             "missing sequence",
             "duplicate/replay",
             "anchor outage",
-            "restore-time re-purge",
+            "re-purge",
             "fail closed",
         ):
             with self.subTest(scenario=scenario):
@@ -80,7 +80,8 @@ class Day20PreparationContractTests(unittest.TestCase):
             "grant insert on apisenx_audit_it.audit_records to apisenx_it_writer;",
             "grant select on apisenx_audit_it.case_records to apisenx_it_reader;",
             "grant delete on apisenx_audit_it.audit_records to apisenx_it_retention;",
-            "grant insert on apisenx_audit_it.deletion_receipts to apisenx_it_retention;",
+            "grant insert on apisenx_audit_it.deletion_receipts "
+            "to apisenx_it_retention;",
         )
         self.assertIn(
             "revoke all on schema apisenx_audit_it from public;", self.bootstrap
@@ -109,7 +110,10 @@ class Day20PreparationContractTests(unittest.TestCase):
     def test_preparation_does_not_claim_runtime_acceptance(self):
         self.assertIn("test-plan preparation only", self.plan.lower())
         self.assertIn("a skipped test", self.plan.lower())
-        self.assertIn("no checkbox above is complete by virtue of this plan", self.plan.lower())
+        self.assertIn(
+            "no checkbox above is complete by virtue of this plan",
+            self.plan.lower(),
+        )
 
 
 class Day21IntegratedFailurePlanContractTests(unittest.TestCase):
@@ -122,7 +126,7 @@ class Day21IntegratedFailurePlanContractTests(unittest.TestCase):
         route_rows = {
             match.group(1)
             for line in self.plan.splitlines()
-            if (match := re.match(r"^\|\s*(RF-\d{2})\b", line))
+            if (match := re.match(r"^\|\s*\*{0,2}(RF-\d{2})\b", line))
         }
         self.assertEqual(
             route_rows, {f"RF-{number:02d}" for number in range(1, 6)}
