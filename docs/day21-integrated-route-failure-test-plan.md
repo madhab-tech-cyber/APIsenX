@@ -1,6 +1,6 @@
 # Day 21 — integrated route-failure and recovery test plan
 
-**Status: preparation only — no integrated runtime execution is claimed.** This plan turns FAIL-LAB-1.0 into a route-by-fault acceptance matrix for the approved synthetic lab. It supplements the policy in [route-failure-policy.md](route-failure-policy.md) and the Day 20 storage test plan; it does not implement an enforcement adapter or authorize active rules.
+**Status: preparation only — no integrated runtime execution is claimed.** This plan turns FAIL-LAB-1.0 into a route-by-fault acceptance matrix for the approved synthetic lab. It supplements the policy in [route-failure-policy.md](route-failure-policy.md) and the Day 20 storage test plan. Track integrated acceptance on [Issue #102](https://github.com/madhab-tech-cyber/APIsenX/issues/102). It does not implement an enforcement adapter or authorize active rules.
 
 ## Preconditions
 
