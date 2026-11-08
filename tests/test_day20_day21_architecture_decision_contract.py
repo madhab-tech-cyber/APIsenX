@@ -5,7 +5,6 @@ approval or independent review. They do not connect to PostgreSQL, provision
 infrastructure, or constitute implementation acceptance.
 """
 
-import json
 import unittest
 from pathlib import Path
 
@@ -132,7 +131,10 @@ class Day21IntegratedExecutionGateContractTests(unittest.TestCase):
         self.assertIn("generic 503 before mutation", self.plan)
         self.assertIn("rf-04", self.plan)
         self.assertIn("generic 503 before privileged data delivery", self.plan)
-        self.assertIn("ordinary owner read may continue with visible audit degradation", self.plan)
+        self.assertIn(
+            "ordinary owner read may continue with visible audit degradation",
+            self.plan,
+        )
         self.assertIn("do not generalize rf-01/rf-02 ordinary owner-read degradation", self.plan)
 
     def test_evidence_template_does_not_claim_a_human_run(self):
