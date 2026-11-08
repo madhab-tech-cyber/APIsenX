@@ -37,7 +37,7 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
 
     def test_architecture_record_is_not_human_approval(self):
         for required in (
-            "role issuing this record: member 1",
+            "**role issuing this record:** member 1",
             "**not** the service-owner approval",
             "**not** an independent review",
             "approval is not inferred from a pr merge",
@@ -53,7 +53,7 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
             "sqlite `durablestore` candidate is **not** selected",
             "at most seven days",
             "rt-05's 90-day class",
-            "auditwriter keeps defaulting to `memorystore`",
+            "`auditwriter` keeps defaulting to `memorystore`",
             "no default changes as part of this decision",
         ):
             with self.subTest(required=required):
