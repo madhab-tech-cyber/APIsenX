@@ -452,3 +452,24 @@ tests in this follow-up branch require their own exact-head CI.
 Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release
 **NOT APPROVED**. Do not infer service-owner approval or independent review
 from PR #138's merge or the green exact-main workflows.
+
+## 2026-11-08 PR #139 exact-head validation
+
+PR [#139](https://github.com/madhab-tech-cyber/APIsenX/pull/139) adds the
+architecture-decision and integrated-execution gate regression tests. Its
+final tested head at this checkpoint was
+`b77f00dcd95555e0dad99399f8f70e9a3c9c67c6`; all four workflows passed:
+
+- [Mock API Security Tests — run 42443973096](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443973096):
+  480 tests, Ruff, Bandit, dependency audit and API security stages passed.
+- [Analytics Security Tests — run 42443973011](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443973011):
+  480 tests, Ruff, Bandit, secret/dependency checks and analytics security stages passed.
+- [Member 3 Loopback Integration — run 42443972831](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443972831):
+  28 Rust tests and loopback contract passed.
+- [API-Sentinel CI — run 42443972811](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443972811):
+  repository regression/security, secret scanning and dashboard quality/security jobs passed.
+
+The two 480-test counts are separate workflow executions, not 960 unique
+tests. GitHub Actions is the validation source; no local execution is claimed.
+The PostgreSQL role tests remain opt-in and no live database integration is
+claimed. PR #139 remains open and unmerged; independent review is pending.
