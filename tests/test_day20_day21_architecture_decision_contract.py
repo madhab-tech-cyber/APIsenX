@@ -102,7 +102,8 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
             "no checkbox above is complete by virtue of this plan",
             "dated service-owner architecture and operating-model decision",
             "separate independent architecture review",
-            "separate dated service-owner and independent-reviewer implementation acceptance",
+            "separate dated service-owner and "
+            "independent-reviewer implementation acceptance",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, self.plan)
@@ -120,7 +121,8 @@ class Day21IntegratedExecutionGateContractTests(unittest.TestCase):
             "preparation only — no integrated runtime execution is claimed",
             "service owner records a dated storage architecture",
             "independent reviewer records a separate architecture review",
-            "approved durable audit implementation and schema/migration version are deployed",
+            "approved durable audit implementation and "
+            "schema/migration version are deployed",
             "do not run the integrated cases until all of the following are evidenced",
         ):
             with self.subTest(required=required):
@@ -135,7 +137,10 @@ class Day21IntegratedExecutionGateContractTests(unittest.TestCase):
             "ordinary owner read may continue with visible audit degradation",
             self.plan,
         )
-        self.assertIn("do not generalize rf-01/rf-02 ordinary owner-read degradation", self.plan)
+        self.assertIn(
+            "do not generalize rf-01/rf-02 ordinary owner-read degradation",
+            self.plan,
+        )
 
     def test_evidence_template_does_not_claim_a_human_run(self):
         for required in (
