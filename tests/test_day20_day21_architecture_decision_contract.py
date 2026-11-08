@@ -38,8 +38,8 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
     def test_architecture_record_is_not_human_approval(self):
         for required in (
             "role issuing this record: member 1",
-            "not the service-owner approval",
-            "not an independent review",
+            "**not** the service-owner approval",
+            "**not** an independent review",
             "approval is not inferred from a pr merge",
             "both remain required",
             "until both are recorded",
@@ -50,7 +50,7 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
     def test_selected_architecture_and_rejected_candidate_are_unambiguous(self):
         for required in (
             "adopt the postgresql design",
-            "sqlite `durablestore` candidate is not selected",
+            "sqlite `durablestore` candidate is **not** selected",
             "at most seven days",
             "rt-05's 90-day class",
             "auditwriter keeps defaulting to `memorystore`",
