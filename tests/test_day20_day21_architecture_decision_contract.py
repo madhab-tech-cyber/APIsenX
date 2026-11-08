@@ -102,8 +102,8 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
             "no checkbox above is complete by virtue of this plan",
             "dated service-owner architecture and operating-model decision",
             "separate independent architecture review",
-            "separate dated service-owner and "
-            "independent reviewer implementation acceptance",
+            "separate service-owner implementation acceptance and "
+            "independent reviewer acceptance",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, self.plan)
