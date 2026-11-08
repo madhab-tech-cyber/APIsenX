@@ -374,3 +374,102 @@ This section supersedes the older October baseline and candidate/pending-PR note
 Day 20 remains BLOCKED: no approved durable architecture, owner approval, independent review, complete RT-01–RT-08 runtime retention, deletion/backup/restore controls, case-scoped RBAC, audited exports or protected integrity checkpoints. Day 21 remains IN PROGRESS: component tests are merged, but integrated dependency-failure/recovery, approved durable-audit outage behavior and dated owner/independent acceptance are not evidenced. Day 22 integrated acceptance and Days 14–18 human/governance gates also remain open.
 
 The main branch is currently reported unprotected; detailed branch-protection readback is unavailable to this connection. No administrator action, human demonstration, or human approval is claimed. Keep AP-1.0 monitor_only, active enforcement rules at zero, and release **NOT APPROVED**.
+
+## 2026-11-08 verified-main reconciliation — architecture decision issued, human gates remain
+
+**Verified main:** `c36a4b2e8ad1619c55c09177d0aa10cc807cfecc`, merge commit for
+[PR #138](https://github.com/madhab-tech-cyber/APIsenX/pull/138). This section
+supersedes the older current-state statements above where they say that the
+Member 1 architecture position has not yet been issued.
+
+### Day 20 — architecture position is now recorded; approval is not
+
+- PRs [#135](https://github.com/madhab-tech-cyber/APIsenX/pull/135),
+  [#136](https://github.com/madhab-tech-cyber/APIsenX/pull/136) and
+  [#137](https://github.com/madhab-tech-cyber/APIsenX/pull/137) are merged.
+  They provide an opt-in disposable PostgreSQL role harness, retention /
+  deletion / restore / integrity test plan, and deterministic preparation
+  contracts. The PostgreSQL tests remain skip-by-design unless a dedicated
+  disposable database, psycopg and four separately provisioned role DSNs are
+  supplied. No live database integration run is claimed.
+- PR #138 adds
+  [the Day 20 architecture decision record](day20-durable-audit-architecture-decision.md).
+  Member 1 adopts the dedicated PostgreSQL design for the isolated synthetic
+  lab and explicitly rejects the SQLite candidate as the selected backend.
+- PR #138 is an architecture decision only. It is **not** the service-owner
+  approval and **not** an independent review. The PR review list is empty;
+  neither human decision is recorded in the approval template.
+- The runtime implementation is therefore still not authorized. Do not add
+  the PostgreSQL runtime store, retention worker, checkpoint signer, reader
+  service, or change the default as if owner approval existed.
+  `analytics/audit.py::AuditWriter` still defaults to volatile
+  `MemoryStore`; the SQLite candidate remains an opt-in local test double.
+  The `durable_audit` gate in `docs/member4-review-checkpoints.json` remains
+  `pending`.
+
+### Day 21 — acceptance plan exists; integrated execution is still gated
+
+- PR #137's
+  [route-failure plan](day21-integrated-route-failure-test-plan.md) and static
+  contracts are merged. They specify RF-01–RF-05 and FI-01–FI-07, including
+  the distinct rule that RF-03 PATCH and RF-04 privileged delivery fail
+  closed before side effects when required durable audit append is unavailable.
+- No approved PostgreSQL runtime or integrated API/analytics/storage
+  environment is evidenced. No live durable-store outage, restore, restart or
+  route-by-fault integrated execution is claimed.
+- Do not execute or accept the integrated matrix until the service-owner
+  decision, separate independent architecture review, approved runtime and
+  exact-SHA test environment exist. Keep the observer telemetry-only and do
+  not activate a signed-decision consumer or enforcement rules.
+
+### Exact-main CI on the verified merge commit
+
+All three repository workflows completed successfully on
+`c36a4b2e8ad1619c55c09177d0aa10cc807cfecc`:
+
+- [Mock API Security Tests — run 42386004294](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42386004294): success.
+- [Analytics Security Tests — run 42386004550](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42386004550): success.
+- [Member 3 Loopback Integration — run 42386004334](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42386004334): success.
+
+These are exact-main CI results for the merged architecture record and
+previously merged tests. They do not execute a live PostgreSQL service or
+satisfy owner/reviewer acceptance. The new architecture-decision regression
+tests in this follow-up branch require their own exact-head CI.
+
+### Current issue and release disposition
+
+- Issue [#83](https://github.com/madhab-tech-cyber/APIsenX/issues/83) remains
+  OPEN; service-owner approval, independent architecture review and runtime
+  implementation/acceptance are still pending.
+- Issue [#102](https://github.com/madhab-tech-cyber/APIsenX/issues/102) remains
+  OPEN; integrated route-failure/recovery evidence and separate human
+  decisions remain pending.
+- Issue [#89](https://github.com/madhab-tech-cyber/APIsenX/issues/89) is
+  currently CLOSED, but its body still lists the release-gate requirements as
+  unchecked. Closure is not evidence that those gates passed and must not be
+  described as release acceptance.
+
+Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release
+**NOT APPROVED**. Do not infer service-owner approval or independent review
+from PR #138's merge or the green exact-main workflows.
+
+## 2026-11-08 PR #139 exact-head validation
+
+PR [#139](https://github.com/madhab-tech-cyber/APIsenX/pull/139) adds the
+architecture-decision and integrated-execution gate regression tests. Its
+final tested head at this checkpoint was
+`b77f00dcd95555e0dad99399f8f70e9a3c9c67c6`; all four workflows passed:
+
+- [Mock API Security Tests — run 42443973096](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443973096):
+  480 tests, Ruff, Bandit, dependency audit and API security stages passed.
+- [Analytics Security Tests — run 42443973011](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443973011):
+  480 tests, Ruff, Bandit, secret/dependency checks and analytics security stages passed.
+- [Member 3 Loopback Integration — run 42443972831](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443972831):
+  28 Rust tests and loopback contract passed.
+- [API-Sentinel CI — run 42443972811](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42443972811):
+  repository regression/security, secret scanning and dashboard quality/security jobs passed.
+
+The two 480-test counts are separate workflow executions, not 960 unique
+tests. GitHub Actions is the validation source; no local execution is claimed.
+The PostgreSQL role tests remain opt-in and no live database integration is
+claimed. PR #139 remains open and unmerged; independent review is pending.
