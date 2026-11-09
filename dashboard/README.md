@@ -197,3 +197,11 @@ files for configured secret patterns and check sensitive-file exclusions. This
 is a bounded repository check, not a claim of comprehensive secret detection.
 CI validates the generated SBOM's CycloneDX format, 1.x specification version,
 and non-empty component list before uploading the artifact.
+
+The dashboard container is built from `docker/Dockerfile.dashboard`. The
+`container-security` CI job scans that built image with Trivy for HIGH and
+CRITICAL vulnerabilities and secrets, then uploads the JSON report for 30 days.
+The scan currently records findings without failing the job
+(`exit-code: '0'`); a passing job is therefore not proof that the image has no
+findings. Review the report and record remediation or an explicitly accepted
+risk before release.
