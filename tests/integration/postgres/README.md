@@ -8,6 +8,8 @@
 - Install the optional driver in the test environment: `python -m pip install "psycopg[binary]>=3.2,<4"`. It is intentionally not added to the application requirements.
 - Apply `bootstrap.sql` using a database administrator only in that disposable database.
 - Supply four independently provisioned connection strings through environment variables: `APISENX_PG_WRITER_DSN`, `APISENX_PG_READER_DSN`, `APISENX_PG_RETENTION_DSN`, and `APISENX_PG_MIGRATION_DSN`.
+- The DSNs must explicitly identify these distinct login roles: `apisenx_it_writer`, `apisenx_it_reader`, `apisenx_it_retention`, and `apisenx_it_migration`. All four must target the same explicitly named disposable database.
+- The test harness parses connection metadata locally and skips the PostgreSQL tests unless each DSN's username matches its intended role and all four DSNs resolve to the same host/host-address/port/database tuple. It does not print DSNs or parser errors.
 - Do not place DSNs, passwords, hostnames, certificates, or key material in Git, command output, test reports, or issue comments.
 - The test suite refuses to run unless `APISENX_PG_TEST_ACK=DISPOSABLE_SYNTHETIC_DATABASE` is set. It only uses the fixed `apisenx_audit_it` schema and synthetic identifiers.
 
