@@ -6,6 +6,7 @@ WORKDIR /app
 COPY dashboard/package.json dashboard/package-lock.json ./
 RUN npm ci --ignore-scripts
 COPY dashboard/ ./
+COPY docs/ ./docs/
 RUN npm run build
 
 FROM nginx:1.27-alpine
