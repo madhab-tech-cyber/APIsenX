@@ -156,5 +156,45 @@ class Day21IntegratedExecutionGateContractTests(unittest.TestCase):
                 self.assertIn(required, self.plan)
 
 
+class Day20Day21StatusReconciliationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.status = normalized(
+            read_repo_file("docs/day20-day21-cross-component-status.md")
+        )
+
+    def test_status_uses_the_actual_merged_main_commit(self):
+        self.assertIn("ac73eb0d7ec8aedf2ca2c3b5708c68f4089d7dbc", self.status)
+        self.assertIn("pr #139 is **merged**, not open", self.status)
+        self.assertNotIn("pr #139 remains open and unmerged", self.status)
+
+    def test_pr_head_checks_are_not_misrepresented_as_post_merge_checks(self):
+        self.assertIn("these are **pr-head** results", self.status)
+        self.assertIn("no post-merge check result is asserted here", self.status)
+        for run_id in (
+            "42443973096",
+            "42443973011",
+            "42443972831",
+            "42443972811",
+        ):
+            with self.subTest(run_id=run_id):
+                self.assertIn(run_id, self.status)
+
+    def test_day20_and_day21_remain_open_and_unaccepted(self):
+        self.assertIn("issue #83", self.status)
+        self.assertIn("issue #102", self.status)
+        self.assertIn("remains open", self.status)
+        self.assertIn("service-owner", self.status)
+        self.assertIn("independent architecture review", self.status)
+        self.assertIn("no exact-sha live route-failure", self.status)
+
+    def test_closed_release_gate_is_reopened_without_claiming_acceptance(self):
+        self.assertIn("issue #89", self.status)
+        self.assertIn("it was reopened on 2026-11-09", self.status)
+        self.assertIn("every release requirement pending", self.status)
+        self.assertIn("release **not approved**", self.status)
+        self.assertIn("no admin/maintain permission", self.status)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
