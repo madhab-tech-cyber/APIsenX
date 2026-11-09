@@ -21,6 +21,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Reject UTF-8 BOM in tracked text sources
+        run: python scripts/check_no_bom.py
+
       - name: Check for accidentally committed sensitive files
         shell: bash
         run: |
