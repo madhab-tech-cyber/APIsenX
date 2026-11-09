@@ -87,6 +87,49 @@ Use the approved externally protected signing/anchor destination; a hash stored 
 - Recovery verifies committed state, sequence/checkpoint continuity, deletion backlog and retention backlog before normal operation resumes.
 - Verify kill switch and monitor-only behavior remain effective throughout degraded and recovery states.
 
+
+## Independent-review amendment test cases (2026-11-09)
+
+These cases extend the acceptance plan; they are not evidence that the controls exist.
+
+### Trusted case boundary
+- Reader with no grant, forged issuer/signature, altered case ID, expired/revoked grant or wrong operation is denied.
+- Attempt direct SELECT on every base table, SET ROLE to any privileged role, modify `app.case_id`, invoke functions with another case, and reuse a pooled connection after a scoped transaction. All attempts fail; no case scope leaks.
+- Verify reader has no table privileges, no BYPASSRLS membership, and cannot inherit writer/retention/migration/owner privileges. Verify RLS FORCE is defense in depth and service authorization remains mandatory.
+- Force the access-audit append to fail; verify zero protected rows are returned.
+
+### Canonical chain and checkpoint
+- Verify RFC 8785 canonical bytes and domain-separated SHA-256 digest, rejecting duplicate JSON keys and non-finite numbers.
+- Run concurrent writers and prove one monotonic sequence with no gaps/duplicates; verify retries preserve idempotency and conflicting digests fail.
+- Verify checkpoint at 5 minutes or 1,000 events, whichever first; inject 10-minute/2,000-event backlog and verify quarantine/export block.
+- Verify environment/policy stream partition, contiguous ranges, previous-checkpoint linkage, KMS key ID, rotation transition, historical verification and revocation.
+- Simulate KMS/anchor outage and recovery; verify no false anchored status and no history rewrite.
+
+### Privacy-preserving deletion receipts
+- Assert receipt schema contains no subject, case, raw record ID or linkable payload digest.
+- Verify HMAC reference changes with environment/class/record and cannot be recomputed without KMS key; verify key rotation and 90-day receipt expiry.
+- Inject partial derivative failure; verify PARTIAL/FAILED receipt, retryable state and no COMPLETE until all derivatives are verified absent.
+
+### Backup and restore
+- Verify each backup expires at creation+7d and is inaccessible after expiry; expired primary is absent from all backups within 7d after primary deletion.
+- Restore a snapshot containing expired records while access is denied; replay independently signed deletion/hold ledger, re-purge, verify checkpoint chain, then test no resurrection.
+- Interrupt restore at each stage; service remains unavailable until all validation succeeds.
+- Verify per-record transaction and external derivative state machine semantics; retries are idempotent and receipts never overstate success.
+
+### Identity and operations
+- Verify technical DB identity mapping to producer, reader API, retention automation and one-time migration job.
+- Verify analyst, approver, custodian and dashboard personas have no direct DB credential; dashboard receives only approved projection.
+- Test MFA for human privileged actions, 24h grant maximum, 1h privileged session maximum, grant expiry/revocation, two-person break-glass, break-glass audit outage denial, migration credential disablement and 90-day credential rotation.
+- Verify alert routing, owner escalation at 15 minutes and emergency disable remains available during audit outage.
+
+### Availability and recovery objectives
+- Under controlled crash/restore, measure RPO <=15 minutes and RTO <=4 business hours, or record measured failure and retain degraded status.
+- Verify queue age <=2 seconds, capacity <=1,000, no disk spool, zero silent drops and alert on every drop.
+- Verify checkpoint backlog <=10 minutes/2,000 events and retention backlog <=24h; threshold breach quarantines or blocks acceptance as specified.
+- Recovery acceptance requires 100% sequence/checkpoint continuity, zero expired data/derivatives restored and zero unresolved deletion items.
+
+**Owner confirmation required:** The RPO/RTO, queue, checkpoint, retention-backlog, session, rotation and escalation values are proposed isolated-lab limits. The service owner must confirm or amend them before runtime work. Reviewer closure must be separately recorded.
+
 ## Acceptance evidence checklist
 
 - [ ] Dated service-owner architecture and operating-model decision is recorded.
