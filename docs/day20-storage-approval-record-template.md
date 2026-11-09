@@ -51,6 +51,6 @@ The independent reviewer must be a different person from the service owner and t
 
 ## Release gate
 
-**Architecture decision: APPROVED by service owner on 2026-11-09 16:29:25 UTC. Independent architecture review: APPROVE WITH AMENDMENTS (2026-11-09 17:09:36 UTC); six clarifications incorporated in PR #TBD, reviewer closure pending. Numeric operating targets require service-owner confirmation. Runtime implementation and acceptance: PENDING.**
+**Architecture decision: APPROVED by service owner on 2026-11-09 16:29:25 UTC. Independent architecture review: APPROVE WITH AMENDMENTS (2026-11-09 17:09:36 UTC); six clarifications incorporated in PR #147, reviewer closure pending. Numeric operating targets require service-owner confirmation. Runtime implementation and acceptance: PENDING.**
 
 Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. This approval authorizes review and documentation refinement only. Runtime implementation remains gated until the independent reviewer confirms the six clarifications are closed and the service owner confirms or amends the proposed operating targets. It does not authorize production deployment, live production data, enforcement activation, or release. Never store raw captures, request bodies, tokens, credentials, key material, or real personal data in Git.
