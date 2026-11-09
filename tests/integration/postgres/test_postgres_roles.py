@@ -117,6 +117,12 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
     def connect(self, role):
         return psycopg.connect(dsn(role), connect_timeout=5)
 
+    def test_each_connection_authenticates_as_its_expected_database_role(self):
+        for role, expected_user in ROLE_USERS.items():
+            with self.subTest(role=role), self.connect(role) as conn:
+                current_user = conn.execute("SELECT current_user").fetchone()[0]
+                self.assertEqual(current_user, expected_user)
+
     def test_writer_can_insert_but_cannot_read_or_mutate_existing_rows(self):
         record_id = f"writer-{uuid.uuid4()}"
         with self.connect("WRITER") as conn:
