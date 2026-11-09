@@ -30,7 +30,10 @@ jobs:
           cache: "pip"
           cache-dependency-path: requirements.txt
 
-      - name: Install project dependencies
+      - name: Reject UTF-8 BOM in tracked text sources
+              run: python scripts/check_no_bom.py
+              
+              - name: Install project dependencies
         run: python -m pip install -r requirements.txt
 
       - name: Install security and quality tools
