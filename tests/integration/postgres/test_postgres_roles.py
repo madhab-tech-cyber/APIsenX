@@ -10,8 +10,10 @@ import uuid
 
 try:
     import psycopg
+    from psycopg.conninfo import conninfo_to_dict
 except ImportError:  # pragma: no cover - depends on optional test environment
     psycopg = None
+    conninfo_to_dict = None
 
 
 ACK = "DISPOSABLE_SYNTHETIC_DATABASE"
@@ -33,7 +35,11 @@ def dsn(name):
 
 def role_dsns_are_isolated():
     """Fail closed unless each DSN names its intended role on one DB target."""
-    if psycopg is None or os.environ.get("APISENX_PG_TEST_ACK") != ACK:
+    if (
+        psycopg is None
+        or conninfo_to_dict is None
+        or os.environ.get("APISENX_PG_TEST_ACK") != ACK
+    ):
         return False
 
     values = {role: dsn(role) for role in ROLE_USERS}
@@ -42,8 +48,7 @@ def role_dsns_are_isolated():
 
     try:
         configs = {
-            role: psycopg.conninfo.conninfo_to_dict(value)
-            for role, value in values.items()
+            role: conninfo_to_dict(value) for role, value in values.items()
         }
     except Exception:  # Never expose connection-string parser details.
         return False
