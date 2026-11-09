@@ -19,18 +19,55 @@ SCHEMA = "apisenx_audit_it"
 TABLE = f"{SCHEMA}.audit_records"
 VIEW = f"{SCHEMA}.case_records"
 RECEIPTS = f"{SCHEMA}.deletion_receipts"
+ROLE_USERS = {
+    "WRITER": "apisenx_it_writer",
+    "READER": "apisenx_it_reader",
+    "RETENTION": "apisenx_it_retention",
+    "MIGRATION": "apisenx_it_migration",
+}
 
 
 def dsn(name):
     return os.environ.get(f"APISENX_PG_{name}_DSN")
 
 
+def role_dsns_are_isolated():
+    """Fail closed unless each DSN names its intended role on one DB target."""
+    if psycopg is None or os.environ.get("APISENX_PG_TEST_ACK") != ACK:
+        return False
+
+    values = {role: dsn(role) for role in ROLE_USERS}
+    if any(not value for value in values.values()):
+        return False
+
+    try:
+        configs = {
+            role: psycopg.conninfo.conninfo_to_dict(value)
+            for role, value in values.items()
+        }
+    except Exception:  # Never expose connection-string parser details.
+        return False
+
+    if any(
+        configs[role].get("user") != expected_user
+        for role, expected_user in ROLE_USERS.items()
+    ):
+        return False
+
+    # All four identities must target the same explicitly named disposable DB.
+    if any(not config.get("dbname") for config in configs.values()):
+        return False
+    targets = {
+        tuple(config.get(field) for field in ("host", "hostaddr", "port", "dbname"))
+        for config in configs.values()
+    }
+    return len(targets) == 1
+
+
 @unittest.skipUnless(
-    psycopg is not None
-    and os.environ.get("APISENX_PG_TEST_ACK") == ACK
-    and all(dsn(role) for role in ("WRITER", "READER", "RETENTION", "MIGRATION")),
-    "requires optional psycopg, four isolated role DSNs and explicit "
-    "disposable-DB acknowledgement",
+    role_dsns_are_isolated(),
+    "requires psycopg, explicit disposable-DB acknowledgement, and four "
+    "role-specific DSNs targeting the same disposable database",
 )
 class PostgreSQLRoleBoundaryTests(unittest.TestCase):
     def connect(self, role):
