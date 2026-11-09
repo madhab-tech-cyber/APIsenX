@@ -7,6 +7,7 @@ approved runtime architecture or a complete case-authorization mechanism.
 import os
 import unittest
 import uuid
+from unittest.mock import patch
 
 try:
     import psycopg
@@ -67,6 +68,44 @@ def role_dsns_are_isolated():
         for config in configs.values()
     }
     return len(targets) == 1
+
+
+class PostgreSQLDsnConfigurationTests(unittest.TestCase):
+    def setUp(self):
+        self.env = {"APISENX_PG_TEST_ACK": ACK}
+        self.configs = {}
+        for role, username in ROLE_USERS.items():
+            value = f"dsn-{role.lower()}"
+            self.env[f"APISENX_PG_{role}_DSN"] = value
+            self.configs[value] = {
+                "user": username,
+                "host": "db.example.test",
+                "hostaddr": None,
+                "port": "5432",
+                "dbname": "apisenx_disposable",
+            }
+
+    def run_guard(self):
+        def parse(value):
+            return self.configs[value]
+
+        with (
+            patch.dict(os.environ, self.env, clear=True),
+            patch(f"{__name__}.psycopg", new=object()),
+            patch(f"{__name__}.conninfo_to_dict", side_effect=parse),
+        ):
+            return role_dsns_are_isolated()
+
+    def test_accepts_four_expected_roles_on_one_named_database(self):
+        self.assertTrue(self.run_guard())
+
+    def test_rejects_reused_or_privileged_login_identity(self):
+        self.configs["dsn-writer"]["user"] = "postgres"
+        self.assertFalse(self.run_guard())
+
+    def test_rejects_role_dsns_pointing_at_different_databases(self):
+        self.configs["dsn-reader"]["dbname"] = "another_database"
+        self.assertFalse(self.run_guard())
 
 
 @unittest.skipUnless(
