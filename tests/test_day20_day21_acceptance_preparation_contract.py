@@ -67,13 +67,21 @@ class Day20PreparationContractTests(unittest.TestCase):
     def test_postgres_harness_requires_explicit_disposable_environment(self):
         self.assertIn("DISPOSABLE_SYNTHETIC_DATABASE", self.role_tests)
         self.assertIn("skipUnless", self.role_tests)
-        self.assertIn(
-            'all(dsn(role) for role in ("WRITER", "READER", "RETENTION", "MIGRATION"))',
-            self.role_tests,
-        )
-        self.assertIn("connect_timeout=5", self.role_tests)
+        self.assertIn("role_dsns_are_isolated()", self.role_tests)
+        self.assertIn("conninfo_to_dict", self.role_tests)
+        self.assertIn("config.get(\"user\") != expected_user", self.role_tests)
+        self.assertIn("config.get(\"dbname\")", self.role_tests)
+        self.assertIn("four role-specific DSNs", self.role_tests)
         for role in ("WRITER", "READER", "RETENTION", "MIGRATION"):
             self.assertIn(f"APISENX_PG_{role}_DSN", self.readme)
+        for username in (
+            "apisenx_it_writer",
+            "apisenx_it_reader",
+            "apisenx_it_retention",
+            "apisenx_it_migration",
+        ):
+            with self.subTest(username=username):
+                self.assertIn(username, self.readme)
 
     def test_postgres_bootstrap_revokes_public_and_grants_narrow_roles(self):
         expected_grants = (
