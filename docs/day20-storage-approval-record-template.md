@@ -8,7 +8,7 @@
 - Service owner (GitHub handle or role): pappukumar96727-sketch — service owner, as designated by repository owner in Issue #83
 - Independent reviewer (GitHub handle or role; must be a different person): PENDING — must be completed by a person other than the service owner and the Member 1 architecture author
 - Design version / commit reviewed: `docs/day20-durable-audit-architecture-decision.md`, merged on main by PR #138; architecture decision commit `c36a4b2e8ad1619c55c09177d0aa10cc807cfecc`
-- Decision: **APPROVE**
+- Decision: APPROVE / APPROVE WITH AMENDMENTS / REJECT — **recorded decision: APPROVE**
 - Decision source: Explicit service-owner confirmation in the project conversation at 2026-11-09 16:29:25 UTC; recorded in the repository at the service owner's request.
 - Scope: **Isolated synthetic lab only.** No production data, no production deployment, and no enforcement activation.
 - Limits: Approval adopts the PostgreSQL architecture as written. It does not claim that infrastructure, credentials, KMS, backups, immutable destination, or runtime controls have been provisioned or tested.
