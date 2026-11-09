@@ -92,6 +92,8 @@ class Member1GovernanceTests(unittest.TestCase):
     def test_protection_flag_alone_is_not_settings_and_pr_gate_evidence(self):
         observation = self.record["protection_observation"]
         observation.update(main_protected=True, settings_verified=True)
+        observation.pop("readback_reference", None)
+        observation.pop("merge_gate_reference", None)
         with self.assertRaises(KeyError):
             validate_register(self.record)
 
@@ -118,6 +120,11 @@ class Member1GovernanceTests(unittest.TestCase):
         ]
         self.record.update(integration_status="accepted", release_status="approved")
         self.record["integration_evidence"] = [reference]
+        self.record["protection_observation"].update(
+            main_protected=False, settings_verified=False
+        )
+        self.record["protection_observation"].pop("readback_reference", None)
+        self.record["protection_observation"].pop("merge_gate_reference", None)
         with self.assertRaisesRegex(ValueError, "unverified main protection"):
             validate_register(self.record)
         self.record["protection_observation"].update(
