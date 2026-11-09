@@ -188,8 +188,9 @@ unittest suite. The separate Analytics Security Tests workflow also runs
 repository tests and analytics-specific scans/evidence checks. A local pass
 does not establish remote workflow success, branch protection, production
 readiness, or release approval. The dashboard CI generates a CycloneDX SBOM
-from the lockfile and retains it as a 30-day review artifact. No container
-exists yet, so container scanning is not applicable.
+from the lockfile and retains it as a 30-day review artifact. The dashboard
+container is built from `docker/Dockerfile.dashboard`; its image scan is
+described below.
 
 The dashboard workflow's dependency check is `npm audit --audit-level=high`;
 it requires registry access. Repository security regression tests scan text
