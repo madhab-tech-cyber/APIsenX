@@ -119,7 +119,7 @@ is decided here; the service owner approves or amends each in the record.
    service must never become an authorization path for the API.
 
 
-## Independent-review amendments — 2026-11-09 (PR #TBD)
+## Independent-review amendments — 2026-11-09 (PR #147)
 
 The independent review by @jayitape on Issue #83 returned **APPROVE WITH AMENDMENTS / CLARIFICATIONS**. The following design constraints resolve the six findings. Numeric operational targets below are proposed isolated-lab limits, not evidence of provisioning; the service owner must confirm them before infrastructure is provisioned or runtime implementation begins. The reviewer must confirm closure after this document is merged.
 
