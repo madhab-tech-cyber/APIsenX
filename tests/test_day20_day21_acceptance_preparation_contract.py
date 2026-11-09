@@ -69,7 +69,7 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("skipUnless", self.role_tests)
         self.assertIn("role_dsns_are_isolated()", self.role_tests)
         self.assertIn("conninfo_to_dict", self.role_tests)
-        self.assertIn("config.get(\"user\") != expected_user", self.role_tests)
+        self.assertIn("configs[role].get(\"user\") != expected_user", self.role_tests)
         self.assertIn("config.get(\"dbname\")", self.role_tests)
         self.assertIn("four role-specific DSNs", self.role_tests)
         for role in ("WRITER", "READER", "RETENTION", "MIGRATION"):
