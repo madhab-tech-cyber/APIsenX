@@ -6,7 +6,7 @@
 
 - Decision date/time (UTC): 2026-11-09 16:29:25 UTC
 - Service owner (GitHub handle or role): pappukumar96727-sketch — service owner, as designated by repository owner in Issue #83
-- Independent reviewer (GitHub handle or role; must be a different person): PENDING — must be completed by a person other than the service owner and the Member 1 architecture author
+- Independent reviewer (GitHub handle or role; must be a different person): @jayitape — review posted 2026-11-09 17:09:36 UTC on Issue #83; outcome APPROVE WITH AMENDMENTS / CLARIFICATIONS (not unconditional approval)
 - Design version / commit reviewed: `docs/day20-durable-audit-architecture-decision.md`, merged on main by PR #138; architecture decision commit `c36a4b2e8ad1619c55c09177d0aa10cc807cfecc`
 - Decision: APPROVE / APPROVE WITH AMENDMENTS / REJECT — **recorded decision: APPROVE**
 - Decision source: Explicit service-owner confirmation in the project conversation at 2026-11-09 16:29:25 UTC; recorded in the repository at the service owner's request.
@@ -51,6 +51,6 @@ The independent reviewer must be a different person from the service owner and t
 
 ## Release gate
 
-**Architecture decision: APPROVED by the service owner on 2026-11-09 16:29:25 UTC. Independent architecture review: PENDING. Runtime implementation and acceptance: PENDING.**
+**Architecture decision: APPROVED by service owner on 2026-11-09 16:29:25 UTC. Independent architecture review: APPROVE WITH AMENDMENTS (2026-11-09 17:09:36 UTC); six clarifications incorporated in PR #147, reviewer closure pending. Numeric operating targets require service-owner confirmation. Runtime implementation and acceptance: PENDING.**
 
-Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. This approval authorizes proceeding to the independent architecture review and, after that review is recorded, implementation planning within the isolated synthetic lab. It does not authorize production deployment, live production data, enforcement activation, or release. Never store raw captures, request bodies, tokens, credentials, key material, or real personal data in Git.
+Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. This approval authorizes review and documentation refinement only. Runtime implementation remains gated until the independent reviewer confirms the six clarifications are closed and the service owner confirms or amends the proposed operating targets. It does not authorize production deployment, live production data, enforcement activation, or release. Never store raw captures, request bodies, tokens, credentials, key material, or real personal data in Git.
