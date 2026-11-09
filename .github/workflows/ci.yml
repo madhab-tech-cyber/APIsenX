@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - member6/dashboard-devsecops
+      - member6/pdf-completion-2026-11
   pull_request:
     branches:
       - main
