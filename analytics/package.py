@@ -35,7 +35,9 @@ FILES = (
     "analytics/normalization.py",
     "analytics/ownership.py",
     "analytics/package.py",
+    "analytics/requirements-lock.txt",
     "analytics/review_demo.py",
+    "analytics/sbom.cdx.json",
     "analytics/final_demo.py",
     "analytics/schemas.py",
     "analytics/store.py",
@@ -85,7 +87,11 @@ def current_manifest():
         "rule_version": RULE_VERSION,
         "mode": "monitor_only",
         "release_approved": False,
-        "dependency_lock": "Direct pins only; transitive lock/SBOM pending",
+        "dependency_lock": (
+            "Full transitive lock with SHA-256 hashes: "
+            "analytics/requirements-lock.txt (pip-compile 7.6.2, 18 packages); "
+            "CycloneDX 1.5 SBOM: analytics/sbom.cdx.json"
+        ),
         "rules_digest": rules_digest(),
         "files": hashes,
     }

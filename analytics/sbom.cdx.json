@@ -1,0 +1,255 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-10T06:38:39Z",
+    "tools": [
+      {
+        "name": "pip-compile (pip-tools) lock + repo-format SBOM emitter",
+        "version": "1.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "APIsenX analytics release candidate (API-Sentinel lab)",
+      "version": "0.1.0-lab-candidate"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "purl": "pkg:pypi/annotated-doc@0.0.5",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "purl": "pkg:pypi/annotated-types@0.8.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "anyio",
+      "version": "4.16.0",
+      "purl": "pkg:pypi/anyio@4.16.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "certifi",
+      "version": "2026.10.23",
+      "purl": "pkg:pypi/certifi@2026.10.23",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "click",
+      "version": "8.5.1",
+      "purl": "pkg:pypi/click@8.5.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.143.3",
+      "purl": "pkg:pypi/fastapi@0.143.3",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "h11",
+      "version": "0.16.0",
+      "purl": "pkg:pypi/h11@0.16.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpcore",
+      "version": "1.0.9",
+      "purl": "pkg:pypi/httpcore@1.0.9",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx",
+      "version": "0.28.1",
+      "purl": "pkg:pypi/httpx@0.28.1",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "idna",
+      "version": "3.20",
+      "purl": "pkg:pypi/idna@3.20",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-api",
+      "version": "1.45.2",
+      "purl": "pkg:pypi/opentelemetry-api@1.45.2",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic-core",
+      "version": "2.33.2",
+      "purl": "pkg:pypi/pydantic-core@2.33.2",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic",
+      "version": "2.11.7",
+      "purl": "pkg:pypi/pydantic@2.11.7",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyyaml",
+      "version": "6.0.3",
+      "purl": "pkg:pypi/pyyaml@6.0.3",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "starlette",
+      "version": "1.10.0",
+      "purl": "pkg:pypi/starlette@1.10.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typing-inspection",
+      "version": "0.4.5",
+      "purl": "pkg:pypi/typing-inspection@0.4.5",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uvicorn",
+      "version": "0.35.0",
+      "purl": "pkg:pypi/uvicorn@0.35.0",
+      "scope": "required",
+      "properties": [
+        {
+          "name": "ecosystem",
+          "value": "pypi"
+        }
+      ]
+    }
+  ]
+}
