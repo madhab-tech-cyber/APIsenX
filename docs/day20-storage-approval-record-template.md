@@ -28,15 +28,37 @@ The service owner approves the eight architecture positions below as written in 
 
 ## Independent review
 
-- Reviewer decision: **PENDING — not supplied by the service owner**
-- Date/time (UTC): PENDING
-- Threat-model and least-privilege findings: PENDING
-- Integrity/checkpoint and key-separation findings: PENDING
-- Retention/deletion/restore findings: PENDING
-- Required changes or objections: PENDING
-- Evidence references (sanitized only): PENDING
+- Reviewer: **@jayitape** (separate from the service owner and Member 1 architecture author)
+- Review date/time (UTC): **2026-11-09 17:09:36 UTC**
+- Reviewer decision: **APPROVE WITH AMENDMENTS / CLARIFICATIONS** for the isolated synthetic-lab architecture only.
+- Findings: six clarifications covering trusted case authorization/database boundaries; checkpoint ordering, canonicalization and recovery; deletion-receipt privacy; retention/backup and partial-batch semantics; identity/operational controls; and availability/recovery objectives.
+- Amendment evidence: incorporated in the architecture decision and retention/restore/integrity plan through [PR #147](https://github.com/madhab-tech-cyber/APIsenX/pull/147), merged on 2026-11-09 at `5e0bc4c970b2fadc3aa5d704e201b5fddcdbe1ec`.
+- **Reviewer closure of all six findings: PENDING.** A separate dated confirmation against the merged amendments has been requested; the conditional review is not unconditional approval.
+- Evidence references: [Issue #83](https://github.com/madhab-tech-cyber/APIsenX/issues/83) and [PR #147](https://github.com/madhab-tech-cyber/APIsenX/pull/147).
 
-The independent reviewer must be a different person from the service owner and the Member 1 architecture author. A requested review or an empty PR review list is not an approval.
+This review is independent of the service-owner decision. A conditional architecture review does not constitute runtime implementation acceptance, deployment authorization or release approval.
+
+## A6 operating-target confirmation — 2026-11-10
+
+The service owner explicitly confirmed the following three targets on Issue #83:
+
+- [x] Capacity: up to **100,000 synthetic audit events**.
+- [x] Backup retention: **rolling 7 days**.
+- [x] Availability: **lab-hours only, single instance, no HA**.
+
+The following proposed A6 objectives remain **UNAPPROVED** and must be explicitly confirmed or amended before they are relied on for provisioning or acceptance:
+
+- [ ] RPO: 15 minutes maximum.
+- [ ] RTO: 4 business hours.
+- [ ] Volatile queue: 2 seconds maximum age; capacity 1,000 events.
+- [ ] Zero silent drops, with bounded loss counters and alerts.
+- [ ] Checkpoint backlog: 10 minutes or 2,000 events maximum.
+- [ ] Retention backlog: 24 hours maximum past primary expiry; alert at 1 hour overdue.
+- [ ] Recovery: 100% sequence/checkpoint continuity, zero expired records/derivatives restored, and zero unresolved deletion items.
+
+These checkboxes record only the service-owner confirmation already posted; they do not represent infrastructure, runtime or test evidence.
+
+## Implementation acceptance
 
 ## Implementation acceptance (complete only after runtime evidence exists)
 
@@ -51,6 +73,6 @@ The independent reviewer must be a different person from the service owner and t
 
 ## Release gate
 
-**Architecture decision: APPROVED by service owner on 2026-11-09 16:29:25 UTC. Independent architecture review: APPROVE WITH AMENDMENTS (2026-11-09 17:09:36 UTC); six clarifications incorporated in PR #147, reviewer closure pending. Numeric operating targets require service-owner confirmation. Runtime implementation and acceptance: PENDING.**
+**Architecture decision: APPROVED by service owner on 2026-11-09 16:29:25 UTC. Independent architecture review: APPROVE WITH AMENDMENTS / CLARIFICATIONS (2026-11-09 17:09:36 UTC); PR #147 merged the six clarifications, but reviewer closure remains PENDING. Service owner confirmed only 100,000 synthetic events, rolling 7-day backups and lab-hours single-instance/no-HA availability on 2026-11-10; all remaining A6 targets remain UNAPPROVED. Runtime implementation and acceptance: PENDING.**
 
-Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. This approval authorizes review and documentation refinement only. Runtime implementation remains gated until the independent reviewer confirms the six clarifications are closed and the service owner confirms or amends the proposed operating targets. It does not authorize production deployment, live production data, enforcement activation, or release. Never store raw captures, request bodies, tokens, credentials, key material, or real personal data in Git.
+Keep AP-1.0 in `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. The architecture approval authorizes review and documentation refinement only. Runtime implementation remains gated until the independent reviewer confirms the six clarifications are closed, the service owner confirms or amends the remaining A6 operating targets, and the required isolated infrastructure is provisioned. It does not authorize production deployment, live production data, enforcement activation, or release approval. Never store raw captures, request bodies, tokens, credentials, key material, or real personal data in Git.

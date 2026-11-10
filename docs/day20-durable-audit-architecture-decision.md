@@ -2,12 +2,8 @@
 
 **Role issuing this record:** Member 1 — governance / security architecture.
 **Date:** 2026-11-07.
-**Status:** ARCHITECTURE DECISION ISSUED — the design below is adopted as the
-project's architecture. It is **not** the service-owner approval and **not**
-an independent review; both remain required by
-[the approval record template](day20-storage-approval-record-template.md)
-before any runtime is deployed. Approval is not inferred from a PR merge,
-a CI result, or this document.
+**Architecture decision:** APPROVED by the service owner on 2026-11-09 16:29:25 UTC for the isolated synthetic lab only. This Member 1 record is **not** a substitute for the separate independent review or implementation acceptance. **Independent review:** @jayitape returned APPROVE WITH AMENDMENTS / CLARIFICATIONS on 2026-11-09 17:09:36 UTC; the six clarifications were merged in PR #147, but the reviewer's explicit closure confirmation remains **PENDING**. **Runtime authorization:** BLOCKED until that closure and the remaining A6 operating objectives are explicitly confirmed or amended, followed by provisioning and implementation acceptance. Approval is not inferred from a PR merge or CI result.
+
 **Scope:** Isolated synthetic lab only. No production data, no enforcement
 activation. AP-1.0 stays `monitor_only`, zero active enforcement rules, and
 the release remains **NOT APPROVED** until the approval record is completed
@@ -164,7 +160,7 @@ The independent review by @jayitape on Issue #83 returned **APPROVE WITH AMENDME
 
 ### A6. Availability, recovery and bounded work targets
 
-The following are proposed acceptance objectives for the isolated, non-HA lab and require service-owner confirmation before provisioning:
+The following table contains proposed acceptance objectives for the isolated, non-HA lab. On 2026-11-10, the service owner explicitly confirmed only the event-capacity ceiling, rolling backup window, and lab-hours single-instance/no-HA availability model. Every other numeric objective remains proposed until individually confirmed or amended; do not infer approval.
 
 | Measure | Proposed lab target | Required behavior |
 |---|---:|---|
@@ -176,11 +172,18 @@ The following are proposed acceptance objectives for the isolated, non-HA lab an
 | Retention backlog | 24 hours maximum past primary expiry | Alert at 1 hour overdue; block acceptance if any expired primary remains after 24 hours |
 | Recovery acceptance | 100% sequence/checkpoint continuity; zero expired records/derivatives restored; zero unresolved deletion items | Any mismatch keeps restored service unavailable |
 
+**Service-owner confirmations recorded on Issue #83 (2026-11-10):**
+- Capacity: up to **100,000 synthetic audit events**.
+- Backups: **rolling 7 days**.
+- Availability: **lab-hours only, one instance, no HA**.
+
+**Still unapproved:** RPO, RTO, volatile queue age/capacity, zero-silent-drop acceptance, checkpoint backlog/cadence limits, retention backlog/alert thresholds, and recovery acceptance thresholds. These remain proposals and must be explicitly confirmed or amended before they are relied on for provisioning or runtime acceptance.
+
 The single-instance design is explicitly not HA. If the proposed RPO cannot be met by the selected rolling-backup configuration, the service owner must approve a revised backup/WAL strategy and cost before implementation. A successful process restart or mocked test is not proof of these objectives.
 
 ## Review disposition and implementation gate
 
-The independent review is recorded on Issue #83 by @jayitape at 2026-11-09 17:09:36 UTC as **APPROVE WITH AMENDMENTS / CLARIFICATIONS**. This PR incorporates the six clarification areas for reviewer verification. It does not convert that conditional review into unconditional approval. The reviewer must confirm the amended text closes the findings; the service owner must explicitly confirm the proposed numeric operating targets in A6 and the clarified controls before runtime implementation. Until both confirmations are recorded, no runtime migrations, PostgreSQL adapter, retention worker, checkpoint signer or reader service is authorized. Keep `AuditWriter` on `MemoryStore`, AP-1.0 `monitor_only`, zero active rules, and release **NOT APPROVED**.
+The service-owner architecture decision is recorded as **APPROVE** on Issue #83 at 2026-11-09 16:29:25 UTC. @jayitape's independent architecture review is recorded at 2026-11-09 17:09:36 UTC as **APPROVE WITH AMENDMENTS / CLARIFICATIONS**. PR #147 merged the six requested clarifications, but the reviewer's separate closure decision is still **PENDING**. The service owner confirmed only the three A6 targets listed above; the remaining A6 objectives are unapproved. Until reviewer closure and explicit confirmation or amendment of the remaining A6 objectives are recorded, no runtime migrations, PostgreSQL adapter, retention worker, checkpoint signer or reader service is authorized. Keep `AuditWriter` on `MemoryStore`, AP-1.0 `monitor_only`, zero active rules, and release **NOT APPROVED**.
 
 ## What already exists against this architecture
 
@@ -195,7 +198,7 @@ The independent review is recorded on Issue #83 by @jayitape at 2026-11-09 17:09
 - The volatile default is unchanged and honestly labelled everywhere it
   appears; `durable_audit` remains PENDING in `analytics.acceptance`.
 
-## What remains after owner approval (implementation order)
+## What remains after architecture gates and provisioning (implementation order)
 
 1. Runtime schema + migration for the audit table, sequence, receipt
    stream and checkpoint table, owned by the migration identity.
@@ -211,17 +214,11 @@ The independent review is recorded on Issue #83 by @jayitape at 2026-11-09 17:09
    exact commit, then implementation acceptance recorded in the approval
    record, then — and only then — `durable_audit` can move from PENDING.
 
-## Decisions still required from humans
+## Remaining decisions and implementation prerequisites
 
-- **Service owner:** complete [the approval record](day20-storage-approval-record-template.md)
-  — APPROVE / APPROVE WITH AMENDMENTS / REJECT, dated, against the commit
-  carrying this record, covering the eight items above.
-- **Independent reviewer (a different person):** complete the review
-  section of the same record — threat-model and least-privilege findings,
-  integrity/key-separation findings, retention/restore findings,
-  objections — dated, with sanitized evidence references.
+- **Independent reviewer:** @jayitape must post a separate dated closure decision confirming whether PR #147 resolves all six architecture findings. The conditional review is recorded; closure is not assumed.
+- **Service owner:** explicitly confirm or amend the remaining A6 objectives (RPO, RTO, queue age/capacity, drop handling, checkpoint/retention backlog and recovery thresholds). The three confirmed targets do not imply approval of the others.
+- **Authorized infrastructure owner:** provision the disposable isolated PostgreSQL service, four independently provisioned role identities/DSNs, external KMS custody and immutable checkpoint destination, and the approved backup/restore environment. Supply credentials only through the approved secret mechanism; never commit them.
+- **Implementation acceptance:** only after the above gates, implement the approved runtime and execute the deterministic database, retention, deletion, restore, authorization, checkpoint, outage and recovery tests on an exact commit. Record separate dated service-owner and independent-reviewer implementation decisions.
 
-Until both are recorded: implementation of a runtime durable store is not
-authorized by this record, the demo environment of issue #89 must not use
-an unapproved store, issue #102's fail-closed proofs remain gated, and the
-release remains **NOT APPROVED**.
+Until the reviewer closure, remaining A6 decisions and required infrastructure are evidenced, no runtime durable store is authorized by this record, the demo environment of Issue #89 must not use an unapproved store, Issue #102's fail-closed proofs remain gated, and the release remains **NOT APPROVED**.

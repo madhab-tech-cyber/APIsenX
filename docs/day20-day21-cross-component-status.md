@@ -536,3 +536,36 @@ that an administrator verified them.
 Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release
 **NOT APPROVED**. Do not close Issues #83, #102 or #89 based on documentation,
 merged tests, or CI alone.
+
+
+## 2026-11-10 current-main reconciliation — Day 20 and Day 21
+
+**Verified main:** `758bc24aba9b81c41d74d83863106340bf94b46e` (2026-11-09). The exact-main workflows reported success:
+
+- [Mock API Security Tests — run 42668765244](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42668765244).
+- [Analytics Security Tests — run 42668764633](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42668764633).
+- [Member 3 Loopback Integration — run 42668765043](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/42668765043).
+
+These results validate the exact main commit's configured workflows; they do not prove a live PostgreSQL integration, runtime acceptance or a human demonstration.
+
+### Day 20 — architecture decisions recorded; runtime remains blocked
+
+- Service-owner architecture decision: **APPROVE**, recorded 2026-11-09 16:29:25 UTC for the isolated synthetic lab only.
+- Independent architecture review: @jayitape recorded **APPROVE WITH AMENDMENTS / CLARIFICATIONS** on 2026-11-09 17:09:36 UTC. The six clarifications merged in [PR #147](https://github.com/madhab-tech-cyber/APIsenX/pull/147) at `5e0bc4c970b2fadc3aa5d704e201b5fddcdbe1ec`; the reviewer's separate closure decision remains **PENDING**.
+- Service owner confirmed only these A6 targets on 2026-11-10: capacity up to 100,000 synthetic audit events; rolling 7-day backups; lab-hours availability on one instance with no HA.
+- Remaining A6 RPO/RTO, queue age/capacity, drop, checkpoint/retention backlog and recovery objectives remain **UNAPPROVED**.
+- `analytics.audit.AuditWriter` still defaults to volatile `MemoryStore`. No dedicated PostgreSQL service, KMS/immutable anchor, four live role DSNs, runtime adapter, retention worker, checkpoint signer, reader service, restore/re-purge run or live database role test is evidenced.
+
+**Day 20 disposition:** architecture approval is recorded, but independent-review closure, remaining A6 decisions, infrastructure provisioning, runtime implementation and implementation acceptance are outstanding. Issue #83 remains OPEN. Do not create runtime migrations, adapter, worker, signer or reader before the remaining human and infrastructure gates are satisfied.
+
+### Day 21 — component tests exist; integrated route acceptance remains blocked
+
+The RF-01–RF-05 route/fault plan and deterministic component regressions are merged. They cover API authority under optional-observer failure, bounded telemetry failures, privacy-safe diagnostics, and mocked analytics errors. They do not exercise a live approved durable store or the integrated API → analytics → PostgreSQL path.
+
+Issue #102 remains OPEN/PARTIAL. Integrated durable-append outage, RF-02 privileged-read denial, RF-03 pre-mutation failure, RF-04 pre-delivery failure, restart/checkpoint continuity and recovery require the approved runtime and exact-SHA disposable-environment evidence. The observer remains telemetry-only; no signed-decision consumer or enforcement adapter is approved or activated.
+
+### Other current repository work
+
+PR [#148](https://github.com/madhab-tech-cyber/APIsenX/pull/148) is the only open PR observed in this inspection. Its four PR-head workflows passed on `a542bb0cdae11656b44194ae439db3b96562278e`; it has no submitted review at this readback and is unrelated to Day 20/21 acceptance.
+
+Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. Do not close Issues #83, #102 or #89 based on documentation, component CI or PR merges alone.
