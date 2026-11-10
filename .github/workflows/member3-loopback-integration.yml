@@ -33,3 +33,21 @@ jobs:
           cargo clippy --locked --all-targets --manifest-path collector/Cargo.toml -- -D warnings
       - name: Check real loopback Rust/Python batch handoff
         run: python scripts/check_member3_loopback.py
+      - name: Package locked Rust collector source with checksums
+        run: |
+          cargo package --locked --manifest-path collector/Cargo.toml
+          sha256sum collector/target/package/api-sentinel-collector-0.1.0.crate collector/Cargo.lock > collector/target/package/SHA256SUMS
+          sha256sum --check collector/target/package/SHA256SUMS
+          rustc --version > collector/target/package/toolchain.txt
+          cargo --version >> collector/target/package/toolchain.txt
+      - name: Retain collector source package and build inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: member3-collector-source-${{ github.sha }}
+          path: |
+            collector/target/package/api-sentinel-collector-0.1.0.crate
+            collector/target/package/SHA256SUMS
+            collector/target/package/toolchain.txt
+            collector/Cargo.lock
+          if-no-files-found: error
+          retention-days: 30

@@ -52,3 +52,14 @@ Check runs on commit `c69153a0e693d03c75f02c090ff16e71540373d9`,
 - The collector remains a tested library, not a deployed daemon: no Linux
   ring-buffer consumer exists, and no live-sensor latency or recovery
   evidence is implied by this record.
+
+## Subsequent source-package follow-up
+
+The Member 3 final-evidence follow-up adds a CI step to package the Rust
+**source crate** with `cargo package --locked`, save its SHA-256 alongside
+`Cargo.lock` and the runner toolchain versions, and upload those inputs as a
+30-day workflow artifact. This is pending exact-head CI verification and a
+linked artifact digest; the historical limitations above remain true for the
+`c69153a` source evaluated in this record. Even after CI passes, that package
+is neither a full-system release artifact nor proof of bit-for-bit builds on
+independent hosts.
