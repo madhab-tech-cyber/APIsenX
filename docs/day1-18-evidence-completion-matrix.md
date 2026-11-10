@@ -56,6 +56,39 @@ This matrix consolidates the available repository and prior user-provided eviden
 7. Resolve or explicitly disposition AP-1.0 and sensor-contract acceptance with accountable owners.
 8. Record an authorized release-owner decision only after required gates are satisfied.
 
+## Member 2 individual-plan Days 17–18 — formal disposition (2026-11-10)
+
+**This is a disposition record, not an implementation record.** It closes two
+items from Member 2's (eBPF Traffic Engineer, `renu-stack`) individual
+30-day plan, which are distinct from the project-level Days 17–18 rows in
+the table above:
+
+| Member 2 plan day | Plan item | Disposition |
+|---|---|---|
+| 17 | Attach rule metadata without dropping | **CLOSED BY GOVERNANCE DECISION** — not implemented |
+| 18 | Implement approved enforcement hook | **CLOSED BY GOVERNANCE DECISION** — not implemented, none approved |
+
+**Basis for the disposition:**
+
+- AP-1.0 is `monitor_only` project-wide with zero active enforcement rules,
+  and the release is **NOT APPROVED**. No enforcement action of any kind has
+  been authorized for any member's plan.
+- `docs/enforcement-approval-and-rollback.md` (policy ENF-1.0, Day 16)
+  approves enforcement *design criteria* only. Its §1 gates (EG-01…EG-08)
+  and §5 disposition state that active-rule approval requires separate
+  evidence and a recorded authorization, and that the criteria approval
+  "authorizes neither a blocking rule nor a network mutation." No such
+  authorization exists in the repository.
+- In the sensor code, `TC_ACT_SHOT` exists only as an unused `#define` and
+  the `STAT_ENFORCEMENT_DROPS` counter has no incrementing code path,
+  consistent with monitor-only operation (`TC_ACT_OK` on every packet).
+
+**Effect:** Member 2 plan Days 17–18 require no implementation and no
+further evidence while this governance state holds. They may only be
+reopened by a recorded authorization under ENF-1.0 naming the rule, scope
+and expiry — not by a PR, a CI result, or this matrix. This disposition
+does not approve enforcement, deployment, or release.
+
 ## Safety / completion rule
 
 Do not check off a gate merely because this report exists, a historical checklist is checked, a PR-head workflow passed, or an issue was closed. Do not fabricate human/admin evidence. No deployment or active enforcement is authorized by this matrix. Keep `monitor_only`, zero active enforcement, and release **NOT APPROVED** until authorized evidence supports a different decision.
