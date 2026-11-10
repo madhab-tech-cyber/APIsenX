@@ -42,7 +42,7 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
             "**not** an independent review",
             "approval is not inferred from a pr merge",
             "reviewer closure confirmation remains **pending**",
-            "runtime authorization: blocked",
+            "**runtime authorization:** blocked",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, self.decision)
