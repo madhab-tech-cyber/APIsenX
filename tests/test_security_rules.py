@@ -7,6 +7,7 @@ Validates compliance with Section 5 Security and Review Checklist
 import unittest
 import os
 import re
+import subprocess
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -21,34 +22,46 @@ EXCLUDED_DIRS = {".git", "__pycache__", ".pytest_cache", ".venv", "venv"}
 EXCLUDED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".pdf", ".lock"}
 
 
+def repository_files():
+    """Return tracked and non-ignored untracked files, excluding generated dependencies."""
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=REPO_ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    return [
+        os.path.join(REPO_ROOT, os.fsdecode(path))
+        for path in result.stdout.split(b"\0")
+        if path
+    ]
+
+
 class TestSecurityAndCompliance(unittest.TestCase):
     """Test suite ensuring zero secret leakage and compliance with security rules."""
 
     def test_zero_staged_secrets_or_private_keys(self):
         """Rule 1: Never commit secrets, personal data, raw packet captures, or private keys."""
         violations = []
-        for root, dirs, files in os.walk(REPO_ROOT):
-            dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
-            for file in files:
-                _, ext = os.path.splitext(file)
-                if ext in EXCLUDED_EXTENSIONS:
-                    continue
+        for filepath in repository_files():
+            _, ext = os.path.splitext(filepath)
+            if ext in EXCLUDED_EXTENSIONS:
+                continue
 
-                filepath = os.path.join(root, file)
-                relpath = os.path.relpath(filepath, REPO_ROOT)
+            relpath = os.path.relpath(filepath, REPO_ROOT)
 
-                # Skip tests checking patterns themselves
-                if relpath.replace("\\", "/").endswith("test_security_rules.py"):
-                    continue
+            # Skip tests checking patterns themselves
+            if relpath.replace("\\", "/").endswith("test_security_rules.py"):
+                continue
 
-                try:
-                    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                        content = f.read()
-                        for pattern, desc in FORBIDDEN_PATTERNS:
-                            if re.search(pattern, content, re.IGNORECASE):
-                                violations.append(f"{relpath}: contains {desc}")
-                except Exception as e:
-                    violations.append(f"Could not read {relpath}: {e}")
+            try:
+                with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                    for pattern, desc in FORBIDDEN_PATTERNS:
+                        if re.search(pattern, content, re.IGNORECASE):
+                            violations.append(f"{relpath}: contains {desc}")
+            except Exception as e:
+                violations.append(f"Could not read {relpath}: {e}")
 
         self.assertEqual(
             len(violations),
@@ -78,12 +91,11 @@ class TestSecurityAndCompliance(unittest.TestCase):
 
     def test_no_pcap_files_tracked(self):
         """Rule 2: Ensure raw packet captures (*.pcap, *.pcapng) are not tracked."""
-        pcap_files = []
-        for root, dirs, files in os.walk(REPO_ROOT):
-            dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
-            for file in files:
-                if file.lower().endswith((".pcap", ".pcapng", ".cap")):
-                    pcap_files.append(os.path.join(root, file))
+        pcap_files = [
+            filepath
+            for filepath in repository_files()
+            if filepath.lower().endswith((".pcap", ".pcapng", ".cap"))
+        ]
 
         self.assertEqual(
             len(pcap_files),
