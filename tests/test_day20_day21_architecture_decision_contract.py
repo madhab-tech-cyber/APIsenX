@@ -1,8 +1,8 @@
-"""Regression guards for the newly issued Day 20 architecture decision.
+"""Regression guards for Day 20/21 human-decision and runtime boundaries.
 
-These checks prevent an architecture decision from being mistaken for owner
-approval or independent review. They do not connect to PostgreSQL, provision
-infrastructure, or constitute implementation acceptance.
+These checks reconcile recorded architecture decisions without treating a
+conditional review, documentation change, or CI result as runtime acceptance.
+They do not connect to PostgreSQL or provision infrastructure.
 """
 
 import unittest
@@ -41,8 +41,8 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
             "**not** the service-owner approval",
             "**not** an independent review",
             "approval is not inferred from a pr merge",
-            "both remain required",
-            "until both are recorded",
+            "reviewer closure confirmation remains **pending**",
+            "**runtime authorization:** blocked",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, self.decision)
@@ -86,6 +86,21 @@ class Day20ArchitectureDecisionContractTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, self.template)
 
+    def test_current_owner_reviewer_and_a6_decisions_are_not_overstated(self):
+        for required in (
+            "recorded decision: approve",
+            "approve with amendments / clarifications",
+            "reviewer closure of all six findings: pending",
+            "100,000 synthetic audit events",
+            "rolling 7 days",
+            "lab-hours only, single instance, no ha",
+            "rpo: 15 minutes maximum",
+            "rto: 4 business hours",
+            "remaining a6 targets remain unapproved",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, self.template)
+
     def test_runtime_default_stays_volatile_and_injection_seam_is_preserved(self):
         key = b"day20-architecture-contract-test-key"
         default_writer = AuditWriter(key)
@@ -119,8 +134,9 @@ class Day21IntegratedExecutionGateContractTests(unittest.TestCase):
     def test_integrated_execution_requires_owner_and_independent_decisions(self):
         for required in (
             "preparation only — no integrated runtime execution is claimed",
-            "service owner records a dated storage architecture",
-            "independent reviewer records a separate architecture review",
+            "service-owner architecture decision: **approve**",
+            "reviewer closure confirmation remains pending",
+            "service owner confirms or amends the remaining a6 objectives",
             "approved durable audit implementation and "
             "schema/migration version are deployed",
             "do not run the integrated cases until all of the following are evidenced",
@@ -187,6 +203,21 @@ class Day20Day21StatusReconciliationTests(unittest.TestCase):
         self.assertIn("service-owner", self.status)
         self.assertIn("independent architecture review", self.status)
         self.assertIn("no exact-sha live route-failure", self.status)
+        self.assertIn(
+            "reviewer's separate closure decision remains **pending**", self.status
+        )
+        self.assertIn("remaining a6 rpo/rto", self.status)
+
+    def test_latest_main_ci_and_owner_targets_are_pinned(self):
+        self.assertIn("758bc24aba9b81c41d74d83863106340bf94b46e", self.status)
+        for run_id in ("42668765244", "42668764633", "42668765043"):
+            with self.subTest(run_id=run_id):
+                self.assertIn(run_id, self.status)
+        self.assertIn("100,000 synthetic audit events", self.status)
+        self.assertIn("rolling 7-day backups", self.status)
+        self.assertIn(
+            "lab-hours availability on one instance with no ha", self.status
+        )
 
     def test_closed_release_gate_is_reopened_without_claiming_acceptance(self):
         self.assertIn("issue #89", self.status)
