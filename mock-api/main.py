@@ -37,6 +37,10 @@ from authorization import (  # noqa: E402, I001
     load_users,
 )
 
+from sentinel_adapter import (  # noqa: E402
+    SentinelObservationAdapter,
+)
+
 
 app = FastAPI(
     title="APISenX Mock API",
@@ -46,6 +50,24 @@ app = FastAPI(
         "Uses demo tokens and process-local order updates."
     ),
 )
+
+# Optional monitor-only telemetry. Delivery is called from the existing
+# request observer after FastAPI has resolved the route template.
+SENTINEL_ADAPTER = SentinelObservationAdapter.from_env()
+
+
+app = FastAPI(
+    title="APISenX Mock API",
+    version="1.0.0",
+    description=(
+        "Local API-Sentinel security testing lab. "
+        "Uses demo tokens and process-local order updates."
+    ),
+)
+
+# Optional monitor-only telemetry. Delivery is called from the existing
+# request observer after FastAPI has resolved the route template.
+SENTINEL_ADAPTER = SentinelObservationAdapter.from_env()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("apisenx.audit")
