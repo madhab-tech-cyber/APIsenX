@@ -26,11 +26,39 @@ function App() {
 
   return (
     <div className="dashboard">
-      <header className="topbar">
-        <h1>API-Sentinel</h1>
-        <p>Secure API Security Dashboard</p>
-        <p className="data-source-badge">{DATA_SOURCE_LABEL}</p>
-      </header>
+      <aside className="sidebar" aria-label="Dashboard navigation">
+        <div className="brand">
+          <span className="brand-mark" aria-hidden="true">A</span>
+          <div>
+            <div className="brand-name">API-SENTINEL</div>
+            <div className="brand-sub">Security workspace</div>
+          </div>
+        </div>
+        <div className="nav-caption">Workspace</div>
+        <nav className="side-nav">
+          <a href="#overview"><span className="nav-icon" aria-hidden="true">◈</span>Overview</a>
+          <a href="#owasp"><span className="nav-icon" aria-hidden="true">⌘</span>OWASP coverage</a>
+          <a href="#endpoints"><span className="nav-icon" aria-hidden="true">⇄</span>Endpoints</a>
+          <a href="#alerts"><span className="nav-icon" aria-hidden="true">◎</span>Alerts &amp; triage</a>
+          <a href="#evidence"><span className="nav-icon" aria-hidden="true">▤</span>Evidence</a>
+          <a href="#health"><span className="nav-icon" aria-hidden="true">⌁</span>System health</a>
+        </nav>
+        <div className="sidebar-footer">
+          <strong>DEFENSIVE SECURITY</strong>
+          <span>API posture visibility and security review workspace</span>
+        </div>
+      </aside>
+
+      <div className="dashboard-main">
+        <header className="topbar">
+          <div>
+            <h1>API-Sentinel <span className="workspace-label">/ Security overview</span></h1>
+            <p>API security monitoring workspace</p>
+          </div>
+          <div className="topbar-meta">
+            <span className="data-source-badge">{DATA_SOURCE_LABEL}</span>
+          </div>
+        </header>
 
       <div className="data-boundary" role="status">
         Synthetic fixture data - not live security status
@@ -41,7 +69,14 @@ function App() {
       </div>
 
       <main className="content">
-        <h2 className="section-title">Security Overview</h2>
+        <div className="page-heading" id="overview">
+          <div>
+            <p className="eyebrow">SECURITY OPERATIONS / API POSTURE</p>
+            <h2>Security overview</h2>
+            <p className="page-description">A consolidated view of API exposure, findings and control coverage.</p>
+          </div>
+        </div>
+        <h2 className="section-title">Posture snapshot</h2>
 
         <section className="metrics">
           {securityMetrics.map((metric) => (
@@ -56,7 +91,7 @@ function App() {
           ))}
         </section>
 
-        <h2 className="section-title">OWASP API Security Top 10 (2023)</h2>
+        <h2 className="section-title" id="owasp">OWASP API Security Top 10 (2023)</h2>
         <section className="owasp-grid" aria-label="OWASP API Security Top 10 coverage">
           {owaspMapping.mappings.map((mapping) => (
             <article className="owasp-card" key={mapping.id}>
@@ -73,7 +108,7 @@ function App() {
         </section>
         <p className="mapping-disclaimer">{owaspMapping.disclaimer}</p>
 
-        <h2 className="section-title">
+        <h2 className="section-title" id="endpoints">
           Endpoint Inventory <span className="fixture-label">(Synthetic)</span>
         </h2>
 
@@ -118,7 +153,7 @@ function App() {
           unavailable; deprecated status is not part of that contract. Live values are not wired.
         </p>
 
-        <h2 className="section-title">
+        <h2 className="section-title" id="alerts">
           Alerts &amp; Triage <span className="fixture-label">(Synthetic)</span>
         </h2>
 
@@ -194,7 +229,7 @@ function App() {
           </table>
         </section>
 
-        <h2 className="section-title">
+        <h2 className="section-title" id="evidence">
           Security Evidence <span className="fixture-label">(Synthetic)</span>
         </h2>
 
@@ -233,7 +268,7 @@ function App() {
           </table>
         </section>
 
-        <h2 className="section-title">
+        <h2 className="section-title" id="health">
           Performance &amp; Health <span className="fixture-label">(Synthetic)</span>
         </h2>
 
@@ -269,6 +304,7 @@ function App() {
           </table>
         </section>
       </main>
+      </div>
     </div>
   )
 }
