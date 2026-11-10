@@ -8,7 +8,7 @@ describe('API-Sentinel dashboard', () => {
   it('renders all major security views', () => {
     render(<App />)
 
-    expect(screen.getByText('Security Overview')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Security overview' })).toBeInTheDocument()
     expect(screen.getByText('Endpoint Inventory')).toBeInTheDocument()
     expect(screen.getByText('Alerts & Triage')).toBeInTheDocument()
     expect(screen.getByText('Security Evidence')).toBeInTheDocument()
