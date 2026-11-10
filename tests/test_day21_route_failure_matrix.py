@@ -140,10 +140,6 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         self.assertEqual(main.ORDERS, before)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 
 class Day21AnalyticsFailureBoundaryTests(unittest.TestCase):
     """Optional analytics recommendation failures never create trusted replies."""
@@ -300,8 +296,14 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
                     self.settings,
                     clock=lambda: self.now,
                     resolver=lambda event_id, item=observation: Observation(
-                        event_id, item.observed_at, item.method, item.target,
-                        item.actor, item.resource, item.status_code,
+                        event_id,
+                        item.observed_at,
+                        item.method,
+                        item.request_target,
+                        item.actor_id,
+                        item.object_id,
+                        item.status_code,
+                        item.policy_version,
                     ),
                 )
                 with patch.object(
@@ -370,7 +372,16 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
         app = create_app(
             self.settings,
             clock=lambda: self.now,
-            resolver=lambda _event_id: observation,
+            resolver=lambda event_id: Observation(
+                event_id,
+                observation.observed_at,
+                observation.method,
+                observation.request_target,
+                observation.actor_id,
+                observation.object_id,
+                observation.status_code,
+                observation.policy_version,
+            ),
         )
         response = TestClient(app).post(
             "/v1/recommendations",
