@@ -32,7 +32,7 @@ def repository_files():
     )
     return [
         os.path.join(REPO_ROOT, os.fsdecode(path))
-        for path in result.stdout.split(b"\\0")
+        for path in result.stdout.split(b"\0")
         if path
     ]
 
