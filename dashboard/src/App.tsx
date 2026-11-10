@@ -15,432 +15,346 @@ const dashboardSource: DashboardSource = {
   message: 'Management API unavailable; dashboard is showing synthetic fixture data.',
 }
 
-const coverageOrder = ['regression_tested', 'partial', 'not_assessed'] as const
-
-function coverageCounts() {
-  const counts: Record<string, number> = {}
-  for (const mapping of owaspMapping.mappings) {
-    counts[mapping.coverage] = (counts[mapping.coverage] ?? 0) + 1
-  }
-  return counts
-}
-
-function severityCounts() {
-  const counts: Record<AlertSeverity, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 }
-  for (const alert of securityAlerts) counts[alert.severity] += 1
-  return counts
-}
-
-function LogoMark() {
-  return (
-    <svg className="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <path
-        d="M16 2 28 6v8c0 7.5-5 13.4-12 16C9 27.4 4 21.5 4 14V6Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.4"
-      />
-      <circle cx="16" cy="14" r="4.4" fill="currentColor" />
-    </svg>
-  )
-}
-
 function App() {
   const [severityFilter, setSeverityFilter] = useState<'All' | AlertSeverity>('All')
   const [statusFilter, setStatusFilter] = useState<'All' | AlertStatus>('All')
+  const severityBreakdown = (['Critical', 'High', 'Medium', 'Low'] as const).map((severity) => ({
+    severity,
+    count: securityAlerts.filter((alert) => alert.severity === severity).length,
+  }))
+  const riskBreakdown = (['High', 'Medium', 'Low'] as const).map((risk) => ({
+    risk,
+    count: apiEndpoints.filter((endpoint) => endpoint.risk === risk).length,
+  }))
+  const maxSeverityCount = Math.max(1, ...severityBreakdown.map((item) => item.count))
   const filteredAlerts = securityAlerts.filter(
     (alert) =>
       (severityFilter === 'All' || alert.severity === severityFilter) &&
       (statusFilter === 'All' || alert.status === statusFilter),
   )
-  const coverage = coverageCounts()
-  const totalMappings = owaspMapping.mappings.length
-  const severities = severityCounts()
-  const maxLatency = Math.max(...healthMetrics.map((metric) => metric.latencyMs))
-  const openAlerts = securityAlerts.filter((alert) => alert.status !== 'Resolved').length
 
   return (
-    <div className="shell">
-      <aside className="rail">
+    <div className="dashboard">
+      <aside className="sidebar" aria-label="Dashboard navigation">
         <div className="brand">
-          <LogoMark />
+          <span className="brand-mark" aria-hidden="true">A</span>
           <div>
-            <p className="brand-name">API-Sentinel</p>
-            <p className="brand-sub">Secure API Security Dashboard</p>
+            <div className="brand-name">API-SENTINEL</div>
+            <div className="brand-sub">Security workspace</div>
           </div>
         </div>
-
-        <nav className="rail-nav" aria-label="Dashboard sections">
-          <a href="#overview">Overview</a>
-          <a href="#owasp">OWASP Coverage</a>
-          <a href="#endpoints">Endpoints</a>
-          <a href="#alerts">Alerts</a>
-          <a href="#evidence">Evidence</a>
-          <a href="#health">Health</a>
+        <div className="nav-caption">Workspace</div>
+        <nav className="side-nav">
+          <a href="#overview"><span className="nav-icon" aria-hidden="true">◈</span>Overview</a>
+          <a href="#owasp"><span className="nav-icon" aria-hidden="true">⌘</span>OWASP coverage</a>
+          <a href="#endpoints"><span className="nav-icon" aria-hidden="true">⇄</span>Endpoints</a>
+          <a href="#alerts"><span className="nav-icon" aria-hidden="true">◎</span>Alerts &amp; triage</a>
+          <a href="#evidence"><span className="nav-icon" aria-hidden="true">▤</span>Evidence</a>
+          <a href="#health"><span className="nav-icon" aria-hidden="true">⌁</span>System health</a>
         </nav>
-
-        <div className="rail-foot">
-          <p className="rail-label">Posture</p>
-          <p className="posture">
-            <span className="posture-dot" aria-hidden="true" />
-            AP-1.0 · monitor_only
-          </p>
-          <p className="data-source-badge">{DATA_SOURCE_LABEL}</p>
-          <p className="rail-note" role="status">
-            Source state: {dashboardSource.state}. {dashboardSource.message}
-          </p>
+        <div className="sidebar-footer">
+          <strong>DEFENSIVE SECURITY</strong>
+          <span>API posture visibility and security review workspace</span>
         </div>
       </aside>
 
-      <div className="main">
-        <div className="boundary" role="status">
-          Synthetic fixture data - not live security status
+      <div className="dashboard-main">
+        <header className="topbar">
+          <div>
+            <h1>API-Sentinel <span className="workspace-label">/ Security overview</span></h1>
+            <p>API security monitoring workspace</p>
+          </div>
+          <div className="topbar-meta">
+            <span className="data-source-badge">{DATA_SOURCE_LABEL}</span>
+          </div>
+        </header>
+
+      <div className="data-boundary" role="status">
+        Synthetic fixture data - not live security status
+      </div>
+
+      <div className="data-boundary" role="status">
+        Source state: {dashboardSource.state}. {dashboardSource.message}
+      </div>
+
+      <main className="content">
+        <div className="page-heading" id="overview">
+          <div>
+            <p className="eyebrow">SECURITY OPERATIONS / API POSTURE</p>
+            <h2>Security overview</h2>
+            <p className="page-description">A consolidated view of API exposure, findings and control coverage.</p>
+          </div>
         </div>
+        <h2 className="section-title">Posture snapshot</h2>
 
-        <main className="content">
-          <section id="overview" className="block">
-            <div className="block-head">
-              <h2 className="block-title">Security Overview</h2>
-              <p className="block-kicker">
-                Fixture snapshot · {securityAlerts.length} alerts · {apiEndpoints.length}{' '}
-                endpoints · {healthMetrics.length} services
-              </p>
-            </div>
-
-            <div className="overview-grid">
-              <div className="panel panel-alerts">
-                <p className="panel-label">Alerts by severity</p>
-                <p className="panel-big">
-                  {openAlerts}
-                  <span className="panel-big-sub"> open / investigating</span>
-                </p>
-                <div className="sev-bars">
-                  {(Object.keys(severities) as AlertSeverity[]).map((severity) => (
-                    <div className="sev-row" key={severity}>
-                      <span
-                        className={`sev-dot sev-${severity.toLowerCase()}`}
-                        aria-hidden="true"
-                      />
-                      <span className="sev-name">{severity}</span>
-                      <span className="sev-track">
-                        <span
-                          className={`sev-fill sev-${severity.toLowerCase()}`}
-                          style={{
-                            width: `${Math.max(
-                              8,
-                              (severities[severity] / Math.max(1, securityAlerts.length)) * 100,
-                            )}%`,
-                          }}
-                        />
-                      </span>
-                      <span className="sev-count">{severities[severity]}</span>
-                    </div>
-                  ))}
-                </div>
+        <section className="metrics">
+          {securityMetrics.map((metric) => (
+            <article className="metric-card" key={metric.label}>
+              <p className="metric-label">{metric.label}</p>
+              <div
+                className={`metric-value${metric.label === 'System Health' ? ' metric-status' : ''}`}
+              >
+                {metric.value}
               </div>
+            </article>
+          ))}
+        </section>
 
-              <div className="panel panel-coverage">
-                <p className="panel-label">OWASP coverage</p>
-                <p className="panel-big">
-                  {coverage['regression_tested'] ?? 0}
-                  <span className="panel-big-sub"> of {totalMappings} regression tested</span>
-                </p>
-                <div className="coverage-bar" role="img" aria-label="Coverage breakdown">
-                  {coverageOrder.map((key) => (
-                    <span
-                      key={key}
-                      className={`coverage-seg seg-${key}`}
-                      style={{ width: `${((coverage[key] ?? 0) / totalMappings) * 100}%` }}
-                    />
-                  ))}
-                </div>
-                <ul className="coverage-legend">
-                  {coverageOrder.map((key) => (
-                    <li key={key}>
-                      <span className={`legend-swatch seg-${key}`} aria-hidden="true" />
-                      {key.replaceAll('_', ' ')} — {coverage[key] ?? 0}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="panel panel-live">
-                <p className="panel-label">Live posture — awaiting management API</p>
-                <dl className="live-list">
-                  {securityMetrics.map((metric) => (
-                    <div className="live-row" key={metric.label}>
-                      <dt>{metric.label}</dt>
-                      <dd>{metric.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="live-note">
-                  These four values are only ever reported by the live source. In fixture mode
-                  the dashboard shows the state, never an invented number.
-                </p>
-              </div>
+        <section className="command-grid" aria-label="Security command center analytics">
+          <article className="command-panel severity-panel">
+            <div className="panel-heading">
+              <div><p className="panel-kicker">THREAT MONITORING</p><h3>Alert severity snapshot</h3></div>
+              <span className="panel-chip">FIXTURE</span>
             </div>
-          </section>
-
-          <section id="owasp" className="block">
-            <div className="block-head">
-              <h2 className="block-title">OWASP API Security Top 10 (2023)</h2>
-              <p className="block-kicker">What the lab API demonstrably does about each risk</p>
-            </div>
-            <div className="owasp-list">
-              {owaspMapping.mappings.map((mapping, index) => (
-                <article className="owasp-row" key={mapping.id}>
-                  <span className="owasp-index">{String(index + 1).padStart(2, '0')}</span>
-                  <div className="owasp-main">
-                    <h3>
-                      <span className="owasp-id">{mapping.id}</span> {mapping.name}
-                    </h3>
-                    <p>{mapping.example.expected_result}</p>
+            <div className="severity-visual">
+              <div className="severity-total"><strong>{securityAlerts.length}</strong><span>sample alerts</span></div>
+              <div className="severity-bars">
+                {severityBreakdown.map((item) => (
+                  <div className="bar-row" key={item.severity}>
+                    <span className={`bar-label severity-text-${item.severity.toLowerCase()}`}>{item.severity}</span>
+                    <div className="bar-track"><span className={`bar-fill bar-${item.severity.toLowerCase()}`} style={{ width: `${(item.count / maxSeverityCount) * 100}%` }} /></div>
+                    <strong>{item.count}</strong>
                   </div>
-                  <span className={`coverage coverage-${mapping.coverage}`}>
-                    {mapping.coverage.replaceAll('_', ' ')}
-                  </span>
-                </article>
+                ))}
+              </div>
+            </div>
+            <p className="panel-footnote">Distribution calculated from the bundled synthetic alert fixtures.</p>
+          </article>
+          <article className="command-panel risk-panel">
+            <div className="panel-heading">
+              <div><p className="panel-kicker">ATTACK SURFACE</p><h3>Endpoint risk profile</h3></div>
+              <span className="panel-chip">FIXTURE</span>
+            </div>
+            <div className="risk-summary">
+              {riskBreakdown.map((item) => (
+                <div className="risk-stat" key={item.risk}>
+                  <span className={`risk-dot risk-dot-${item.risk.toLowerCase()}`} />
+                  <strong>{item.count}</strong><span>{item.risk} risk</span>
+                </div>
               ))}
             </div>
-            <p className="mapping-disclaimer">{owaspMapping.disclaimer}</p>
-          </section>
+            <div className="risk-stack" aria-label="Endpoint risk distribution">
+              {riskBreakdown.map((item) => (
+                <span key={item.risk} className={`risk-segment risk-segment-${item.risk.toLowerCase()}`} style={{ width: `${apiEndpoints.length ? (item.count / apiEndpoints.length) * 100 : 0}%` }} />
+              ))}
+            </div>
+            <p className="panel-footnote">{apiEndpoints.length} example endpoints in the local fixture inventory; not live discovery.</p>
+          </article>
+        </section>
 
-          <section id="endpoints" className="block">
-            <div className="block-head">
-              <h2 className="block-title">
-                Endpoint Inventory <span className="fixture-label">(Synthetic)</span>
-              </h2>
-              <p className="block-kicker">Routes under observation in the lab</p>
-            </div>
-            <div className="table-wrap">
-              <table className="table">
-                <caption>Synthetic endpoint inventory examples</caption>
-                <thead>
-                  <tr>
-                    <th>Method</th>
-                    <th>Endpoint</th>
-                    <th>Authentication</th>
-                    <th>Status</th>
-                    <th>Contract classification</th>
-                    <th>Risk</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {apiEndpoints.map((endpoint) => (
-                    <tr key={`${endpoint.method}-${endpoint.endpoint}`}>
-                      <td>
-                        <span className={`method method-${endpoint.method.toLowerCase()}`}>
-                          {endpoint.method}
-                        </span>
-                      </td>
-                      <td className="mono">{endpoint.endpoint}</td>
-                      <td>{endpoint.authRequired ? 'Required' : 'Public'}</td>
-                      <td>{endpoint.status}</td>
-                      <td>{endpoint.classification ?? 'Unavailable in fixture'}</td>
-                      <td>
-                        <span className={`risk risk-${endpoint.risk.toLowerCase()}`}>
-                          {endpoint.risk}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="table-note">
-              These fixtures provide no contract classification. The protected inventory contract
-              supports documented, method not documented, path not documented, and visibility
-              unavailable; deprecated status is not part of that contract. Live values are not
-              wired.
-            </p>
-          </section>
-
-          <section id="alerts" className="block">
-            <div className="block-head">
-              <h2 className="block-title">
-                Alerts &amp; Triage <span className="fixture-label">(Synthetic)</span>
-              </h2>
-              <p className="block-kicker">Detections waiting on a human decision</p>
-            </div>
-            <div className="table-wrap">
-              <div className="alert-filters">
-                <label>
-                  Severity
-                  <select
-                    aria-label="Filter alerts by severity"
-                    value={severityFilter}
-                    onChange={(event) =>
-                      setSeverityFilter(event.target.value as 'All' | AlertSeverity)
-                    }
-                  >
-                    <option value="All">All severities</option>
-                    <option value="Critical">Critical</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                  </select>
-                </label>
-                <label>
-                  Triage status
-                  <select
-                    aria-label="Filter alerts by triage status"
-                    value={statusFilter}
-                    onChange={(event) =>
-                      setStatusFilter(event.target.value as 'All' | AlertStatus)
-                    }
-                  >
-                    <option value="All">All statuses</option>
-                    <option value="Open">Open</option>
-                    <option value="Investigating">Investigating</option>
-                    <option value="Resolved">Resolved</option>
-                  </select>
-                </label>
-                <p className="alert-result-count" role="status" aria-live="polite">
-                  {filteredAlerts.length} synthetic alerts shown
-                </p>
+        <h2 className="section-title" id="owasp">OWASP API Security Top 10 (2023)</h2>
+        <section className="owasp-grid" aria-label="OWASP API Security Top 10 coverage">
+          {owaspMapping.mappings.map((mapping) => (
+            <article className="owasp-card" key={mapping.id}>
+              <div className="owasp-heading">
+                <span className="owasp-id">{mapping.id}</span>
+                <span className={`coverage coverage-${mapping.coverage}`}>
+                  {mapping.coverage.replaceAll('_', ' ')}
+                </span>
               </div>
-              <table className="table">
-                <caption>Security alerts and triage status</caption>
-                <thead>
-                  <tr>
-                    <th>Severity</th>
-                    <th>Alert</th>
-                    <th>Endpoint</th>
-                    <th>Status</th>
-                    <th>Detected</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAlerts.map((alert) => (
-                    <tr key={alert.id}>
-                      <td>
-                        <span className={`severity severity-${alert.severity.toLowerCase()}`}>
-                          <span
-                            className={`sev-dot sev-${alert.severity.toLowerCase()}`}
-                            aria-hidden="true"
-                          />
-                          {alert.severity}
-                        </span>
-                      </td>
-                      <td>
-                        <strong>{alert.title}</strong>
-                        <span className="row-id">{alert.id}</span>
-                      </td>
-                      <td className="mono">{alert.endpoint}</td>
-                      <td>{alert.status}</td>
-                      <td className="mono">{alert.detectedAt}</td>
-                    </tr>
-                  ))}
-                  {filteredAlerts.length === 0 && (
-                    <tr>
-                      <td className="empty-state" colSpan={5} role="status">
-                        No synthetic alerts match these filters.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+              <h3>{mapping.name}</h3>
+              <p>{mapping.example.expected_result}</p>
+            </article>
+          ))}
+        </section>
+        <p className="mapping-disclaimer">{owaspMapping.disclaimer}</p>
 
-          <section id="evidence" className="block">
-            <div className="block-head">
-              <h2 className="block-title">
-                Security Evidence <span className="fixture-label">(Synthetic)</span>
-              </h2>
-              <p className="block-kicker">Masked records behind the alerts</p>
-            </div>
-            <div className="table-wrap">
-              <table className="table">
-                <caption>Masked synthetic security evidence</caption>
-                <thead>
-                  <tr>
-                    <th>Severity</th>
-                    <th>Finding</th>
-                    <th>Endpoint</th>
-                    <th>Evidence Type</th>
-                    <th>Masked Evidence</th>
-                    <th>Captured</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {securityEvidence.map((evidence) => (
-                    <tr key={evidence.id}>
-                      <td>
-                        <span className={`severity severity-${evidence.severity.toLowerCase()}`}>
-                          <span
-                            className={`sev-dot sev-${evidence.severity.toLowerCase()}`}
-                            aria-hidden="true"
-                          />
-                          {evidence.severity}
-                        </span>
-                      </td>
-                      <td>
-                        <strong>{evidence.finding}</strong>
-                        <span className="row-id">{evidence.id}</span>
-                      </td>
-                      <td className="mono">{evidence.endpoint}</td>
-                      <td>{evidence.evidenceType}</td>
-                      <td className="mono evidence-value">{evidence.maskedEvidence}</td>
-                      <td className="mono">{evidence.capturedAt}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+        <h2 className="section-title" id="endpoints">
+          Endpoint Inventory <span className="fixture-label">(Synthetic)</span>
+        </h2>
 
-          <section id="health" className="block">
-            <div className="block-head">
-              <h2 className="block-title">
-                Performance &amp; Health <span className="fixture-label">(Synthetic)</span>
-              </h2>
-              <p className="block-kicker">Component latency, relative to the slowest service</p>
-            </div>
-            <div className="table-wrap">
-              <table className="table">
-                <caption>Synthetic component performance and health</caption>
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Status</th>
-                    <th>Latency</th>
-                    <th>Uptime</th>
-                    <th>Last Checked</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {healthMetrics.map((metric) => (
-                    <tr key={metric.service}>
-                      <td>
-                        <strong>{metric.service}</strong>
-                      </td>
-                      <td>
-                        <span className={`health-status health-${metric.status.toLowerCase()}`}>
-                          {metric.status}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="latency">
-                          <span className="latency-track">
-                            <span
-                              className="latency-fill"
-                              style={{ width: `${(metric.latencyMs / maxLatency) * 100}%` }}
-                            />
-                          </span>
-                          <span className="mono">{metric.latencyMs} ms</span>
-                        </span>
-                      </td>
-                      <td className="mono">{metric.uptime}</td>
-                      <td className="mono">{metric.lastChecked}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </main>
+        <section className="endpoint-table-card">
+          <table className="endpoint-table">
+            <caption>Synthetic endpoint inventory examples</caption>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Authentication</th>
+                <th>Status</th>
+                <th>Contract classification</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apiEndpoints.map((endpoint) => (
+                <tr key={`${endpoint.method}-${endpoint.endpoint}`}>
+                  <td>
+                    <span className={`method method-${endpoint.method.toLowerCase()}`}>
+                      {endpoint.method}
+                    </span>
+                  </td>
+                  <td className="endpoint-name">{endpoint.endpoint}</td>
+                  <td>{endpoint.authRequired ? 'Required' : 'Public'}</td>
+                  <td>{endpoint.status}</td>
+                  <td>{endpoint.classification ?? 'Unavailable in fixture'}</td>
+                  <td>
+                    <span className={`risk risk-${endpoint.risk.toLowerCase()}`}>
+                      {endpoint.risk}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+        <p className="inventory-note">
+          These fixtures provide no contract classification. The protected inventory contract
+          supports documented, method not documented, path not documented, and visibility
+          unavailable; deprecated status is not part of that contract. Live values are not wired.
+        </p>
+
+        <h2 className="section-title" id="alerts">
+          Alerts &amp; Triage <span className="fixture-label">(Synthetic)</span>
+        </h2>
+
+        <section className="alerts-table-card">
+          <div className="alert-filters">
+            <label>
+              Severity
+              <select
+                aria-label="Filter alerts by severity"
+                value={severityFilter}
+                onChange={(event) => setSeverityFilter(event.target.value as 'All' | AlertSeverity)}
+              >
+                <option value="All">All severities</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </label>
+            <label>
+              Triage status
+              <select
+                aria-label="Filter alerts by triage status"
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value as 'All' | AlertStatus)}
+              >
+                <option value="All">All statuses</option>
+                <option value="Open">Open</option>
+                <option value="Investigating">Investigating</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+            </label>
+            <p className="alert-result-count" role="status" aria-live="polite">
+              {filteredAlerts.length} synthetic alerts shown
+            </p>
+          </div>
+          <table className="alerts-table">
+            <caption>Security alerts and triage status</caption>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Alert</th>
+                <th>Endpoint</th>
+                <th>Status</th>
+                <th>Detected</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAlerts.map((alert) => (
+                <tr key={alert.id}>
+                  <td>
+                    <span className={`severity severity-${alert.severity.toLowerCase()}`}>
+                      {alert.severity}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{alert.title}</strong>
+                    <span className="alert-id">{alert.id}</span>
+                  </td>
+                  <td className="endpoint-name">{alert.endpoint}</td>
+                  <td>{alert.status}</td>
+                  <td>{alert.detectedAt}</td>
+                </tr>
+              ))}
+              {filteredAlerts.length === 0 && (
+                <tr>
+                  <td className="empty-state" colSpan={5} role="status">
+                    No synthetic alerts match these filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
+        <h2 className="section-title" id="evidence">
+          Security Evidence <span className="fixture-label">(Synthetic)</span>
+        </h2>
+
+        <section className="evidence-table-card">
+          <table className="evidence-table">
+            <caption>Masked synthetic security evidence</caption>
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Finding</th>
+                <th>Endpoint</th>
+                <th>Evidence Type</th>
+                <th>Masked Evidence</th>
+                <th>Captured</th>
+              </tr>
+            </thead>
+            <tbody>
+              {securityEvidence.map((evidence) => (
+                <tr key={evidence.id}>
+                  <td>
+                    <span className={`severity severity-${evidence.severity.toLowerCase()}`}>
+                      {evidence.severity}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{evidence.finding}</strong>
+                    <span className="alert-id">{evidence.id}</span>
+                  </td>
+                  <td className="endpoint-name">{evidence.endpoint}</td>
+                  <td>{evidence.evidenceType}</td>
+                  <td className="evidence-value">{evidence.maskedEvidence}</td>
+                  <td>{evidence.capturedAt}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <h2 className="section-title" id="health">
+          Performance &amp; Health <span className="fixture-label">(Synthetic)</span>
+        </h2>
+
+        <section className="health-table-card">
+          <table className="health-table">
+            <caption>Synthetic component performance and health</caption>
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th>Uptime</th>
+                <th>Last Checked</th>
+              </tr>
+            </thead>
+            <tbody>
+              {healthMetrics.map((metric) => (
+                <tr key={metric.service}>
+                  <td>
+                    <strong>{metric.service}</strong>
+                  </td>
+                  <td>
+                    <span className={`health-status health-${metric.status.toLowerCase()}`}>
+                      {metric.status}
+                    </span>
+                  </td>
+                  <td>{metric.latencyMs} ms</td>
+                  <td>{metric.uptime}</td>
+                  <td>{metric.lastChecked}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </main>
       </div>
     </div>
   )
