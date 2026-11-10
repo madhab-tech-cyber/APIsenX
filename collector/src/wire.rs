@@ -232,4 +232,151 @@ mod tests {
             Err(DecodeError::Flags)
         ));
     }
+
+    // --- Day 26 deterministic malformed-input corpus ---------------------
+    // No fuzz runner (cargo-fuzz / libFuzzer) is available in any
+    // environment this crate is currently verified in, so the malformed
+    // input coverage runs here instead: a fixed-seed corpus executed by the
+    // normal `cargo test --locked --all-targets` command in CI. Every run
+    // exercises exactly the same inputs. The decoder contract under test is
+    // that arbitrary bytes produce a typed `DecodeError` (or a valid event),
+    // never a panic.
+
+    /// xorshift64* generator; the seed is fixed so the corpus is stable.
+    struct Corpus(u64);
+
+    impl Corpus {
+        fn next_u64(&mut self) -> u64 {
+            let mut x = self.0;
+            x ^= x >> 12;
+            x ^= x << 25;
+            x ^= x >> 27;
+            self.0 = x;
+            x.wrapping_mul(0x2545_F491_4F6C_DD1D)
+        }
+
+        fn byte(&mut self) -> u8 {
+            (self.next_u64() >> 56) as u8
+        }
+
+        fn below(&mut self, limit: usize) -> usize {
+            (self.next_u64() % limit as u64) as usize
+        }
+    }
+
+    #[test]
+    fn corpus_every_truncation_is_a_length_error() {
+        let valid = valid_record();
+        let mut len = 0;
+        while len < EVENT_BYTES {
+            assert!(matches!(
+                decode(&valid[..len], &routes()),
+                Err(DecodeError::Length)
+            ));
+            len += 1;
+        }
+    }
+
+    #[test]
+    fn corpus_oversized_records_are_length_errors() {
+        for extra in [1_usize, 8, 64, 192, 1024] {
+            let mut record = valid_record().to_vec();
+            record.resize(EVENT_BYTES + extra, 0);
+            assert!(matches!(
+                decode(&record, &routes()),
+                Err(DecodeError::Length)
+            ));
+        }
+    }
+
+    #[test]
+    fn corpus_single_byte_mutations_never_panic() {
+        let valid = valid_record();
+        let mut calls = 0_usize;
+        let mut rejected = 0_usize;
+        for (position, original) in valid.iter().enumerate() {
+            for value in [0x00_u8, 0x01, 0x7f, 0x80, 0xff] {
+                if value == *original {
+                    continue;
+                }
+                let mut record = valid;
+                record[position] = value;
+                calls += 1;
+                if decode(&record, &routes()).is_err() {
+                    rejected += 1;
+                }
+            }
+        }
+        assert!(calls > 0);
+        assert!(rejected > 0);
+    }
+
+    #[test]
+    fn corpus_pseudo_random_records_never_panic() {
+        let mut corpus = Corpus(0x9E37_79B9_7F4A_7C15);
+        for _ in 0..1024 {
+            let mut record = [0_u8; EVENT_BYTES];
+            for byte in record.iter_mut() {
+                *byte = corpus.byte();
+            }
+            let _ = decode(&record, &routes());
+        }
+        // Random lengths around the valid size: anything but exactly
+        // EVENT_BYTES must be a length error, and nothing may panic.
+        let mut buffer = [0_u8; 256];
+        for _ in 0..256 {
+            for byte in buffer.iter_mut() {
+                *byte = corpus.byte();
+            }
+            let len = corpus.below(buffer.len() + 1);
+            if len == EVENT_BYTES {
+                let _ = decode(&buffer[..len], &routes());
+            } else {
+                assert!(matches!(
+                    decode(&buffer[..len], &routes()),
+                    Err(DecodeError::Length)
+                ));
+            }
+        }
+    }
+
+    #[test]
+    fn corpus_mutated_valid_records_never_panic() {
+        let mut corpus = Corpus(0xD1B5_4A32_D192_ED03);
+        for _ in 0..1024 {
+            let mut record = valid_record();
+            let mutations = 1 + corpus.below(16);
+            for _ in 0..mutations {
+                let position = corpus.below(EVENT_BYTES);
+                record[position] = corpus.byte();
+            }
+            let _ = decode(&record, &routes());
+        }
+    }
+
+    #[test]
+    fn corpus_route_field_edge_cases() {
+        // Non-UTF-8 route bytes are an encoding error, not a panic.
+        let mut record = valid_record();
+        record[ROUTE_START..].fill(0xff);
+        record[ROUTE_START + 1] = 0;
+        assert!(matches!(
+            decode(&record, &routes()),
+            Err(DecodeError::RouteEncoding)
+        ));
+        // ASCII control characters in the route are rejected the same way.
+        record = valid_record();
+        record[ROUTE_START..].fill(0);
+        record[ROUTE_START] = b'/';
+        record[ROUTE_START + 1] = 0x01;
+        assert!(matches!(
+            decode(&record, &routes()),
+            Err(DecodeError::RouteEncoding)
+        ));
+        // An empty route decodes but is never forwarded as a template.
+        record = valid_record();
+        record[ROUTE_START..].fill(0);
+        let event = decode(&record, &routes()).unwrap();
+        assert!(event.route_template.is_none());
+    }
 }
