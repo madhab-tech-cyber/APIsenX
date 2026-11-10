@@ -24,8 +24,10 @@ credentials. Source/tests/documents remain under the actual secret scanner.
 ZIP ordering, timestamps and file modes are fixed. Two builds in the tested
 environment must be byte-identical, and every archived source hash must match.
 This proves archive reproducibility, not a reproducible Python dependency
-environment: direct requirements are pinned, but a transitive lock/SBOM and
-cross-platform build acceptance remain pending. Do not commit the generated ZIP.
+environment: direct requirements are pinned; the full transitive lock with
+SHA-256 hashes (`analytics/requirements-lock.txt`) and a CycloneDX 1.5 SBOM
+(`analytics/sbom.cdx.json`) are now part of the frozen candidate, but
+cross-platform build acceptance remains pending. Do not commit the generated ZIP.
 
 Extraction is not automatic and this tool does not execute or install its output.
 To exercise the repository's final synthetic rehearsal, use:
@@ -60,3 +62,9 @@ It is not a Linux sensor, shared dashboard or human final presentation.
 Passing CI, a frozen manifest, policy MAC or merged PR does not fill these boxes.
 No missing approval is inferred from a teammate reminder or absent response.
 Observe-only operation, zero active rules and release held remain mandatory.
+
+## Recorded deviations
+
+- 2026-11-10: Per-day evidence notes are replaced by the three range-index
+  evidence files (Days 1–10 / 11–20 / 21–30). Acceptance of this deviation is
+  PENDING the independent reviewer's sign-off; it is not recorded as accepted.
