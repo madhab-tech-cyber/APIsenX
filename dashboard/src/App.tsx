@@ -27,7 +27,6 @@ function App() {
     count: apiEndpoints.filter((endpoint) => endpoint.risk === risk).length,
   }))
   const maxSeverityCount = Math.max(1, ...severityBreakdown.map((item) => item.count))
-  const maxRiskCount = Math.max(1, ...riskBreakdown.map((item) => item.count))
   const filteredAlerts = securityAlerts.filter(
     (alert) =>
       (severityFilter === 'All' || alert.severity === severityFilter) &&
