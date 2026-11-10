@@ -566,6 +566,6 @@ Issue #102 remains OPEN/PARTIAL. Integrated durable-append outage, RF-02 privile
 
 ### Other current repository work
 
-PR [#148](https://github.com/madhab-tech-cyber/APIsenX/pull/148) is the only open PR observed in this inspection. Its four PR-head workflows passed on `a542bb0cdae11656b44194ae439db3b96562278e`; it has no submitted review at this readback and is unrelated to Day 20/21 acceptance.
+PR [#148](https://github.com/madhab-tech-cyber/APIsenX/pull/148) is an open Member 6 dashboard-integration PR separate from Day 20/21 acceptance. Its four PR-head workflows passed on `a542bb0cdae11656b44194ae439db3b96562278e`; it had no submitted review at the initial readback.
 
 Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. Do not close Issues #83, #102 or #89 based on documentation, component CI or PR merges alone.

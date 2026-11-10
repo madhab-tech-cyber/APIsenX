@@ -58,8 +58,6 @@ The following proposed A6 objectives remain **UNAPPROVED** and must be explicitl
 
 These checkboxes record only the service-owner confirmation already posted; they do not represent infrastructure, runtime or test evidence.
 
-## Implementation acceptance
-
 ## Implementation acceptance (complete only after runtime evidence exists)
 
 - Candidate implementation commit: PENDING — no approved PostgreSQL runtime implementation yet

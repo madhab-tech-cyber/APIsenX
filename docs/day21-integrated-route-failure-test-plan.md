@@ -7,7 +7,7 @@
 Do not run the integrated cases until all of the following are evidenced:
 
 - [x] Service-owner architecture decision: **APPROVE**, recorded on [Issue #83](https://github.com/madhab-tech-cyber/APIsenX/issues/83) at 2026-11-09 16:29:25 UTC, isolated synthetic lab only.
-- [ ] Independent-review closure: @jayitape recorded **APPROVE WITH AMENDMENTS / CLARIFICATIONS** on 2026-11-09 17:09:36 UTC; the six clarifications merged in PR #147, but the reviewer's separate closure confirmation remains pending.
+- [ ] Independent-review closure: @jayitape recorded **APPROVE WITH AMENDMENTS / CLARIFICATIONS** on 2026-11-09 17:09:36 UTC; the six clarifications merged in PR #147, but reviewer closure confirmation remains pending.
 - [ ] Service owner confirms or amends the remaining A6 objectives. Only 100,000 synthetic events, rolling 7-day backups and lab-hours single-instance/no-HA availability have been confirmed; RPO/RTO, queue/drop, checkpoint/retention backlog and recovery thresholds remain unapproved.
 - [ ] The approved durable audit implementation and schema/migration version are deployed in a disposable, isolated synthetic environment.
 - [ ] The test environment contains the actual Mock API, analytics service and approved audit backend. Add collector/dashboard only for the end-to-end demonstration; do not substitute mocks for a required live boundary.

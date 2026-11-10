@@ -135,7 +135,7 @@ class Day21IntegratedExecutionGateContractTests(unittest.TestCase):
         for required in (
             "preparation only — no integrated runtime execution is claimed",
             "service-owner architecture decision: **approve**",
-            "reviewer closure confirmation remains pending",
+            "reviewer closure confirmation remains **pending**",
             "service owner confirms or amends the remaining a6 objectives",
             "approved durable audit implementation and "
             "schema/migration version are deployed",
@@ -213,7 +213,9 @@ class Day20Day21StatusReconciliationTests(unittest.TestCase):
                 self.assertIn(run_id, self.status)
         self.assertIn("100,000 synthetic audit events", self.status)
         self.assertIn("rolling 7-day backups", self.status)
-        self.assertIn("lab-hours availability on one instance with no ha", self.status)
+        self.assertIn(
+            "lab-hours availability on one instance with no ha", self.status
+        )
 
     def test_closed_release_gate_is_reopened_without_claiming_acceptance(self):
         self.assertIn("issue #89", self.status)

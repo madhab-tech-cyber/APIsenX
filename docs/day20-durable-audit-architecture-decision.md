@@ -2,7 +2,7 @@
 
 **Role issuing this record:** Member 1 — governance / security architecture.
 **Date:** 2026-11-07.
-**Architecture decision:** APPROVED by the service owner on 2026-11-09 16:29:25 UTC for the isolated synthetic lab only. This Member 1 record is **not** a substitute for the separate independent review or implementation acceptance. **Independent review:** @jayitape returned APPROVE WITH AMENDMENTS / CLARIFICATIONS on 2026-11-09 17:09:36 UTC; the six clarifications were merged in PR #147, but the reviewer's explicit closure confirmation remains **PENDING**. **Runtime authorization:** BLOCKED until that closure and the remaining A6 operating objectives are explicitly confirmed or amended, followed by provisioning and implementation acceptance. Approval is not inferred from a PR merge or CI result.
+**Architecture decision:** APPROVED by the service owner on 2026-11-09 16:29:25 UTC for the isolated synthetic lab only. This Member 1 architecture record is **not** the service-owner approval and **not** an independent review or implementation acceptance. **Independent review:** @jayitape returned APPROVE WITH AMENDMENTS / CLARIFICATIONS on 2026-11-09 17:09:36 UTC; the six clarifications were merged in PR #147, but reviewer closure confirmation remains **PENDING**. **Runtime authorization:** BLOCKED until that closure and the remaining A6 operating objectives are explicitly confirmed or amended, followed by provisioning and implementation acceptance. Approval is not inferred from a PR merge or CI result.
 
 **Scope:** Isolated synthetic lab only. No production data, no enforcement
 activation. AP-1.0 stays `monitor_only`, zero active enforcement rules, and
