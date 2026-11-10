@@ -1,8 +1,36 @@
 import asyncio
+import contextlib
+import sys
 import unittest
+from pathlib import Path
 
-import main
 from fastapi.testclient import TestClient
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "mock-api"))
+
+import main  # noqa: E402
+
+
+@contextlib.contextmanager
+def pinned_clock(limiter):
+    """Freeze a limiter's clock so a seeded empty bucket cannot refill.
+
+    Seeding a bucket with 0 tokens against the live monotonic clock races
+    the request: at production refill rates the bucket regains a full
+    token in ~10-100 ms, so a slow or loaded test run flips an expected
+    429 into a 200 (observed intermittently in
+    test_weighted_route_budget_rejects_without_order_mutation). Pinning
+    the clock for the duration of the request makes the seeded state
+    exact. The limiter's real clock is always restored.
+    """
+    original_clock = limiter.clock
+    frozen = original_clock()
+    limiter.clock = lambda: frozen
+    try:
+        yield frozen
+    finally:
+        limiter.clock = original_clock
 
 
 class TokenBucketLimiterTests(unittest.TestCase):
@@ -169,14 +197,14 @@ class TokenBucketLimiterTests(unittest.TestCase):
     def test_unauthenticated_source_limit_returns_429(self):
         client = TestClient(main.app)
         main.SOURCE_LIMITER.buckets.clear()
-        now = main.SOURCE_LIMITER.clock()
-        main.SOURCE_LIMITER.buckets[("source", "testclient")] = (
-            0.0, now, now
-        )
-        try:
-            response = client.get("/orders")
-        finally:
-            main.SOURCE_LIMITER.buckets.clear()
+        with pinned_clock(main.SOURCE_LIMITER) as now:
+            main.SOURCE_LIMITER.buckets[("source", "testclient")] = (
+                0.0, now, now
+            )
+            try:
+                response = client.get("/orders")
+            finally:
+                main.SOURCE_LIMITER.buckets.clear()
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
         self.assertGreaterEqual(int(response.headers["Retry-After"]), 1)
@@ -219,21 +247,21 @@ class TokenBucketLimiterTests(unittest.TestCase):
         main.SERVICE_LIMITER.buckets.clear()
         main.SUBJECT_LIMITER.buckets.clear()
         main.ROUTE_COST_LIMITER.buckets.clear()
-        now = main.ROUTE_COST_LIMITER.clock()
-        main.ROUTE_COST_LIMITER.buckets[("route", "GET /orders")] = (
-            0.0, now, now
-        )
         client = TestClient(main.app)
         original_status = main.ORDERS["order-1001"]["status"]
-        try:
-            response = client.get("/orders", headers={
-                "Authorization": "Bearer lab-user-a-token",
-                "X-Policy-Version": "AP-1.0",
-            })
-        finally:
-            main.SERVICE_LIMITER.buckets.clear()
-            main.SUBJECT_LIMITER.buckets.clear()
-            main.ROUTE_COST_LIMITER.buckets.clear()
+        with pinned_clock(main.ROUTE_COST_LIMITER) as now:
+            main.ROUTE_COST_LIMITER.buckets[("route", "GET /orders")] = (
+                0.0, now, now
+            )
+            try:
+                response = client.get("/orders", headers={
+                    "Authorization": "Bearer lab-user-a-token",
+                    "X-Policy-Version": "AP-1.0",
+                })
+            finally:
+                main.SERVICE_LIMITER.buckets.clear()
+                main.SUBJECT_LIMITER.buckets.clear()
+                main.ROUTE_COST_LIMITER.buckets.clear()
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
         self.assertEqual(main.ORDERS["order-1001"]["status"], original_status)
@@ -286,24 +314,26 @@ class TokenBucketLimiterTests(unittest.TestCase):
         main.SERVICE_LIMITER.buckets.clear()
         main.SUBJECT_LIMITER.buckets.clear()
         main.ROUTE_COST_LIMITER.buckets.clear()
-        now = main.ROUTE_COST_LIMITER.clock()
-        main.ROUTE_COST_LIMITER.buckets[("subject", "user-a", "GET /orders")] = (
-            0.0,
-            now,
-            now,
-        )
-        try:
-            response = client.get(
-                "/orders",
-                headers={
-                    "Authorization": "Bearer lab-user-a-token",
-                    "X-Policy-Version": "AP-1.0",
-                },
+        with pinned_clock(main.ROUTE_COST_LIMITER) as now:
+            main.ROUTE_COST_LIMITER.buckets[
+                ("subject", "user-a", "GET /orders")
+            ] = (
+                0.0,
+                now,
+                now,
             )
-        finally:
-            main.SERVICE_LIMITER.buckets.clear()
-            main.SUBJECT_LIMITER.buckets.clear()
-            main.ROUTE_COST_LIMITER.buckets.clear()
+            try:
+                response = client.get(
+                    "/orders",
+                    headers={
+                        "Authorization": "Bearer lab-user-a-token",
+                        "X-Policy-Version": "AP-1.0",
+                    },
+                )
+            finally:
+                main.SERVICE_LIMITER.buckets.clear()
+                main.SUBJECT_LIMITER.buckets.clear()
+                main.ROUTE_COST_LIMITER.buckets.clear()
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
         self.assertGreaterEqual(int(response.headers["Retry-After"]), 1)
@@ -313,16 +343,16 @@ class TokenBucketLimiterTests(unittest.TestCase):
         client = TestClient(main.app)
         main.SERVICE_LIMITER.buckets.clear()
         main.SUBJECT_LIMITER.buckets.clear()
-        now = main.SERVICE_LIMITER.clock()
-        main.SERVICE_LIMITER.buckets[("service",)] = (0.0, now, now)
-        try:
-            response = client.get("/orders", headers={
-                "Authorization": "Bearer lab-user-a-token",
-                "X-Policy-Version": "AP-1.0",
-            })
-        finally:
-            main.SERVICE_LIMITER.buckets.clear()
-            main.SUBJECT_LIMITER.buckets.clear()
+        with pinned_clock(main.SERVICE_LIMITER) as now:
+            main.SERVICE_LIMITER.buckets[("service",)] = (0.0, now, now)
+            try:
+                response = client.get("/orders", headers={
+                    "Authorization": "Bearer lab-user-a-token",
+                    "X-Policy-Version": "AP-1.0",
+                })
+            finally:
+                main.SERVICE_LIMITER.buckets.clear()
+                main.SUBJECT_LIMITER.buckets.clear()
         self.assertEqual(response.status_code, 429)
         self.assertEqual(response.json()["error"]["code"], "RATE_LIMITED")
         self.assertIn("X-Correlation-ID", response.headers)
