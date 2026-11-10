@@ -203,7 +203,9 @@ class Day20Day21StatusReconciliationTests(unittest.TestCase):
         self.assertIn("service-owner", self.status)
         self.assertIn("independent architecture review", self.status)
         self.assertIn("no exact-sha live route-failure", self.status)
-        self.assertIn("reviewer's separate closure decision remains **pending**", self.status)
+        self.assertIn(
+            "reviewer's separate closure decision remains **pending**", self.status
+        )
         self.assertIn("remaining a6 rpo/rto", self.status)
 
     def test_latest_main_ci_and_owner_targets_are_pinned(self):
