@@ -1,0 +1,99 @@
+# PROPOSED — NOT ACTIVE. This file is a ready-to-paste proposal, saved
+# outside .github/workflows/ on purpose: the Muse GitHub App cannot push
+# workflow files, so nothing here runs today.
+#
+# To activate: a human copies this file to
+#   .github/workflows/security-scans-extended.yml
+# through the GitHub web UI (or a local git push with workflow scope),
+# then confirms the two new jobs appear and pass on a pull request.
+#
+# Scope: closes the plan's Day 26 gap — IaC scanning of the Dockerfiles
+# and compose file, and licence scanning for the Python and npm
+# dependency sets. Both jobs are record-only (they upload reports and do
+# not fail the build), matching the current Trivy container scan. Making
+# any scan enforcing is a separate human decision; in particular this
+# proposal does NOT change the existing container-security job's
+# exit-code: '0'.
+name: Security Scans (Extended)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  iac-scan:
+    name: IaC scan (Dockerfiles and Compose)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Scan Dockerfiles and Compose for misconfiguration
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'json'
+          output: 'trivy-iac.json'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '0'
+
+      - name: Upload IaC scan report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-iac-report
+          path: trivy-iac.json
+          retention-days: 30
+
+  licence-scan:
+    name: Licence scan (Python and npm)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Generate Python licence report
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install pip-licenses==5.5.5
+          pip-licenses --format=json --output-file=python-licences.json
+
+      - name: Upload Python licence report
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-licence-report
+          path: python-licences.json
+          retention-days: 30
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate dashboard licence report
+        working-directory: dashboard
+        run: |
+          npm ci
+          npx --yes license-checker@25.0.1 --production --json > ../dashboard-licences.json
+
+      - name: Upload dashboard licence report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-licence-report
+          path: dashboard-licences.json
+          retention-days: 30
