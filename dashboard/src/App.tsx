@@ -18,6 +18,16 @@ const dashboardSource: DashboardSource = {
 function App() {
   const [severityFilter, setSeverityFilter] = useState<'All' | AlertSeverity>('All')
   const [statusFilter, setStatusFilter] = useState<'All' | AlertStatus>('All')
+  const severityBreakdown = (['Critical', 'High', 'Medium', 'Low'] as const).map((severity) => ({
+    severity,
+    count: securityAlerts.filter((alert) => alert.severity === severity).length,
+  }))
+  const riskBreakdown = (['High', 'Medium', 'Low'] as const).map((risk) => ({
+    risk,
+    count: apiEndpoints.filter((endpoint) => endpoint.risk === risk).length,
+  }))
+  const maxSeverityCount = Math.max(1, ...severityBreakdown.map((item) => item.count))
+  const maxRiskCount = Math.max(1, ...riskBreakdown.map((item) => item.count))
   const filteredAlerts = securityAlerts.filter(
     (alert) =>
       (severityFilter === 'All' || alert.severity === severityFilter) &&
@@ -89,6 +99,48 @@ function App() {
               </div>
             </article>
           ))}
+        </section>
+
+        <section className="command-grid" aria-label="Security command center analytics">
+          <article className="command-panel severity-panel">
+            <div className="panel-heading">
+              <div><p className="panel-kicker">THREAT MONITORING</p><h3>Alert severity snapshot</h3></div>
+              <span className="panel-chip">FIXTURE</span>
+            </div>
+            <div className="severity-visual">
+              <div className="severity-total"><strong>{securityAlerts.length}</strong><span>sample alerts</span></div>
+              <div className="severity-bars">
+                {severityBreakdown.map((item) => (
+                  <div className="bar-row" key={item.severity}>
+                    <span className={`bar-label severity-text-${item.severity.toLowerCase()}`}>{item.severity}</span>
+                    <div className="bar-track"><span className={`bar-fill bar-${item.severity.toLowerCase()}`} style={{ width: `${(item.count / maxSeverityCount) * 100}%` }} /></div>
+                    <strong>{item.count}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="panel-footnote">Distribution calculated from the bundled synthetic alert fixtures.</p>
+          </article>
+          <article className="command-panel risk-panel">
+            <div className="panel-heading">
+              <div><p className="panel-kicker">ATTACK SURFACE</p><h3>Endpoint risk profile</h3></div>
+              <span className="panel-chip">FIXTURE</span>
+            </div>
+            <div className="risk-summary">
+              {riskBreakdown.map((item) => (
+                <div className="risk-stat" key={item.risk}>
+                  <span className={`risk-dot risk-dot-${item.risk.toLowerCase()}`} />
+                  <strong>{item.count}</strong><span>{item.risk} risk</span>
+                </div>
+              ))}
+            </div>
+            <div className="risk-stack" aria-label="Endpoint risk distribution">
+              {riskBreakdown.map((item) => (
+                <span key={item.risk} className={`risk-segment risk-segment-${item.risk.toLowerCase()}`} style={{ width: `${apiEndpoints.length ? (item.count / apiEndpoints.length) * 100 : 0}%` }} />
+              ))}
+            </div>
+            <p className="panel-footnote">{apiEndpoints.length} example endpoints in the local fixture inventory; not live discovery.</p>
+          </article>
         </section>
 
         <h2 className="section-title" id="owasp">OWASP API Security Top 10 (2023)</h2>
