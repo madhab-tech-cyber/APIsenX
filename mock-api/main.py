@@ -42,19 +42,6 @@ from sentinel_adapter import (  # noqa: E402
 )
 
 
-app = FastAPI(
-    title="APISenX Mock API",
-    version="1.0.0",
-    description=(
-        "Local API-Sentinel security testing lab. "
-        "Uses demo tokens and process-local order updates."
-    ),
-)
-
-# Optional monitor-only telemetry. Delivery is called from the existing
-# request observer after FastAPI has resolved the route template.
-SENTINEL_ADAPTER = SentinelObservationAdapter.from_env()
-
 
 app = FastAPI(
     title="APISenX Mock API",
@@ -442,6 +429,7 @@ async def observe_request(request: Request, call_next):
         except Exception:
             # Optional monitor-only telemetry must never change an API result.
             # Keep diagnostics fixed and do not expose exception text or data.
+            logger.info("sentinel_observation outcome=unavailable")
 
     logger.info(
         "observation correlation_id=%s method=%s route=%s status=%s elapsed_ms=%s",
