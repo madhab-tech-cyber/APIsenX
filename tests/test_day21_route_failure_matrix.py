@@ -191,7 +191,7 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
                     with self.assertLogs("apisenx.audit", level="INFO") as captured:
                         response = self.client.request(method, path, **request_args)
 
-                diagnostics = "\\n".join(captured.output)
+                diagnostics = "\n".join(captured.output)
                 correlation_id = response.headers.get("X-Correlation-ID")
                 self.assertEqual(response.status_code, expected_status)
                 if route_id == "RF-02":
@@ -214,7 +214,6 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
                 main.USED_NONCES.clear()
 
 
-()
 
 
 
