@@ -101,9 +101,9 @@ impl<T: AnalyticsTransport> Collector<T> {
         }
         let mut event = NormalizedEvent::new(EventInput {
             source_id: self.config.source_id.clone(),
-            // PR #92 currently leaves event_id uninitialized. Do not forward
-            // those raw bytes as a purported sequence until the producer is fixed.
-            sequence: 0,
+            // The current producer allocates this shared event sequence before
+            // ring-buffer reservation. It is not an HTTP request identifier.
+            sequence: decoded.sequence,
             monotonic_ns: decoded.monotonic_ns,
             direction: decoded.direction,
             method: decoded.method,
@@ -303,7 +303,28 @@ mod tests {
         assert!(collector
             .pending
             .iter()
-            .all(|event| event.sensor_sequence == 0));
+            .all(|event| event.sensor_sequence == 7));
+    }
+
+    #[test]
+    fn forwards_distinct_sensor_sequences_without_request_correlation() {
+        let now = Instant::now();
+        let mut collector = collector(3);
+        let first = record(42, 0, 0);
+        let mut second = record(42, 0, 0);
+        second[8..12].copy_from_slice(&8_u32.to_ne_bytes());
+        collector.ingest(&first, now, Utc::now()).unwrap();
+        collector.ingest(&second, now, Utc::now()).unwrap();
+        assert_eq!(collector.pending[0].sensor_sequence, 7);
+        assert_eq!(collector.pending[1].sensor_sequence, 8);
+        assert!(collector
+            .pending
+            .iter()
+            .all(|event| event.correlation_id.is_none()));
+        assert!(collector
+            .pending
+            .iter()
+            .all(|event| event.correlation_quality == CorrelationQuality::Ambiguous));
     }
 
     #[test]
