@@ -44,6 +44,12 @@ A retry with the same idempotency key may return the original committed outcome 
 
 The route-specific audit behavior above follows FAIL-LAB-1.0. In particular, do not generalize RF-01/RF-02 ordinary owner-read degradation to RF-03 privileged writes or RF-04 privileged data delivery.
 
+## Deterministic component regression — 2026-11-11
+
+`tests/test_day21_route_failure_matrix.py::Day21AnalyticsFailureBoundaryTests.test_invalid_and_unknown_routes_never_get_signed_recommendations` exercises both an invalid path (`ROUTE_INVALID`) and an undocumented path (`ROUTE_DRIFT`) using a resolver result bound to the request event ID. It asserts that normalization yields no documented route, the recommendation endpoint returns bounded `503 CONTEXT_UNAVAILABLE`, no signed response is produced, and no audit row is appended.
+
+This is component-level regression evidence only. It does not inject failures into the integrated API/analytics/durable-audit path and does not satisfy the route-by-route acceptance matrix or its human approval gates.
+
 ## Execution sequence
 
 1. Record the exact tested commit, schema/migration version, environment identifier (non-secret) and baseline fixture digest.
