@@ -46,11 +46,13 @@ The route-specific audit behavior above follows FAIL-LAB-1.0. In particular, do 
 
 ## Deterministic component regression — 2026-11-11
 
-`tests/test_day21_route_failure_matrix.py::Day21OptionalSentinelFailureMatrixTests.test_invalid_and_unknown_routes_never_get_signed_recommendations` exercises an invalid path (`ROUTE_INVALID`, no route) and an undocumented path (`ROUTE_DRIFT`, synthetic `/__unknown__` route) using a resolver result bound to the request event ID. The recommendation service must reject both reason codes before audit append or signature creation and return bounded `503 CONTEXT_UNAVAILABLE`.
+`tests/test_day21_route_failure_matrix.py::Day21OptionalSentinelFailureMatrixTests.test_invalid_route_never_gets_a_signed_recommendation` verifies that malformed route syntax produces `ROUTE_INVALID`, no route, a bounded `503 CONTEXT_UNAVAILABLE`, no signature, and no audit append.
+
+`tests/test_day21_route_failure_matrix.py::Day21OptionalSentinelFailureMatrixTests.test_unknown_route_is_signed_as_monitor_only_discovery` verifies the distinct discovery path: an undocumented route is normalized to the synthetic `/__unknown__` marker and may produce a signed `DET-SHADOW-1` alert with `mode=monitor_only` and `enforce=false`. The resolver is bound to the request event ID, and the audit record must not contain the raw path, query value, or actor identifier.
+
+Unknown-route discovery is intentionally observable in monitor-only mode; it is not authorization to enforce on an undocumented route. The analytics source and frozen candidate manifest are unchanged by these test/documentation updates.
 
 This is component-level regression evidence only. It does not inject failures into the integrated API/analytics/durable-audit path and does not satisfy the route-by-route acceptance matrix or its human approval gates.
-
-The guard changes frozen analytics source, so this branch refreshes `analytics/release-candidate.json` and `docs/member4-review-checkpoints.json` to pin the new source digest. The candidate remains `monitor_only`, `release_approved=false`, and every acceptance gate remains `pending`. This is a source-freeze update only, not a human approval or release authorization.
 
 ## Execution sequence
 
