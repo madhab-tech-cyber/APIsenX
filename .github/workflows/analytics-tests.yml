@@ -29,11 +29,6 @@ jobs:
           ruff==0.17.1 bandit==1.8.6 pip-audit==2.10.1 detect-secrets==1.5.0
       - name: Reject UTF-8 BOM in tracked text sources
         run: python scripts/check_no_bom.py
-      - name: Emit candidate manifest for controlled source refresh
-        run: |
-          echo BEGIN_CANDIDATE_MANIFEST
-          python -m analytics.package --manifest
-          echo END_CANDIDATE_MANIFEST
       - name: Run existing API, contract and new analytics regressions
         run: python -m unittest discover -s tests -v
       - name: Reproduce self-labelled detection corpus and automated review demo
