@@ -18,9 +18,15 @@ This maps the Member 3 30-day plan to evidence as of 10 November. Day numbers ar
 
 ## Remaining joint work and honest blockers
 
-1. **Member 2 + 3:** accept a corrected versioned sensor record, initialize every emitted field, define an authoritative request marker, and run a real Rust ring-buffer consumer on the authorized Linux lab. The reviewed PR #92 revision did not establish trustworthy event sequence or egress flow fields; recheck current producer code before closure.
+1. **Member 2 + 3:** accept a corrected versioned sensor record, define an authoritative request marker, and run a real Rust ring-buffer consumer on the authorized Linux lab. The original PR #92 review found uninitialized sequence and egress fields; later producer commits `2aa0e1e` and `fd98ec4` initialize records and allocate a shared modulo-32-bit event sequence before ring-buffer reservation. The collector now preserves that sequence as event metadata (see the 11 November reconciliation below). Live producer/consumer acceptance remains pending.
 2. **Member 3 + 4:** run the same real sensor events through the live Analytics ingestion contract with source authentication, schema rejection, freshness/replay, deduplication, bounded queues, loss and recovery evidence. The existing loopback uses synthetic records and localhost HTTP.
 3. **Member 1 + 2 + 3 + 4 + 5 + 6:** perform the frozen integrated accuracy/performance plan and human demonstration. Record paired p95 latency, throughput, loss, resource use, route failures and reviewer decisions. No such result can be created from CI or a macOS microbenchmark.
 4. **Member 1 approval:** AP-1.0 remains `monitor_only`, active rules remain zero, and release is **NOT APPROVED**. Any later enforcement proposal requires rule-specific gates and timed rollback evidence; this document and CI cannot grant that authorization.
 
 **Meeting answer:** The Rust library, local Analytics handoff and decoder hardening are merged and tested. The timeline is **not fully complete** as a live Linux sensor-to-dashboard system; the missing work depends on a jointly authorized lab run and real acceptance decisions.
+
+## 11 November repository reconciliation
+
+The current `main` producer zeroes each ingress/egress record and allocates `event_id` from a shared atomic sequence before reserving the ring buffer. The Rust collector previously replaced every decoded sequence with zero based on the earlier PR #92 review. The follow-up branch now forwards the decoded 32-bit sequence into `sensor_sequence`, including valid zero at wraparound. It does **not** use this sequence or the flow hash as an HTTP request ID, and it does not infer actual sensor loss from sequence gaps. The real drop counter and source epoch still need an authenticated Linux adapter.
+
+Local macOS verification for this repository-only change: `cargo test --locked --all-targets` passed 35 tests; `cargo fmt --all -- --check` and strict `cargo clippy --locked --all-targets -- -D warnings` passed. This is not a Linux ring-buffer run or end-to-end performance result.
