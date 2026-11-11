@@ -71,6 +71,32 @@ class DecisionTests(unittest.TestCase):
         self.assertEqual(len(reply.policy.rules_digest), 64)
         self.assertLess(len(response.content), 4097)
 
+    def test_invalid_or_drifted_routes_never_issue_signed_recommendations(self):
+        for reason_code in ("ROUTE_INVALID", "ROUTE_DRIFT"):
+            with self.subTest(reason_code=reason_code):
+                self.request = self.request.model_copy(update={"nonce": uuid4()})
+                detected = replace(
+                    self.app.state.decisions.engine.evaluate(self.observation),
+                    reason_code=reason_code,
+                )
+                before = self.app.state.decisions.audit.store.snapshot(self.now)
+                with patch.object(
+                    self.app.state.decisions.engine,
+                    "evaluate",
+                    return_value=detected,
+                ):
+                    response = self.post()
+
+                self.assertEqual(response.status_code, 503)
+                self.assertEqual(
+                    response.json(), {"detail": "CONTEXT_UNAVAILABLE"}
+                )
+                self.assertNotIn("signature", response.text)
+                self.assertEqual(
+                    self.app.state.decisions.audit.store.snapshot(self.now),
+                    before,
+                )
+
     def test_ingestion_and_recommendation_credentials_are_separate(self):
         for headers in (
             {"content-type": "application/json"},
