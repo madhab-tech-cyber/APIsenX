@@ -46,7 +46,7 @@ The route-specific audit behavior above follows FAIL-LAB-1.0. In particular, do 
 
 ## Deterministic component regression — 2026-11-11
 
-`tests/test_day21_route_failure_matrix.py::Day21AnalyticsFailureBoundaryTests.test_invalid_and_unknown_routes_never_get_signed_recommendations` exercises both an invalid path (`ROUTE_INVALID`) and an undocumented path (`ROUTE_DRIFT`) using a resolver result bound to the request event ID. It asserts that normalization yields no documented route, the recommendation endpoint returns bounded `503 CONTEXT_UNAVAILABLE`, no signed response is produced, and no audit row is appended.
+`tests/test_day21_route_failure_matrix.py::Day21OptionalSentinelFailureMatrixTests.test_invalid_and_unknown_routes_never_get_signed_recommendations` exercises an invalid path (`ROUTE_INVALID`, no route) and an undocumented path (`ROUTE_DRIFT`, synthetic `/__unknown__` route) using a resolver result bound to the request event ID. The recommendation service must reject both reason codes before audit append or signature creation and return bounded `503 CONTEXT_UNAVAILABLE`.
 
 This is component-level regression evidence only. It does not inject failures into the integrated API/analytics/durable-audit path and does not satisfy the route-by-route acceptance matrix or its human approval gates.
 
