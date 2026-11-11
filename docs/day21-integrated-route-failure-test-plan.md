@@ -44,6 +44,16 @@ A retry with the same idempotency key may return the original committed outcome 
 
 The route-specific audit behavior above follows FAIL-LAB-1.0. In particular, do not generalize RF-01/RF-02 ordinary owner-read degradation to RF-03 privileged writes or RF-04 privileged data delivery.
 
+## Deterministic component regression — 2026-11-11
+
+`tests/test_day21_route_failure_matrix.py::Day21OptionalSentinelFailureMatrixTests.test_invalid_route_never_gets_a_signed_recommendation` verifies that malformed route syntax produces `ROUTE_INVALID`, no route, a bounded `503 CONTEXT_UNAVAILABLE`, no signature, and no audit append.
+
+`tests/test_day21_route_failure_matrix.py::Day21OptionalSentinelFailureMatrixTests.test_unknown_route_is_signed_as_monitor_only_discovery` verifies the distinct discovery path: an undocumented route is normalized to the synthetic `/__unknown__` marker and may produce a signed `DET-SHADOW-1` alert with `mode=monitor_only` and `enforce=false`. The resolver is bound to the request event ID, and the audit record must not contain the raw path, query value, or actor identifier.
+
+Unknown-route discovery is intentionally observable in monitor-only mode; it is not authorization to enforce on an undocumented route. The analytics source and frozen candidate manifest are unchanged by these test/documentation updates.
+
+This is component-level regression evidence only. It does not inject failures into the integrated API/analytics/durable-audit path and does not satisfy the route-by-route acceptance matrix or its human approval gates.
+
 ## Execution sequence
 
 1. Record the exact tested commit, schema/migration version, environment identifier (non-secret) and baseline fixture digest.

@@ -13,6 +13,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 from analytics.app import Settings, create_app
+from analytics.decisions import DecisionVerifier, RequestContext
 from analytics.detection import Observation
 
 import sys
@@ -444,15 +445,30 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
         self.assertNotIn("signature", response.text)
 
 
-    def test_unknown_route_never_gets_a_signed_recommendation(self):
-        observation = self.make_observation(
-            "GET", "/unregistered-route", "user-a", None
-        )
-        app = create_app(
+    def app_for_observation(self, observation):
+        return create_app(
             self.settings,
             clock=lambda: self.now,
-            resolver=lambda _event_id: observation,
+            resolver=lambda event_id: Observation(
+                event_id,
+                observation.observed_at,
+                observation.method,
+                observation.request_target,
+                observation.actor_id,
+                observation.object_id,
+                observation.status_code,
+            ),
         )
+
+    def test_invalid_route_never_gets_a_signed_recommendation(self):
+        target = "/orders//order-1001?token=SYNTHETIC_INVALID_QUERY"
+        observation = self.make_observation("GET", target, "user-a", None)
+        app = self.app_for_observation(observation)
+
+        detected = app.state.decisions.engine.evaluate(observation)
+        self.assertEqual(detected.reason_code, "ROUTE_INVALID")
+        self.assertIsNone(detected.route)
+
         response = TestClient(app).post(
             "/v1/recommendations",
             json=self.request_payload(),
@@ -461,6 +477,43 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json(), {"detail": "CONTEXT_UNAVAILABLE"})
         self.assertNotIn("signature", response.text)
+        self.assertEqual(app.state.decisions.audit.store.snapshot(self.now), [])
+
+    def test_unknown_route_is_signed_as_monitor_only_discovery(self):
+        target = "/unregistered-route?token=SYNTHETIC_QUERY_VALUE"
+        observation = self.make_observation("GET", target, "user-a", None)
+        app = self.app_for_observation(observation)
+        request = RequestContext(
+            event_id=uuid4(),
+            nonce=uuid4(),
+            requested_at=self.now,
+        )
+        payload = request.model_dump(mode="json")
+
+        response = TestClient(app).post(
+            "/v1/recommendations",
+            json=payload,
+            headers=self.headers,
+        )
+        self.assertEqual(response.status_code, 200)
+
+        route = app.state.normalizer.normalize("GET", target).route
+        self.assertEqual(route, "/__unknown__")
+        reply = DecisionVerifier(
+            self.settings.decision_key, app.state.normalizer.contract_version
+        ).verify(response.content, request, ("GET", route), self.now)
+        decision = reply.decision
+        self.assertEqual(decision.reason_code, "ROUTE_DRIFT")
+        self.assertEqual(decision.rule_id, "DET-SHADOW-1")
+        self.assertEqual(decision.action, "alert")
+        self.assertEqual(decision.mode, "monitor_only")
+        self.assertFalse(decision.enforce)
+
+        rows = app.state.decisions.audit.store.snapshot(self.now)
+        self.assertEqual(len(rows), 1)
+        for marker in ("user-a", "/unregistered-route", "SYNTHETIC_QUERY_VALUE"):
+            self.assertNotIn(marker, repr(rows))
+
 
     def test_replayed_nonce_is_rejected_without_second_audit_record(self):
         observation = self.make_observation(
