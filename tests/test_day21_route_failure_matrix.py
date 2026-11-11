@@ -446,11 +446,11 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
 
     def test_invalid_and_unknown_routes_never_get_signed_recommendations(self):
         cases = (
-            ("invalid path", "/orders//order-1001", "ROUTE_INVALID"),
-            ("unknown route", "/unregistered-route", "ROUTE_DRIFT"),
+            ("invalid path", "/orders//order-1001", "ROUTE_INVALID", None),
+            ("unknown route", "/unregistered-route", "ROUTE_DRIFT", "/__unknown__"),
         )
 
-        for case_name, target, expected_reason in cases:
+        for case_name, target, expected_reason, expected_route in cases:
             with self.subTest(case=case_name):
                 observation = Observation(
                     uuid4(), self.now, "GET", target, "user-a", None, 200
@@ -471,7 +471,7 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
 
                 detected = app.state.decisions.engine.evaluate(observation)
                 self.assertEqual(detected.reason_code, expected_reason)
-                self.assertIsNone(detected.route)
+                self.assertEqual(detected.route, expected_route)
 
                 before = app.state.decisions.audit.store.snapshot(self.now)
                 response = TestClient(app).post(
