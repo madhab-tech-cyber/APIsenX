@@ -444,23 +444,52 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
         self.assertNotIn("signature", response.text)
 
 
-    def test_unknown_route_never_gets_a_signed_recommendation(self):
-        observation = self.make_observation(
-            "GET", "/unregistered-route", "user-a", None
+    def test_invalid_and_unknown_routes_never_get_signed_recommendations(self):
+        cases = (
+            ("invalid path", "/orders//order-1001", "ROUTE_INVALID"),
+            ("unknown route", "/unregistered-route", "ROUTE_DRIFT"),
         )
-        app = create_app(
-            self.settings,
-            clock=lambda: self.now,
-            resolver=lambda _event_id: observation,
-        )
-        response = TestClient(app).post(
-            "/v1/recommendations",
-            json=self.request_payload(),
-            headers=self.headers,
-        )
-        self.assertEqual(response.status_code, 503)
-        self.assertEqual(response.json(), {"detail": "CONTEXT_UNAVAILABLE"})
-        self.assertNotIn("signature", response.text)
+
+        for case_name, target, expected_reason in cases:
+            with self.subTest(case=case_name):
+                observation = Observation(
+                    uuid4(), self.now, "GET", target, "user-a", None, 200
+                )
+                app = create_app(
+                    self.settings,
+                    clock=lambda: self.now,
+                    resolver=lambda event_id, item=observation: Observation(
+                        event_id,
+                        item.observed_at,
+                        item.method,
+                        item.request_target,
+                        item.actor_id,
+                        item.object_id,
+                        item.status_code,
+                    ),
+                )
+
+                detected = app.state.decisions.engine.evaluate(observation)
+                self.assertEqual(detected.reason_code, expected_reason)
+                self.assertIsNone(detected.route)
+
+                before = app.state.decisions.audit.store.snapshot(self.now)
+                response = TestClient(app).post(
+                    "/v1/recommendations",
+                    json=self.request_payload(),
+                    headers=self.headers,
+                )
+
+                self.assertEqual(response.status_code, 503)
+                self.assertEqual(
+                    response.json(), {"detail": "CONTEXT_UNAVAILABLE"}
+                )
+                self.assertNotIn("signature", response.text)
+                self.assertEqual(
+                    app.state.decisions.audit.store.snapshot(self.now),
+                    before,
+                )
+
 
     def test_replayed_nonce_is_rejected_without_second_audit_record(self):
         observation = self.make_observation(
