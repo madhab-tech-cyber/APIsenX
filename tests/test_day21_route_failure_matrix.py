@@ -483,8 +483,12 @@ class Day21OptionalSentinelFailureMatrixTests(unittest.TestCase):
         target = "/unregistered-route?token=SYNTHETIC_QUERY_VALUE"
         observation = self.make_observation("GET", target, "user-a", None)
         app = self.app_for_observation(observation)
-        payload = self.request_payload()
-        request = RequestContext.model_validate(payload)
+        request = RequestContext(
+            event_id=uuid4(),
+            nonce=uuid4(),
+            requested_at=self.now,
+        )
+        payload = request.model_dump(mode="json")
 
         response = TestClient(app).post(
             "/v1/recommendations",
