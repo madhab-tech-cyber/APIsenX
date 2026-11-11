@@ -222,13 +222,7 @@ class DecisionService:
             not in {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "TRACE"}
             or result.route is None
             or result.reason_code
-            in {
-                "CONTEXT_UNAVAILABLE",
-                "CONTEXT_CONFLICT",
-                "FLOW_STATE_UNAVAILABLE",
-                "ROUTE_DRIFT",
-                "ROUTE_INVALID",
-            }
+            in {"CONTEXT_UNAVAILABLE", "CONTEXT_CONFLICT", "FLOW_STATE_UNAVAILABLE"}
         ):
             raise DecisionError("CONTEXT_UNAVAILABLE")
         # Fail before signing when audit append is unavailable; no raw exception output.
