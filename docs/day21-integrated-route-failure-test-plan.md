@@ -50,6 +50,8 @@ The route-specific audit behavior above follows FAIL-LAB-1.0. In particular, do 
 
 This is component-level regression evidence only. It does not inject failures into the integrated API/analytics/durable-audit path and does not satisfy the route-by-route acceptance matrix or its human approval gates.
 
+The guard changes frozen analytics source, so this branch refreshes `analytics/release-candidate.json` and `docs/member4-review-checkpoints.json` to pin the new source digest. The candidate remains `monitor_only`, `release_approved=false`, and every acceptance gate remains `pending`. This is a source-freeze update only, not a human approval or release authorization.
+
 ## Execution sequence
 
 1. Record the exact tested commit, schema/migration version, environment identifier (non-secret) and baseline fixture digest.
