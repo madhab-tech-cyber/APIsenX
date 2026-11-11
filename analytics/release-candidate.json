@@ -6,7 +6,7 @@
     "analytics/acceptance.py": "b54b778ebe78d1a3782355ac6f8d9896b6c61e997659ce34bb9e69955e9e37fe",
     "analytics/app.py": "47e4a479841c11697b4b36132b69666c514dc05ef061886f83bafeec28308df2",
     "analytics/audit.py": "21f1d6fc23366c94d2aa0bc465684eda33482a61ebcb30b32ed710785bfca9d6",
-    "analytics/decisions.py": "9b006c724843ed5615bec9b25ab4db7e8ea7d8ca9a0f13888a028865aeb5be15",
+    "analytics/decisions.py": "246fb9333033e1a6cc9c48f5a1f37bccfc1781f1f5606d727f401eb313703e0e",
     "analytics/demo.py": "b9336c9a16b760a63fce387921f0c943a52e95988f627e1a6d7ed41b506925e8",
     "analytics/detection.py": "1204dba34834b5d98a70db4b2c0cba297367dc8953a2bc307cdab5bbaa5448b6",
     "analytics/evaluate.py": "7deaba27e8648cdc7bf6898b69a9d1a69f38976c693b5c5ba57de42cc892ef6b",
@@ -31,7 +31,7 @@
     "docs/member4-oct27-acceptance-evidence.md": "89026494f4cdf28cc2fc34fd3645c1f4ecd8a282a3c446d28fd10788b944acb5",
     "docs/member4-recommendation-contract.md": "8fec8ce7d5a99a48728330eb1a3e77d9ff76887e57ac88b334bd4fc188f15337",
     "docs/member4-release-checklist.md": "b052f8dbcb61891913f7f5e99a6c2ce73133dba8fc70165a329fd3c0fe877164",
-    "docs/member4-review-checkpoints.json": "4448fcb0c4bdbd00da792b00c88d66c5fdd05012b116bd42aa3b76ce4e87dd7b",
+    "docs/member4-review-checkpoints.json": "cfd1deac5ac52a895f9ca37a27df530bbde0fc925c0b8ae1b12bc029da582b9c",
     "docs/member4-rule-catalog.md": "cc1b6cd645f19a0ae88d5107cb0a9d4ee09e4f5df472708cf5dd3c9d3cc36f87",
     "docs/openapi.yaml": "4b10825c8a03629240a45520765ce8e55107f3c4e097c7e32680d660d8d7617a",
     "mock_data/orders.json": "82f842c9ca21d8b6f9114eeea605b4648941df67871236fb768b2ac99eba2937",
@@ -57,5 +57,5 @@
   "package_version": "0.1.0-lab-candidate",
   "release_approved": false,
   "rule_version": "DET-1.2",
-  "rules_digest": "b04c8282674ab5700a66d9610a246d64b03d145108aed2d87113d0f6a7efcab0"
+  "rules_digest": "c5960d8dd9f56ea0d40be3c90543e32be7e49968cc45c2caba58dcfa8e350949"
 }
