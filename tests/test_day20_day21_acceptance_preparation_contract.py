@@ -142,9 +142,9 @@ class Day20PreparationContractTests(unittest.TestCase):
         expected_grants = (
             "grant insert on apisenx_audit_it.audit_records to apisenx_it_writer;",
             "grant select on apisenx_audit_it.case_records to apisenx_it_reader;",
-            "grant delete on apisenx_audit_it.audit_records to apisenx_it_retention;",
-            "grant insert on apisenx_audit_it.deletion_receipts to "
-            "apisenx_it_retention;",
+            "grant execute on function "
+            "apisenx_audit_it.purge_expired_record(text, text) "
+            "to apisenx_it_retention;",
         )
         self.assertIn(
             "revoke all on schema apisenx_audit_it from public;", self.bootstrap
@@ -159,6 +159,24 @@ class Day20PreparationContractTests(unittest.TestCase):
 
         self.assertNotIn("grant all", self.bootstrap)
         self.assertNotIn("grant update", self.bootstrap)
+        self.assertNotIn(
+            "grant delete on apisenx_audit_it.audit_records to apisenx_it_retention",
+            self.bootstrap,
+        )
+        self.assertNotIn(
+            "grant insert on apisenx_audit_it.deletion_receipts to "
+            "apisenx_it_retention",
+            self.bootstrap,
+        )
+        self.assertIn("security definer", self.bootstrap)
+        self.assertIn("set search_path = pg_catalog", self.bootstrap)
+        self.assertIn("expires_at <= statement_timestamp()", self.bootstrap)
+        self.assertIn(
+            "revoke all on function "
+            "apisenx_audit_it.purge_expired_record(text, text) from public;",
+            self.bootstrap,
+        )
+        self.assertIn("test_retention_worker_cannot_purge_unexpired_rows", self.role_tests)
         self.assertNotIn(
             "grant select on apisenx_audit_it.audit_records to apisenx_it_reader",
             self.bootstrap,
