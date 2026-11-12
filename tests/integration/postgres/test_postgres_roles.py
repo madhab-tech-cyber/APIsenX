@@ -73,7 +73,7 @@ def role_dsns_are_isolated():
     # Do not allow libpq service files to hide the actual endpoint. The
     # disposable target must be explicit and comparable from each DSN.
     if any(
-        config.get(option)
+        option in config
         for config in configs.values()
         for option in ("service", "servicefile")
     ):
@@ -157,10 +157,11 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
 
     def test_rejects_libpq_service_or_servicefile_indirection(self):
         for option in ("service", "servicefile"):
-            with self.subTest(option=option):
-                self.configs["dsn-reader"][option] = "hidden-target"
-                self.assertFalse(self.run_guard())
-                self.configs["dsn-reader"].pop(option)
+            for value in ("hidden-target", ""):
+                with self.subTest(option=option, value=value):
+                    self.configs["dsn-reader"][option] = value
+                    self.assertFalse(self.run_guard())
+                    self.configs["dsn-reader"].pop(option)
 
     def test_rejects_missing_explicit_host_or_port(self):
         self.configs["dsn-reader"]["host"] = None
