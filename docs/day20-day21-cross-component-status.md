@@ -569,3 +569,54 @@ Issue #102 remains OPEN/PARTIAL. Integrated durable-append outage, RF-02 privile
 PR [#148](https://github.com/madhab-tech-cyber/APIsenX/pull/148) is an open Member 6 dashboard-integration PR separate from Day 20/21 acceptance. Its four PR-head workflows passed on `a542bb0cdae11656b44194ae439db3b96562278e`; it had no submitted review at the initial readback.
 
 Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release **NOT APPROVED**. Do not close Issues #83, #102 or #89 based on documentation, component CI or PR merges alone.
+
+
+## 2026-11-12 current-main reconciliation after PR #163
+
+**Verified main:** `e7838e652956f8fcb22c20e3afb23337afc02036`, merge of
+[PR #163](https://github.com/madhab-tech-cyber/APIsenX/pull/163). The PR hardened
+the disposable PostgreSQL preparation harness with explicit TLS/identity
+preflight, least-privilege retention fixture execution, and transactionally
+atomic fixture bootstrap. It did not add a durable audit runtime.
+
+### Exact-main CI evidence
+
+The main commit has three completed successful check runs:
+
+- [API Security and Quality Gates — run 43201484372](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/43201484372).
+- [Analytics Security and Quality Gates — run 43201484297](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/43201484297).
+- [Rust/Python Loopback Contract — run 43201484763](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/43201484763).
+
+The repository branch listing reports `main` as protected and names the API
+and Analytics quality-gate contexts as required. The detailed protection
+endpoint is not readable by the connected integration (HTTP 403); approval
+count, stale-review behavior and administrator bypass settings are therefore
+not independently verified here. API-Sentinel CI was not present among the
+three check runs on this merge commit, even though it passed on the PR head.
+
+### Day 20 — still blocked
+
+Issue #83 remains OPEN/BLOCKED. The independent reviewer's last recorded
+outcome remains APPROVE WITH AMENDMENTS / CLARIFICATIONS; no separate closure
+confirmation for all six findings is present in the issue comments. The
+approved PostgreSQL environment is not provisioned, and the remaining A6
+operating objectives remain unapproved. PR #163's seven live PostgreSQL role
+tests were skipped without the approved disposable DB and four role-specific
+TLS DSNs. Do not implement runtime migrations, adapter, retention worker,
+checkpoint signer or reader service. `AuditWriter` remains on volatile
+`MemoryStore`.
+
+### Day 21 — still partial
+
+Issue #102 remains OPEN/PARTIAL. No integrated API → analytics → approved
+PostgreSQL durable-audit run, durable-append outage proof, restore/re-purge,
+checkpoint continuity or restart recovery evidence is available. Component
+CI and mocked failures are not integrated acceptance.
+
+### Release posture
+
+Keep AP-1.0 `monitor_only`, active enforcement rules at zero, and release
+**NOT APPROVED**. The repository-side branch-protection improvement is
+credited, but detailed protection policy readback, live PostgreSQL acceptance,
+independent review closure, remaining A6 decisions and human-led integrated
+demonstration remain outstanding.
