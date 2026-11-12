@@ -342,6 +342,42 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
             self.assertEqual(remaining, 1)
             self.assertEqual(receipts, 0)
 
+    def test_receipt_conflict_rolls_back_expired_record_deletion(self):
+        record_id = f"atomic-{uuid.uuid4()}"
+        receipt_id = f"receipt-conflict-{uuid.uuid4()}"
+        with self.connect("MIGRATION") as conn:
+            conn.execute(
+                f"INSERT INTO {TABLE} "
+                "(record_id, case_id, received_at, expires_at, summary) "
+                "VALUES (%s, %s, now() - interval '2 days', "
+                "now() - interval '1 day', %s)",
+                (record_id, "case-a", psycopg.types.json.Jsonb({"kind": "synthetic"})),
+            )
+            conn.execute(
+                f"INSERT INTO {RECEIPTS} "
+                "(receipt_id, record_id, deleted_at, reason_code) "
+                "VALUES (%s, %s, now(), 'PREEXISTING')",
+                (receipt_id, "different-record"),
+            )
+        with self.connect("RETENTION") as conn:
+            with self.assertRaises(psycopg.errors.UniqueViolation):
+                conn.execute(
+                    f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                    (record_id, receipt_id),
+                )
+            conn.rollback()
+        with self.connect("MIGRATION") as conn:
+            remaining = conn.execute(
+                f"SELECT count(*) FROM {TABLE} WHERE record_id = %s", (record_id,)
+            ).fetchone()[0]
+            receipt = conn.execute(
+                f"SELECT record_id, reason_code FROM {RECEIPTS} "
+                "WHERE receipt_id = %s",
+                (receipt_id,),
+            ).fetchone()
+            self.assertEqual(remaining, 1)
+            self.assertEqual(receipt, ("different-record", "PREEXISTING"))
+
     def test_application_roles_cannot_create_schema_objects_or_call_purge(self):
         for role in ("WRITER", "READER"):
             with self.subTest(role=role), self.connect(role) as conn:
