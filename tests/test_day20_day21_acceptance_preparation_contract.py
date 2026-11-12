@@ -74,6 +74,10 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("role_dsns_are_isolated()", self.role_tests)
         self.assertIn("conninfo_to_dict", self.role_tests)
         self.assertIn("configs[role].get(\"user\") != expected_user", self.role_tests)
+        self.assertIn("rolsuper, rolcreatedb, rolcreaterole", self.role_tests)
+        self.assertIn("rolreplication, rolbypassrls", self.role_tests)
+        self.assertIn("WITH RECURSIVE memberships(role_oid)", self.role_tests)
+        self.assertIn("all inherited role memberships", self.readme)
         self.assertIn("config.get(\"dbname\")", self.role_tests)
         self.assertIn(
             "role-specific DSNs targeting the same disposable database",
