@@ -98,6 +98,7 @@ class Day20PreparationContractTests(unittest.TestCase):
             'not (config.get("host") or config.get("hostaddr"))',
             'not config.get("port")',
             'str(config.get("sslmode", "")).lower() not in TLS_MODES',
+            '_is_plain_database_name(config.get("dbname"))',
             'getattr(conn.info, "ssl_in_use", False)',
             "def connect_tls(role):",
         )
@@ -109,6 +110,10 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("sslmode", readme)
         self.assertIn("`service` or `servicefile`", readme)
         self.assertIn("negotiated tls", readme)
+        self.assertIn("uri or conninfo strings embedded in `dbname` are rejected", readme)
+
+        day20 = " ".join(self.plan.lower().split())
+        self.assertIn("uri/conninfo strings embedded in `dbname`", day20)
 
         day21 = " ".join(self.day21_plan.lower().split())
         self.assertIn("ssl_in_use=true", day21)
