@@ -99,6 +99,7 @@ class Day20PreparationContractTests(unittest.TestCase):
             'not config.get("port")',
             'str(config.get("sslmode", "")).lower() not in TLS_MODES',
             'getattr(conn.info, "ssl_in_use", False)',
+            "def connect_tls(role):",
         )
         for requirement in required_role_guard:
             with self.subTest(requirement=requirement):
