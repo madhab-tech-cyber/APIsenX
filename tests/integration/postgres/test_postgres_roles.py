@@ -7,7 +7,8 @@ approved runtime architecture or a complete case-authorization mechanism.
 import os
 import unittest
 import uuid
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 try:
     import psycopg
@@ -28,10 +29,19 @@ ROLE_USERS = {
     "RETENTION": "apisenx_it_retention",
     "MIGRATION": "apisenx_it_migration",
 }
+TLS_MODES = frozenset({"require", "verify-ca", "verify-full"})
 
 
 def dsn(name):
     return os.environ.get(f"APISENX_PG_{name}_DSN")
+
+
+def _is_plain_database_name(value):
+    """Reject URI/conninfo strings that libpq could interpret as new targets."""
+    name = str(value or "").strip()
+    return bool(name) and "=" not in name and not name.lower().startswith(
+        ("postgresql://", "postgres://")
+    )
 
 
 def role_dsns_are_isolated():
@@ -60,14 +70,40 @@ def role_dsns_are_isolated():
     ):
         return False
 
-    # All four identities must target the same explicitly named disposable DB.
-    if any(not config.get("dbname") for config in configs.values()):
+    # Do not allow libpq service files to hide the actual endpoint. The
+    # disposable target must be explicit and comparable from each DSN.
+    if any(
+        option in config
+        for config in configs.values()
+        for option in ("service", "servicefile")
+    ):
         return False
+
+    # Require an explicit endpoint, database, port, and TLS-only mode. In
+    # particular, "prefer"/"allow" can silently fall back to cleartext.
+    if any(
+        not _is_plain_database_name(config.get("dbname"))
+        or not (config.get("host") or config.get("hostaddr"))
+        or not config.get("port")
+        or str(config.get("sslmode", "")).lower() not in TLS_MODES
+        for config in configs.values()
+    ):
+        return False
+
     targets = {
         tuple(config.get(field) for field in ("host", "hostaddr", "port", "dbname"))
         for config in configs.values()
     }
     return len(targets) == 1
+
+
+def connect_tls(role):
+    """Open a role connection only when PostgreSQL confirms negotiated TLS."""
+    conn = psycopg.connect(dsn(role), connect_timeout=5)
+    if not getattr(conn.info, "ssl_in_use", False):
+        conn.close()
+        raise RuntimeError("PostgreSQL integration connection did not negotiate TLS")
+    return conn
 
 
 class PostgreSQLDsnConfigurationTests(unittest.TestCase):
@@ -83,6 +119,7 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
                 "hostaddr": None,
                 "port": "5432",
                 "dbname": "apisenx_disposable",
+                "sslmode": "verify-full",
             }
 
     def run_guard(self):
@@ -107,6 +144,82 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
         self.configs["dsn-reader"]["dbname"] = "another_database"
         self.assertFalse(self.run_guard())
 
+    def test_rejects_dbname_that_embeds_a_connection_string(self):
+        for value in (
+            "postgresql://other.db.example.test/other_database",
+            "postgres://other.db.example.test/other_database",
+            "host=other.db.example.test dbname=other_database",
+        ):
+            with self.subTest(value=value):
+                self.configs["dsn-reader"]["dbname"] = value
+                self.assertFalse(self.run_guard())
+                self.configs["dsn-reader"]["dbname"] = "apisenx_disposable"
+
+    def test_rejects_libpq_service_or_servicefile_indirection(self):
+        for option in ("service", "servicefile"):
+            for value in ("hidden-target", ""):
+                with self.subTest(option=option, value=value):
+                    self.configs["dsn-reader"][option] = value
+                    self.assertFalse(self.run_guard())
+                    self.configs["dsn-reader"].pop(option)
+
+    def test_rejects_missing_explicit_host_or_port(self):
+        self.configs["dsn-reader"]["host"] = None
+        self.configs["dsn-reader"]["hostaddr"] = None
+        self.assertFalse(self.run_guard())
+
+        self.configs["dsn-reader"]["host"] = "db.example.test"
+        self.configs["dsn-reader"]["port"] = None
+        self.assertFalse(self.run_guard())
+
+    def test_rejects_tls_modes_that_can_fall_back_to_cleartext(self):
+        for mode in ("prefer", "allow", "disable", None):
+            with self.subTest(mode=mode):
+                self.configs["dsn-reader"]["sslmode"] = mode
+                self.assertFalse(self.run_guard())
+
+    def test_rejects_different_explicit_host_or_port(self):
+        for field, value in (("host", "other.db.example.test"), ("port", "5433")):
+            with self.subTest(field=field):
+                self.configs["dsn-reader"][field] = value
+                self.assertFalse(self.run_guard())
+                self.configs["dsn-reader"][field] = (
+                    "db.example.test" if field == "host" else "5432"
+                )
+
+
+class PostgreSQLTlsConnectionTests(unittest.TestCase):
+    def test_returns_connection_when_tls_is_negotiated(self):
+        conn = Mock()
+        conn.info = SimpleNamespace(ssl_in_use=True)
+        client = Mock()
+        client.connect.return_value = conn
+
+        with (
+            patch(f"{__name__}.psycopg", new=client),
+            patch(f"{__name__}.dsn", return_value="synthetic-dsn"),
+        ):
+            self.assertIs(connect_tls("WRITER"), conn)
+
+        client.connect.assert_called_once_with("synthetic-dsn", connect_timeout=5)
+        conn.close.assert_not_called()
+
+    def test_closes_and_rejects_connection_without_tls_without_leaking_dsn(self):
+        conn = Mock()
+        conn.info = SimpleNamespace(ssl_in_use=False)
+        client = Mock()
+        client.connect.return_value = conn
+
+        with (
+            patch(f"{__name__}.psycopg", new=client),
+            patch(f"{__name__}.dsn", return_value="synthetic-secret-dsn"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "did not negotiate TLS") as error:
+                connect_tls("WRITER")
+
+        self.assertNotIn("synthetic-secret-dsn", str(error.exception))
+        conn.close.assert_called_once_with()
+
 
 @unittest.skipUnless(
     role_dsns_are_isolated(),
@@ -115,13 +228,34 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
 )
 class PostgreSQLRoleBoundaryTests(unittest.TestCase):
     def connect(self, role):
-        return psycopg.connect(dsn(role), connect_timeout=5)
+        return connect_tls(role)
 
-    def test_each_connection_authenticates_as_its_expected_database_role(self):
+    def test_each_connection_authenticates_as_expected_unprivileged_role(self):
         for role, expected_user in ROLE_USERS.items():
             with self.subTest(role=role), self.connect(role) as conn:
                 current_user = conn.execute("SELECT current_user").fetchone()[0]
                 self.assertEqual(current_user, expected_user)
+
+                attributes = conn.execute(
+                    "SELECT rolsuper, rolcreatedb, rolcreaterole, "
+                    "rolreplication, rolbypassrls "
+                    "FROM pg_roles WHERE rolname = current_user"
+                ).fetchone()
+                self.assertEqual(attributes, (False, False, False, False, False))
+
+                inherited_roles = conn.execute(
+                    "WITH RECURSIVE memberships(role_oid) AS ("
+                    "SELECT m.roleid FROM pg_auth_members AS m "
+                    "JOIN pg_roles AS member_role ON member_role.oid = m.member "
+                    "WHERE member_role.rolname = current_user "
+                    "UNION "
+                    "SELECT m.roleid FROM pg_auth_members AS m "
+                    "JOIN memberships AS parent ON m.member = parent.role_oid"
+                    ") SELECT granted.rolname FROM memberships "
+                    "JOIN pg_roles AS granted ON granted.oid = memberships.role_oid "
+                    "ORDER BY granted.rolname"
+                ).fetchall()
+                self.assertEqual(inherited_roles, [])
 
     def test_writer_can_insert_but_cannot_read_or_mutate_existing_rows(self):
         record_id = f"writer-{uuid.uuid4()}"
@@ -160,8 +294,9 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
                     "now() + interval '1 day', '{}')"
                 )
 
-    def test_retention_worker_can_delete_and_append_receipt_but_not_read(self):
+    def test_retention_worker_can_purge_expired_row_with_receipt_but_cannot_read(self):
         record_id = f"retention-{uuid.uuid4()}"
+        receipt_id = f"receipt-{uuid.uuid4()}"
         with self.connect("MIGRATION") as conn:
             conn.execute(
                 f"INSERT INTO {TABLE} "
@@ -171,18 +306,108 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
                 (record_id, "case-a", psycopg.types.json.Jsonb({"kind": "synthetic"})),
             )
         with self.connect("RETENTION") as conn:
-            conn.execute(f"DELETE FROM {TABLE} WHERE record_id = %s", (record_id,))
+            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                conn.execute(f"DELETE FROM {TABLE} WHERE record_id = %s", (record_id,))
+            conn.rollback()
+            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                conn.execute(
+                    f"INSERT INTO {RECEIPTS} "
+                    "(receipt_id, record_id, deleted_at, reason_code) "
+                    "VALUES (%s, %s, now(), 'RETENTION_EXPIRED')",
+                    (receipt_id, record_id),
+                )
+            conn.rollback()
+            deleted = conn.execute(
+                f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                (record_id, receipt_id),
+            ).fetchone()[0]
+            self.assertTrue(deleted)
+            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                conn.execute(f"SELECT record_id FROM {TABLE}")
+        with self.connect("MIGRATION") as conn:
+            remaining = conn.execute(
+                f"SELECT count(*) FROM {TABLE} WHERE record_id = %s", (record_id,)
+            ).fetchone()[0]
+            receipts = conn.execute(
+                f"SELECT count(*) FROM {RECEIPTS} WHERE receipt_id = %s "
+                "AND record_id = %s AND reason_code = 'RETENTION_EXPIRED'",
+                (receipt_id, record_id),
+            ).fetchone()[0]
+            self.assertEqual(remaining, 0)
+            self.assertEqual(receipts, 1)
+
+    def test_retention_worker_cannot_purge_unexpired_rows(self):
+        record_id = f"not-expired-{uuid.uuid4()}"
+        receipt_id = f"receipt-{uuid.uuid4()}"
+        with self.connect("MIGRATION") as conn:
+            conn.execute(
+                f"INSERT INTO {TABLE} "
+                "(record_id, case_id, received_at, expires_at, summary) "
+                "VALUES (%s, %s, now(), now() + interval '1 day', %s)",
+                (record_id, "case-a", psycopg.types.json.Jsonb({"kind": "synthetic"})),
+            )
+        with self.connect("RETENTION") as conn:
+            deleted = conn.execute(
+                f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                (record_id, receipt_id),
+            ).fetchone()[0]
+            self.assertFalse(deleted)
+        with self.connect("MIGRATION") as conn:
+            remaining = conn.execute(
+                f"SELECT count(*) FROM {TABLE} WHERE record_id = %s", (record_id,)
+            ).fetchone()[0]
+            receipts = conn.execute(
+                f"SELECT count(*) FROM {RECEIPTS} WHERE receipt_id = %s",
+                (receipt_id,),
+            ).fetchone()[0]
+            self.assertEqual(remaining, 1)
+            self.assertEqual(receipts, 0)
+
+    def test_receipt_conflict_rolls_back_expired_record_deletion(self):
+        record_id = f"atomic-{uuid.uuid4()}"
+        receipt_id = f"receipt-conflict-{uuid.uuid4()}"
+        with self.connect("MIGRATION") as conn:
+            conn.execute(
+                f"INSERT INTO {TABLE} "
+                "(record_id, case_id, received_at, expires_at, summary) "
+                "VALUES (%s, %s, now() - interval '2 days', "
+                "now() - interval '1 day', %s)",
+                (record_id, "case-a", psycopg.types.json.Jsonb({"kind": "synthetic"})),
+            )
             conn.execute(
                 f"INSERT INTO {RECEIPTS} "
                 "(receipt_id, record_id, deleted_at, reason_code) "
-                "VALUES (%s, %s, now(), 'RETENTION_EXPIRED')",
-                (f"receipt-{uuid.uuid4()}", record_id),
+                "VALUES (%s, %s, now(), 'PREEXISTING')",
+                (receipt_id, "different-record"),
             )
-            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
-                conn.execute(f"SELECT record_id FROM {TABLE}")
+        with self.connect("RETENTION") as conn:
+            with self.assertRaises(psycopg.errors.UniqueViolation):
+                conn.execute(
+                    f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                    (record_id, receipt_id),
+                )
+            conn.rollback()
+        with self.connect("MIGRATION") as conn:
+            remaining = conn.execute(
+                f"SELECT count(*) FROM {TABLE} WHERE record_id = %s", (record_id,)
+            ).fetchone()[0]
+            receipt = conn.execute(
+                f"SELECT record_id, reason_code FROM {RECEIPTS} "
+                "WHERE receipt_id = %s",
+                (receipt_id,),
+            ).fetchone()
+            self.assertEqual(remaining, 1)
+            self.assertEqual(receipt, ("different-record", "PREEXISTING"))
 
-    def test_application_roles_cannot_create_schema_objects(self):
+    def test_application_roles_cannot_create_schema_objects_or_call_purge(self):
         for role in ("WRITER", "READER", "RETENTION"):
             with self.subTest(role=role), self.connect(role) as conn:
                 with self.assertRaises(psycopg.errors.InsufficientPrivilege):
                     conn.execute(f"CREATE TABLE {SCHEMA}.forbidden_ddl (id integer)")
+                conn.rollback()
+                if role != "RETENTION":
+                    with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                        conn.execute(
+                            f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                            ("forbidden", f"receipt-{uuid.uuid4()}"),
+                        )

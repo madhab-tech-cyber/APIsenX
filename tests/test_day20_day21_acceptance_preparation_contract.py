@@ -19,6 +19,10 @@ class Day20PreparationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.plan = read_repo_file("docs/day20-retention-restore-integrity-test-plan.md")
+        cls.mock_workflow = read_repo_file(".github/workflows/mock-api-tests.yml")
+        cls.day21_plan = read_repo_file(
+            "docs/day21-integrated-route-failure-test-plan.md"
+        )
         cls.readme = read_repo_file("tests/integration/postgres/README.md")
         cls.role_tests = read_repo_file(
             "tests/integration/postgres/test_postgres_roles.py"
@@ -70,6 +74,10 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("role_dsns_are_isolated()", self.role_tests)
         self.assertIn("conninfo_to_dict", self.role_tests)
         self.assertIn("configs[role].get(\"user\") != expected_user", self.role_tests)
+        self.assertIn("rolsuper, rolcreatedb, rolcreaterole", self.role_tests)
+        self.assertIn("rolreplication, rolbypassrls", self.role_tests)
+        self.assertIn("WITH RECURSIVE memberships(role_oid)", self.role_tests)
+        self.assertIn("all inherited role memberships", self.readme)
         self.assertIn("config.get(\"dbname\")", self.role_tests)
         self.assertIn(
             "role-specific DSNs targeting the same disposable database",
@@ -86,14 +94,65 @@ class Day20PreparationContractTests(unittest.TestCase):
             with self.subTest(username=username):
                 self.assertIn(username, self.readme)
 
+    def test_postgres_preflight_requires_explicit_tls_target_without_service_aliases(
+        self,
+    ):
+        required_role_guard = (
+            "TLS_MODES",
+            'for option in ("service", "servicefile")',
+            'not (config.get("host") or config.get("hostaddr"))',
+            'not config.get("port")',
+            'str(config.get("sslmode", "")).lower() not in TLS_MODES',
+            '_is_plain_database_name(config.get("dbname"))',
+            'getattr(conn.info, "ssl_in_use", False)',
+            "def connect_tls(role):",
+        )
+        for requirement in required_role_guard:
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, self.role_tests)
+
+        readme = " ".join(self.readme.lower().split())
+        self.assertIn("sslmode", readme)
+        self.assertIn("`service` or `servicefile`", readme)
+        self.assertIn("negotiated tls", readme)
+        self.assertIn(
+            "uri or conninfo strings embedded in `dbname` are rejected",
+            readme,
+        )
+
+        day20 = " ".join(self.plan.lower().split())
+        self.assertIn("uri/conninfo strings embedded in `dbname`", day20)
+
+        day21 = " ".join(self.day21_plan.lower().split())
+        self.assertIn("ssl_in_use=true", day21)
+        self.assertIn(
+            "skipped role test or non-tls connection is blocked, not pass",
+            day21,
+        )
+
+    def test_postgres_harness_unit_suite_runs_in_mock_api_ci(self):
+        normalized = " ".join(self.mock_workflow.split())
+        self.assertIn(
+            "Run disposable PostgreSQL harness guard and retention tests",
+            normalized,
+        )
+        command = (
+            "python -m unittest discover -s tests/integration/postgres "
+            "-p 'test_*.py' -v"
+        )
+        self.assertIn(command, normalized)
+
     def test_postgres_bootstrap_revokes_public_and_grants_narrow_roles(self):
         expected_grants = (
             "grant insert on apisenx_audit_it.audit_records to apisenx_it_writer;",
             "grant select on apisenx_audit_it.case_records to apisenx_it_reader;",
-            "grant delete on apisenx_audit_it.audit_records to apisenx_it_retention;",
-            "grant insert on apisenx_audit_it.deletion_receipts to "
-            "apisenx_it_retention;",
+            "grant execute on function "
+            "apisenx_audit_it.purge_expired_record(text, text) "
+            "to apisenx_it_retention;",
         )
+        self.assertTrue(self.bootstrap.startswith("-- test only:"))
+        self.assertIn("begin;", self.bootstrap)
+        self.assertTrue(self.bootstrap.rstrip().endswith("commit;"))
         self.assertIn(
             "revoke all on schema apisenx_audit_it from public;", self.bootstrap
         )
@@ -107,6 +166,45 @@ class Day20PreparationContractTests(unittest.TestCase):
 
         self.assertNotIn("grant all", self.bootstrap)
         self.assertNotIn("grant update", self.bootstrap)
+        self.assertNotIn(
+            "grant delete on apisenx_audit_it.audit_records to apisenx_it_retention",
+            self.bootstrap,
+        )
+        self.assertNotIn(
+            "grant insert on apisenx_audit_it.deletion_receipts to "
+            "apisenx_it_retention",
+            self.bootstrap,
+        )
+        self.assertIn("security definer", self.bootstrap)
+        self.assertIn("set search_path = pg_catalog", self.bootstrap)
+        self.assertIn("expires_at <= statement_timestamp()", self.bootstrap)
+        self.assertIn(
+            "create function apisenx_audit_it.purge_expired_record(", self.bootstrap
+        )
+        self.assertIn("security definer", self.bootstrap)
+        self.assertIn("set search_path = pg_catalog", self.bootstrap)
+        self.assertIn(
+            "insert into apisenx_audit_it.deletion_receipts", self.bootstrap
+        )
+        self.assertIn("get diagnostics deleted_count = row_count", self.bootstrap)
+        self.assertIn(
+            "grant execute on function "
+            "apisenx_audit_it.purge_expired_record(text, text) "
+            "to apisenx_it_retention;",
+            self.bootstrap,
+        )
+        self.assertIn(
+            "revoke all on function "
+            "apisenx_audit_it.purge_expired_record(text, text) from public;",
+            self.bootstrap,
+        )
+        self.assertIn(
+            "test_retention_worker_cannot_purge_unexpired_rows", self.role_tests
+        )
+        self.assertIn(
+            "test_receipt_conflict_rolls_back_expired_record_deletion",
+            self.role_tests,
+        )
         self.assertNotIn(
             "grant select on apisenx_audit_it.audit_records to apisenx_it_reader",
             self.bootstrap,
