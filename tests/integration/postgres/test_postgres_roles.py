@@ -7,7 +7,8 @@ approved runtime architecture or a complete case-authorization mechanism.
 import os
 import unittest
 import uuid
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 try:
     import psycopg
@@ -88,6 +89,15 @@ def role_dsns_are_isolated():
     return len(targets) == 1
 
 
+def connect_tls(role):
+    """Open a role connection only when PostgreSQL confirms negotiated TLS."""
+    conn = psycopg.connect(dsn(role), connect_timeout=5)
+    if not getattr(conn.info, "ssl_in_use", False):
+        conn.close()
+        raise RuntimeError("PostgreSQL integration connection did not negotiate TLS")
+    return conn
+
+
 class PostgreSQLDsnConfigurationTests(unittest.TestCase):
     def setUp(self):
         self.env = {"APISENX_PG_TEST_ACK": ACK}
@@ -158,6 +168,39 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
                 )
 
 
+class PostgreSQLTlsConnectionTests(unittest.TestCase):
+    def test_returns_connection_when_tls_is_negotiated(self):
+        conn = Mock()
+        conn.info = SimpleNamespace(ssl_in_use=True)
+        client = Mock()
+        client.connect.return_value = conn
+
+        with (
+            patch(f"{__name__}.psycopg", new=client),
+            patch(f"{__name__}.dsn", return_value="synthetic-dsn"),
+        ):
+            self.assertIs(connect_tls("WRITER"), conn)
+
+        client.connect.assert_called_once_with("synthetic-dsn", connect_timeout=5)
+        conn.close.assert_not_called()
+
+    def test_closes_and_rejects_connection_without_tls_without_leaking_dsn(self):
+        conn = Mock()
+        conn.info = SimpleNamespace(ssl_in_use=False)
+        client = Mock()
+        client.connect.return_value = conn
+
+        with (
+            patch(f"{__name__}.psycopg", new=client),
+            patch(f"{__name__}.dsn", return_value="synthetic-secret-dsn"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "did not negotiate TLS") as error:
+                connect_tls("WRITER")
+
+        self.assertNotIn("synthetic-secret-dsn", str(error.exception))
+        conn.close.assert_called_once_with()
+
+
 @unittest.skipUnless(
     role_dsns_are_isolated(),
     "requires psycopg, explicit disposable-DB acknowledgement, and four "
@@ -165,11 +208,7 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
 )
 class PostgreSQLRoleBoundaryTests(unittest.TestCase):
     def connect(self, role):
-        conn = psycopg.connect(dsn(role), connect_timeout=5)
-        if not getattr(conn.info, "ssl_in_use", False):
-            conn.close()
-            self.fail("PostgreSQL integration connection did not negotiate TLS")
-        return conn
+        return connect_tls(role)
 
     def test_each_connection_authenticates_as_its_expected_database_role(self):
         for role, expected_user in ROLE_USERS.items():
