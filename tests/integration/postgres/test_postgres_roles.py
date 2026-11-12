@@ -36,6 +36,14 @@ def dsn(name):
     return os.environ.get(f"APISENX_PG_{name}_DSN")
 
 
+def _is_plain_database_name(value):
+    """Reject URI/conninfo strings that libpq could interpret as new targets."""
+    name = str(value or "").strip()
+    return bool(name) and "=" not in name and not name.lower().startswith(
+        ("postgresql://", "postgres://")
+    )
+
+
 def role_dsns_are_isolated():
     """Fail closed unless each DSN names its intended role on one DB target."""
     if (
@@ -74,7 +82,7 @@ def role_dsns_are_isolated():
     # Require an explicit endpoint, database, port, and TLS-only mode. In
     # particular, "prefer"/"allow" can silently fall back to cleartext.
     if any(
-        not config.get("dbname")
+        not _is_plain_database_name(config.get("dbname"))
         or not (config.get("host") or config.get("hostaddr"))
         or not config.get("port")
         or str(config.get("sslmode", "")).lower() not in TLS_MODES
@@ -135,6 +143,17 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
     def test_rejects_role_dsns_pointing_at_different_databases(self):
         self.configs["dsn-reader"]["dbname"] = "another_database"
         self.assertFalse(self.run_guard())
+
+    def test_rejects_dbname_that_embeds_a_connection_string(self):
+        for value in (
+            "postgresql://other.db.example.test/other_database",
+            "postgres://other.db.example.test/other_database",
+            "host=other.db.example.test dbname=other_database",
+        ):
+            with self.subTest(value=value):
+                self.configs["dsn-reader"]["dbname"] = value
+                self.assertFalse(self.run_guard())
+                self.configs["dsn-reader"]["dbname"] = "apisenx_disposable"
 
     def test_rejects_libpq_service_or_servicefile_indirection(self):
         for option in ("service", "servicefile"):
