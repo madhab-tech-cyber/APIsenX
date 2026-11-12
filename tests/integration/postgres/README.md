@@ -7,6 +7,7 @@
 - Use a dedicated, disposable PostgreSQL database created for this integration test.
 - Install the optional driver in the test environment: `python -m pip install "psycopg[binary]>=3.2,<4"`. It is intentionally not added to the application requirements.
 - Apply `bootstrap.sql` using a database administrator only in that disposable database.
+- The bootstrap is wrapped in one transaction so the SECURITY DEFINER function's default PUBLIC EXECUTE grant is revoked before any schema/function privilege change becomes visible; abort the entire bootstrap on any error.
 - Supply four independently provisioned connection strings through environment variables: `APISENX_PG_WRITER_DSN`, `APISENX_PG_READER_DSN`, `APISENX_PG_RETENTION_DSN`, and `APISENX_PG_MIGRATION_DSN`.
 - The DSNs must explicitly identify these distinct login roles: `apisenx_it_writer`, `apisenx_it_reader`, `apisenx_it_retention`, and `apisenx_it_migration`. All four must target the same explicitly named disposable database.
 - Each DSN must explicitly provide its expected role username, `host` or `hostaddr`, `port`, a plain database name, and a TLS-only `sslmode` (`require`, `verify-ca`, or `verify-full`). URI or conninfo strings embedded in `dbname` are rejected because libpq can interpret them as connection options and override the apparent target. `prefer`, `allow`, `disable`, and a missing TLS mode are rejected because they can permit a cleartext connection.
