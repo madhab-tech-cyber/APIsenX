@@ -132,10 +132,11 @@ class Day20PreparationContractTests(unittest.TestCase):
             "Run disposable PostgreSQL harness guard and retention tests",
             normalized,
         )
-        self.assertIn(
-            "python -m unittest discover -s tests/integration/postgres -p 'test_*.py' -v",
-            normalized,
+        command = (
+            "python -m unittest discover -s tests/integration/postgres "
+            "-p 'test_*.py' -v"
         )
+        self.assertIn(command, normalized)
 
     def test_postgres_bootstrap_revokes_public_and_grants_narrow_roles(self):
         expected_grants = (
