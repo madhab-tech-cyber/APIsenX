@@ -150,6 +150,9 @@ class Day20PreparationContractTests(unittest.TestCase):
             "apisenx_audit_it.purge_expired_record(text, text) "
             "to apisenx_it_retention;",
         )
+        self.assertTrue(self.bootstrap.startswith("-- test only:"))
+        self.assertIn("begin;", self.bootstrap)
+        self.assertTrue(self.bootstrap.rstrip().endswith("commit;"))
         self.assertIn(
             "revoke all on schema apisenx_audit_it from public;", self.bootstrap
         )
