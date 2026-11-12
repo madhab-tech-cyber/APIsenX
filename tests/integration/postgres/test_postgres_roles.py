@@ -230,11 +230,32 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
     def connect(self, role):
         return connect_tls(role)
 
-    def test_each_connection_authenticates_as_its_expected_database_role(self):
+    def test_each_connection_authenticates_as_expected_unprivileged_role(self):
         for role, expected_user in ROLE_USERS.items():
             with self.subTest(role=role), self.connect(role) as conn:
                 current_user = conn.execute("SELECT current_user").fetchone()[0]
                 self.assertEqual(current_user, expected_user)
+
+                attributes = conn.execute(
+                    "SELECT rolsuper, rolcreatedb, rolcreaterole, "
+                    "rolreplication, rolbypassrls "
+                    "FROM pg_roles WHERE rolname = current_user"
+                ).fetchone()
+                self.assertEqual(attributes, (False, False, False, False, False))
+
+                inherited_roles = conn.execute(
+                    "WITH RECURSIVE memberships(role_oid) AS ("
+                    "SELECT m.roleid FROM pg_auth_members AS m "
+                    "JOIN pg_roles AS member_role ON member_role.oid = m.member "
+                    "WHERE member_role.rolname = current_user "
+                    "UNION "
+                    "SELECT m.roleid FROM pg_auth_members AS m "
+                    "JOIN memberships AS parent ON m.member = parent.role_oid"
+                    ") SELECT granted.rolname FROM memberships "
+                    "JOIN pg_roles AS granted ON granted.oid = memberships.role_oid "
+                    "ORDER BY granted.rolname"
+                ).fetchall()
+                self.assertEqual(inherited_roles, [])
 
     def test_writer_can_insert_but_cannot_read_or_mutate_existing_rows(self):
         record_id = f"writer-{uuid.uuid4()}"
