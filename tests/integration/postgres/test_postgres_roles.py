@@ -273,8 +273,9 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
                     "now() + interval '1 day', '{}')"
                 )
 
-    def test_retention_worker_can_delete_and_append_receipt_but_not_read(self):
+    def test_retention_worker_can_purge_expired_row_with_receipt_but_cannot_read(self):
         record_id = f"retention-{uuid.uuid4()}"
+        receipt_id = f"receipt-{uuid.uuid4()}"
         with self.connect("MIGRATION") as conn:
             conn.execute(
                 f"INSERT INTO {TABLE} "
@@ -284,15 +285,62 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
                 (record_id, "case-a", psycopg.types.json.Jsonb({"kind": "synthetic"})),
             )
         with self.connect("RETENTION") as conn:
-            conn.execute(f"DELETE FROM {TABLE} WHERE record_id = %s", (record_id,))
-            conn.execute(
-                f"INSERT INTO {RECEIPTS} "
-                "(receipt_id, record_id, deleted_at, reason_code) "
-                "VALUES (%s, %s, now(), 'RETENTION_EXPIRED')",
-                (f"receipt-{uuid.uuid4()}", record_id),
-            )
+            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                conn.execute(f"DELETE FROM {TABLE} WHERE record_id = %s", (record_id,))
+            conn.rollback()
+            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                conn.execute(
+                    f"INSERT INTO {RECEIPTS} "
+                    "(receipt_id, record_id, deleted_at, reason_code) "
+                    "VALUES (%s, %s, now(), 'RETENTION_EXPIRED')",
+                    (receipt_id, record_id),
+                )
+            conn.rollback()
+            deleted = conn.execute(
+                f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                (record_id, receipt_id),
+            ).fetchone()[0]
+            self.assertTrue(deleted)
             with self.assertRaises(psycopg.errors.InsufficientPrivilege):
                 conn.execute(f"SELECT record_id FROM {TABLE}")
+        with self.connect("MIGRATION") as conn:
+            remaining = conn.execute(
+                f"SELECT count(*) FROM {TABLE} WHERE record_id = %s", (record_id,)
+            ).fetchone()[0]
+            receipts = conn.execute(
+                f"SELECT count(*) FROM {RECEIPTS} WHERE receipt_id = %s "
+                "AND record_id = %s AND reason_code = 'RETENTION_EXPIRED'",
+                (receipt_id, record_id),
+            ).fetchone()[0]
+            self.assertEqual(remaining, 0)
+            self.assertEqual(receipts, 1)
+
+    def test_retention_worker_cannot_purge_unexpired_rows(self):
+        record_id = f"not-expired-{uuid.uuid4()}"
+        receipt_id = f"receipt-{uuid.uuid4()}"
+        with self.connect("MIGRATION") as conn:
+            conn.execute(
+                f"INSERT INTO {TABLE} "
+                "(record_id, case_id, received_at, expires_at, summary) "
+                "VALUES (%s, %s, now(), now() + interval '1 day', %s)",
+                (record_id, "case-a", psycopg.types.json.Jsonb({"kind": "synthetic"})),
+            )
+        with self.connect("RETENTION") as conn:
+            deleted = conn.execute(
+                f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                (record_id, receipt_id),
+            ).fetchone()[0]
+            self.assertFalse(deleted)
+        with self.connect("MIGRATION") as conn:
+            remaining = conn.execute(
+                f"SELECT count(*) FROM {TABLE} WHERE record_id = %s", (record_id,)
+            ).fetchone()[0]
+            receipts = conn.execute(
+                f"SELECT count(*) FROM {RECEIPTS} WHERE receipt_id = %s",
+                (receipt_id,),
+            ).fetchone()[0]
+            self.assertEqual(remaining, 1)
+            self.assertEqual(receipts, 0)
 
     def test_application_roles_cannot_create_schema_objects(self):
         for role in ("WRITER", "READER", "RETENTION"):
