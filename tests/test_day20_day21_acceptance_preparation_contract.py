@@ -110,7 +110,10 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("sslmode", readme)
         self.assertIn("`service` or `servicefile`", readme)
         self.assertIn("negotiated tls", readme)
-        self.assertIn("uri or conninfo strings embedded in `dbname` are rejected", readme)
+        self.assertIn(
+            "uri or conninfo strings embedded in `dbname` are rejected",
+            readme,
+        )
 
         day20 = " ".join(self.plan.lower().split())
         self.assertIn("uri/conninfo strings embedded in `dbname`", day20)
