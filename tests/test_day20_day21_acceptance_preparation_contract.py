@@ -102,7 +102,7 @@ class Day20PreparationContractTests(unittest.TestCase):
 
         readme = " ".join(self.readme.lower().split())
         self.assertIn("sslmode", readme)
-        self.assertIn("service/servicefile", readme)
+        self.assertIn("service or `servicefile`", readme)
         self.assertIn("negotiated tls", readme)
 
         day21 = " ".join(self.day21_plan.lower().split())
