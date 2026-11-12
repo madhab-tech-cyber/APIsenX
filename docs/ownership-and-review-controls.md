@@ -114,3 +114,36 @@ independent sign-offs must be supplied by their actual authors.
 PR approval cannot replace the missing human checkpoint. A review
 added after merge cannot retroactively provide pre-merge approval. Preserve
 dated evidence and distinguish artifact delivery, review and runtime acceptance.
+
+
+## 2026-11-12 live repository-control reconciliation
+
+The earlier October statements above are historical snapshots and must not be
+read as the current branch state. The GitHub branch-list response for
+`main`, read on 2026-11-12 after merge commit
+`e7838e652956f8fcb22c20e3afb23337afc02036`, reports
+`protected: true` and `protection.enabled: true`. The same response lists these
+required status-check contexts:
+
+- `API Security and Quality Gates`
+- `Analytics Security and Quality Gates`
+
+The linked integration cannot read the detailed branch-protection endpoint
+(HTTP 403), so this record does not claim verification of approval counts,
+conversation resolution, stale-review dismissal, admin bypass policy, or
+required code-owner approval. The currently reported required-check list also
+does not include `Rust/Python Loopback Contract` or `API-Sentinel CI`.
+
+The exact current main commit is `e7838e652956f8fcb22c20e3afb23337afc02036`.
+Its three observed GitHub check runs completed successfully:
+
+- [API Security and Quality Gates — run 43201484372](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/43201484372)
+- [Analytics Security and Quality Gates — run 43201484297](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/43201484297)
+- [Rust/Python Loopback Contract — run 43201484763](https://github.com/madhab-tech-cyber/APIsenX/actions/runs/43201484763)
+
+No `API-Sentinel CI` check run was present in the check-runs response for this
+main commit. Its successful PR #163 run must not be represented as a required
+or post-merge main check. Repository administration should verify whether the
+missing contexts are intentionally PR-only or should be added to protection.
+The repository integration has push but not admin/maintain permission; no
+protection setting was changed by this reconciliation.
