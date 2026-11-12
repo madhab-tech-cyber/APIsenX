@@ -172,11 +172,32 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("set search_path = pg_catalog", self.bootstrap)
         self.assertIn("expires_at <= statement_timestamp()", self.bootstrap)
         self.assertIn(
+            "create function apisenx_audit_it.purge_expired_record(", self.bootstrap
+        )
+        self.assertIn("security definer", self.bootstrap)
+        self.assertIn("set search_path = pg_catalog", self.bootstrap)
+        self.assertIn(
+            "insert into apisenx_audit_it.deletion_receipts", self.bootstrap
+        )
+        self.assertIn("get diagnostics deleted_count = row_count", self.bootstrap)
+        self.assertIn(
+            "grant execute on function "
+            "apisenx_audit_it.purge_expired_record(text, text) "
+            "to apisenx_it_retention;",
+            self.bootstrap,
+        )
+        self.assertIn(
             "revoke all on function "
             "apisenx_audit_it.purge_expired_record(text, text) from public;",
             self.bootstrap,
         )
-        self.assertIn("test_retention_worker_cannot_purge_unexpired_rows", self.role_tests)
+        self.assertIn(
+            "test_retention_worker_cannot_purge_unexpired_rows", self.role_tests
+        )
+        self.assertIn(
+            "test_receipt_conflict_rolls_back_expired_record_deletion",
+            self.role_tests,
+        )
         self.assertNotIn(
             "grant select on apisenx_audit_it.audit_records to apisenx_it_reader",
             self.bootstrap,
