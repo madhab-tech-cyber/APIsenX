@@ -1,4 +1,7 @@
 -- TEST ONLY: apply solely to a disposable synthetic integration database.
+-- Apply atomically so the SECURITY DEFINER function is never exposed with
+-- PostgreSQL's default PUBLIC EXECUTE privilege between bootstrap statements.
+BEGIN;
 -- Provision these roles out-of-band before applying this file:
 --   apisenx_it_writer, apisenx_it_reader, apisenx_it_retention,
 --   apisenx_it_migration
@@ -82,3 +85,5 @@ GRANT INSERT ON apisenx_audit_it.audit_records TO apisenx_it_writer;
 GRANT SELECT ON apisenx_audit_it.case_records TO apisenx_it_reader;
 GRANT EXECUTE ON FUNCTION apisenx_audit_it.purge_expired_record(text, text)
     TO apisenx_it_retention;
+
+COMMIT;
