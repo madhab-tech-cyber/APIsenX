@@ -21,7 +21,7 @@ Create the four login roles out-of-band, with credentials injected into the test
 The bootstrap grants:
 - writer: insert only into the audit test table;
 - reader: select only through a case-filtered view using transaction-local `app.case_id`;
-- retention worker: delete expired test rows and append deletion receipts;
+- retention worker: execute only the narrowly scoped `purge_expired_record(record_id, receipt_id)` function. It atomically deletes a row only when `expires_at <= statement_timestamp()` and inserts the matching `RETENTION_EXPIRED` receipt; it receives no direct table `DELETE`, receipt `INSERT`, or content `SELECT` privilege;
 - migration: schema ownership/DDL for this isolated test schema.
 
 ## Run
@@ -36,4 +36,4 @@ Tests are skipped when optional psycopg or the required environment is absent. A
 
 ## What this harness proves — and does not prove
 
-It checks isolated role boundaries and a case-filtered reader-view query shape against a disposable PostgreSQL schema. The test session variable is caller-settable, so this view is deliberately NOT an authorization control. The retention contract tests validate the policy's UTC boundary arithmetic only; they do not prove a running retention worker. Deletion receipts, derivative/export/backup deletion, hold/release, restore-time re-purge, external signed checkpoints, outage/recovery and the approved service's exact schema still require implementation-specific integration tests after the service owner approves the architecture.
+It checks isolated role boundaries, an atomic expiry-guarded purge function, and a case-filtered reader-view query shape against a disposable PostgreSQL schema. The test session variable is caller-settable, so this view is deliberately NOT an authorization control. The retention contract tests validate the policy's UTC boundary arithmetic only; they do not prove a running retention worker. Deletion receipts, derivative/export/backup deletion, hold/release, restore-time re-purge, external signed checkpoints, outage/recovery and the approved service's exact schema still require implementation-specific integration tests after the service owner approves the architecture.
