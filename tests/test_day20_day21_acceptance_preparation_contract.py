@@ -19,6 +19,7 @@ class Day20PreparationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.plan = read_repo_file("docs/day20-retention-restore-integrity-test-plan.md")
+        cls.mock_workflow = read_repo_file(".github/workflows/mock-api-tests.yml")
         cls.day21_plan = read_repo_file(
             "docs/day21-integrated-route-failure-test-plan.md"
         )
@@ -123,6 +124,17 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn(
             "skipped role test or non-tls connection is blocked, not pass",
             day21,
+        )
+
+    def test_postgres_harness_unit_suite_runs_in_mock_api_ci(self):
+        normalized = " ".join(self.mock_workflow.split())
+        self.assertIn(
+            "Run disposable PostgreSQL harness guard and retention tests",
+            normalized,
+        )
+        self.assertIn(
+            "python -m unittest discover -s tests/integration/postgres -p 'test_*.py' -v",
+            normalized,
         )
 
     def test_postgres_bootstrap_revokes_public_and_grants_narrow_roles(self):
