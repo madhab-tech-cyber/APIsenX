@@ -33,14 +33,52 @@ SELECT record_id, case_id, received_at, expires_at, summary
 FROM apisenx_audit_it.audit_records
 WHERE case_id = current_setting('app.case_id', true);
 
+-- The retention identity gets one narrowly scoped operation, not table-level
+-- DELETE/INSERT privileges. The SECURITY DEFINER owner is the migration role;
+-- the fixed search_path and fully-qualified objects prevent name shadowing.
+-- A receipt is committed atomically with deletion, and only already-expired
+-- rows can be removed through this function.
+CREATE FUNCTION apisenx_audit_it.purge_expired_record(
+    p_record_id text,
+    p_receipt_id text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $function$
+DECLARE
+    deleted_count integer;
+BEGIN
+    DELETE FROM apisenx_audit_it.audit_records
+    WHERE record_id = p_record_id
+      AND expires_at <= statement_timestamp();
+
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+
+    IF deleted_count = 0 THEN
+        RETURN false;
+    END IF;
+
+    INSERT INTO apisenx_audit_it.deletion_receipts
+        (receipt_id, record_id, deleted_at, reason_code)
+    VALUES
+        (p_receipt_id, p_record_id, statement_timestamp(), 'RETENTION_EXPIRED');
+
+    RETURN true;
+END;
+$function$;
+
 RESET ROLE;
 
 REVOKE ALL ON SCHEMA apisenx_audit_it FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA apisenx_audit_it FROM PUBLIC;
+REVOKE ALL ON FUNCTION apisenx_audit_it.purge_expired_record(text, text)
+    FROM PUBLIC;
 
 GRANT USAGE ON SCHEMA apisenx_audit_it
     TO apisenx_it_writer, apisenx_it_reader, apisenx_it_retention;
 GRANT INSERT ON apisenx_audit_it.audit_records TO apisenx_it_writer;
 GRANT SELECT ON apisenx_audit_it.case_records TO apisenx_it_reader;
-GRANT DELETE ON apisenx_audit_it.audit_records TO apisenx_it_retention;
-GRANT INSERT ON apisenx_audit_it.deletion_receipts TO apisenx_it_retention;
+GRANT EXECUTE ON FUNCTION apisenx_audit_it.purge_expired_record(text, text)
+    TO apisenx_it_retention;
