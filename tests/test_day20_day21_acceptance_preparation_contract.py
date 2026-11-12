@@ -19,6 +19,7 @@ class Day20PreparationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.plan = read_repo_file("docs/day20-retention-restore-integrity-test-plan.md")
+        cls.day21_plan = read_repo_file("docs/day21-integrated-route-failure-test-plan.md")
         cls.readme = read_repo_file("tests/integration/postgres/README.md")
         cls.role_tests = read_repo_file(
             "tests/integration/postgres/test_postgres_roles.py"
@@ -85,6 +86,28 @@ class Day20PreparationContractTests(unittest.TestCase):
         ):
             with self.subTest(username=username):
                 self.assertIn(username, self.readme)
+
+    def test_postgres_preflight_requires_explicit_tls_target_without_service_aliases(self):
+        required_role_guard = (
+            "TLS_MODES",
+            'for option in ("service", "servicefile")',
+            'not (config.get("host") or config.get("hostaddr"))',
+            'not config.get("port")',
+            'str(config.get("sslmode", "")).lower() not in TLS_MODES',
+            'getattr(conn.info, "ssl_in_use", False)',
+        )
+        for requirement in required_role_guard:
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, self.role_tests)
+
+        readme = " ".join(self.readme.lower().split())
+        self.assertIn("sslmode", readme)
+        self.assertIn("service/servicefile", readme)
+        self.assertIn("negotiated tls", readme)
+
+        day21 = " ".join(self.day21_plan.lower().split())
+        self.assertIn("ssl_in_use=true", day21)
+        self.assertIn("skipped role test or non-tls connection is blocked, not pass", day21)
 
     def test_postgres_bootstrap_revokes_public_and_grants_narrow_roles(self):
         expected_grants = (

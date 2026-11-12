@@ -28,6 +28,7 @@ ROLE_USERS = {
     "RETENTION": "apisenx_it_retention",
     "MIGRATION": "apisenx_it_migration",
 }
+TLS_MODES = frozenset({"require", "verify-ca", "verify-full"})
 
 
 def dsn(name):
@@ -60,9 +61,26 @@ def role_dsns_are_isolated():
     ):
         return False
 
-    # All four identities must target the same explicitly named disposable DB.
-    if any(not config.get("dbname") for config in configs.values()):
+    # Do not allow libpq service files to hide the actual endpoint. The
+    # disposable target must be explicit and comparable from each DSN.
+    if any(
+        config.get(option)
+        for config in configs.values()
+        for option in ("service", "servicefile")
+    ):
         return False
+
+    # Require an explicit endpoint, database, port, and TLS-only mode. In
+    # particular, "prefer"/"allow" can silently fall back to cleartext.
+    if any(
+        not config.get("dbname")
+        or not (config.get("host") or config.get("hostaddr"))
+        or not config.get("port")
+        or str(config.get("sslmode", "")).lower() not in TLS_MODES
+        for config in configs.values()
+    ):
+        return False
+
     targets = {
         tuple(config.get(field) for field in ("host", "hostaddr", "port", "dbname"))
         for config in configs.values()
@@ -83,6 +101,7 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
                 "hostaddr": None,
                 "port": "5432",
                 "dbname": "apisenx_disposable",
+                "sslmode": "verify-full",
             }
 
     def run_guard(self):
@@ -107,6 +126,37 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
         self.configs["dsn-reader"]["dbname"] = "another_database"
         self.assertFalse(self.run_guard())
 
+    def test_rejects_libpq_service_or_servicefile_indirection(self):
+        for option in ("service", "servicefile"):
+            with self.subTest(option=option):
+                self.configs["dsn-reader"][option] = "hidden-target"
+                self.assertFalse(self.run_guard())
+                self.configs["dsn-reader"].pop(option)
+
+    def test_rejects_missing_explicit_host_or_port(self):
+        self.configs["dsn-reader"]["host"] = None
+        self.configs["dsn-reader"]["hostaddr"] = None
+        self.assertFalse(self.run_guard())
+
+        self.configs["dsn-reader"]["host"] = "db.example.test"
+        self.configs["dsn-reader"]["port"] = None
+        self.assertFalse(self.run_guard())
+
+    def test_rejects_tls_modes_that_can_fall_back_to_cleartext(self):
+        for mode in ("prefer", "allow", "disable", None):
+            with self.subTest(mode=mode):
+                self.configs["dsn-reader"]["sslmode"] = mode
+                self.assertFalse(self.run_guard())
+
+    def test_rejects_different_explicit_host_or_port(self):
+        for field, value in (("host", "other.db.example.test"), ("port", "5433")):
+            with self.subTest(field=field):
+                self.configs["dsn-reader"][field] = value
+                self.assertFalse(self.run_guard())
+                self.configs["dsn-reader"][field] = (
+                    "db.example.test" if field == "host" else "5432"
+                )
+
 
 @unittest.skipUnless(
     role_dsns_are_isolated(),
@@ -115,7 +165,11 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
 )
 class PostgreSQLRoleBoundaryTests(unittest.TestCase):
     def connect(self, role):
-        return psycopg.connect(dsn(role), connect_timeout=5)
+        conn = psycopg.connect(dsn(role), connect_timeout=5)
+        if not getattr(conn.info, "ssl_in_use", False):
+            conn.close()
+            self.fail("PostgreSQL integration connection did not negotiate TLS")
+        return conn
 
     def test_each_connection_authenticates_as_its_expected_database_role(self):
         for role, expected_user in ROLE_USERS.items():

@@ -9,8 +9,9 @@
 - Apply `bootstrap.sql` using a database administrator only in that disposable database.
 - Supply four independently provisioned connection strings through environment variables: `APISENX_PG_WRITER_DSN`, `APISENX_PG_READER_DSN`, `APISENX_PG_RETENTION_DSN`, and `APISENX_PG_MIGRATION_DSN`.
 - The DSNs must explicitly identify these distinct login roles: `apisenx_it_writer`, `apisenx_it_reader`, `apisenx_it_retention`, and `apisenx_it_migration`. All four must target the same explicitly named disposable database.
-- The test harness parses connection metadata locally and skips the PostgreSQL tests unless each DSN's username matches its intended role and all four DSNs resolve to the same host/host-address/port/database tuple. Once connected, the role suite also checks PostgreSQL's `current_user` for each connection. It does not print DSNs or parser errors.
-- Do not place DSNs, passwords, hostnames, certificates, or key material in Git, command output, test reports, or issue comments.
+- Each DSN must explicitly provide its expected role username, `host` or `hostaddr`, `port`, `dbname`, and a TLS-only `sslmode` (`require`, `verify-ca`, or `verify-full`). `prefer`, `allow`, `disable`, and a missing TLS mode are rejected because they can permit a cleartext connection.
+- Do not use libpq `service` or `servicefile` indirection: the harness rejects those options so the endpoint cannot be hidden outside the DSN. All four DSNs must resolve to the same explicit host/host-address/port/database tuple. After connecting, the suite checks PostgreSQL's `current_user` and verifies negotiated TLS with `conn.info.ssl_in_use`. It does not print DSNs or parser errors.
+- Prefer `sslmode=verify-full` with the approved CA configuration. `require` and `verify-ca` are accepted only where the isolated lab's certificate model calls for them. Do not place DSNs, passwords, hostnames, certificates, or key material in Git, command output, test reports, or issue comments.
 - The test suite refuses to run unless `APISENX_PG_TEST_ACK=DISPOSABLE_SYNTHETIC_DATABASE` is set. It only uses the fixed `apisenx_audit_it` schema and synthetic identifiers.
 
 ## Bootstrap roles

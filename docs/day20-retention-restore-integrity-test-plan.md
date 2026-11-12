@@ -5,6 +5,7 @@
 ## Preconditions and evidence rules
 
 - Run only against a dedicated, disposable synthetic environment provisioned for the approved architecture.
+- For the opt-in PostgreSQL role preflight, require four distinct role DSNs with an explicit common `host` or `hostaddr`, `port`, and `dbname`; reject libpq `service`/`servicefile` indirection and require `sslmode=require`, `verify-ca`, or `verify-full`. Verify both `current_user` and negotiated TLS (`conn.info.ssl_in_use`). A skipped or non-TLS preflight is BLOCKED, not PASS.
 - Use synthetic records and independently provisioned least-privilege identities. Inject credentials through the approved secret mechanism; never commit DSNs, tokens, certificates or key material.
 - Use an injectable/frozen UTC clock for deterministic boundary tests. Production receipt time must be assigned by trusted server code, not accepted from the caller.
 - Record the exact tested commit, schema/migration version, environment identifier (non-secret), test command, result, and sanitized logs.
