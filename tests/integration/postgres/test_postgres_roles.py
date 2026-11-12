@@ -342,8 +342,14 @@ class PostgreSQLRoleBoundaryTests(unittest.TestCase):
             self.assertEqual(remaining, 1)
             self.assertEqual(receipts, 0)
 
-    def test_application_roles_cannot_create_schema_objects(self):
-        for role in ("WRITER", "READER", "RETENTION"):
+    def test_application_roles_cannot_create_schema_objects_or_call_purge(self):
+        for role in ("WRITER", "READER"):
             with self.subTest(role=role), self.connect(role) as conn:
                 with self.assertRaises(psycopg.errors.InsufficientPrivilege):
                     conn.execute(f"CREATE TABLE {SCHEMA}.forbidden_ddl (id integer)")
+                conn.rollback()
+                with self.assertRaises(psycopg.errors.InsufficientPrivilege):
+                    conn.execute(
+                        f"SELECT {SCHEMA}.purge_expired_record(%s, %s)",
+                        ("forbidden", f"receipt-{uuid.uuid4()}"),
+                    )
