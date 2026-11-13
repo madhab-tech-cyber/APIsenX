@@ -21,6 +21,7 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
+import httpx
 from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -160,6 +161,30 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         self.assertIn("sentinel_observation outcome=unavailable", diagnostics)
         self.assertEqual(main.ORDERS, before)
 
+
+    def test_optional_observer_timeout_preserves_api_authority(self):
+        class TimedOutObserver:
+            async def publish(self, *_args, **_kwargs):
+                raise httpx.TimeoutException(
+                    "SYNTHETIC_OBSERVER_TIMEOUT_MARKER"
+                )
+
+        before = deepcopy(main.ORDERS)
+        with patch.object(main, "SENTINEL_ADAPTER", TimedOutObserver()):
+            with self.assertLogs("apisenx.audit", level="INFO") as captured:
+                response = self.client.get("/orders", headers=USER_A)
+
+        diagnostics = "\\n".join(captured.output)
+        correlation_id = response.headers.get("X-Correlation-ID")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(correlation_id)
+        self.assertIn(correlation_id, diagnostics)
+        self.assertIn("sentinel_observation outcome=unavailable", diagnostics)
+        self.assertNotIn(
+            "SYNTHETIC_OBSERVER_TIMEOUT_MARKER",
+            response.text + diagnostics,
+        )
+        self.assertEqual(main.ORDERS, before)
 
     def test_optional_observer_outage_preserves_rf01_to_rf04_api_authority(self):
         class FailingObserver:

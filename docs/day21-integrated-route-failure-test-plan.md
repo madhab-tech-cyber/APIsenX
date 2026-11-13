@@ -53,6 +53,14 @@ The route-specific audit behavior above follows FAIL-LAB-1.0. In particular, do 
 
 Unknown-route discovery is intentionally observable in monitor-only mode; it is not authorization to enforce on an undocumented route. The analytics source and frozen candidate manifest are unchanged by these test/documentation updates.
 
+The API middleware boundary also has a deterministic timeout regression:
+`tests/test_day21_route_failure_matrix.py::Day21RouteFailureMatrixTests.test_optional_observer_timeout_preserves_api_authority`
+injects a synthetic `httpx.TimeoutException` and requires the authorized API
+response and correlation ID to survive, with only the fixed unavailable
+diagnostic exposed and no state mutation. This exercises the optional observer
+timeout at the API boundary; it is still a mocked component test, not a live
+analytics or durable-database outage.
+
 This is component-level regression evidence only. It does not inject failures into the integrated API/analytics/durable-audit path and does not satisfy the route-by-route acceptance matrix or its human approval gates.
 
 ## Execution sequence
