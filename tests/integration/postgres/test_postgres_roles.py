@@ -136,6 +136,21 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
     def test_accepts_four_expected_roles_on_one_named_database(self):
         self.assertTrue(self.run_guard())
 
+    def test_accepts_each_explicit_tls_only_mode_for_every_role(self):
+        for role in ROLE_USERS:
+            key = f"dsn-{role.lower()}"
+            for mode in sorted(TLS_MODES):
+                with self.subTest(role=role, mode=mode):
+                    self.configs[key]["sslmode"] = mode
+                    self.assertTrue(self.run_guard())
+                    self.configs[key]["sslmode"] = "verify-full"
+
+    def test_accepts_explicit_hostaddr_without_dns_host(self):
+        for config in self.configs.values():
+            config["host"] = None
+            config["hostaddr"] = "192.0.2.10"
+        self.assertTrue(self.run_guard())
+
     def test_rejects_reused_or_privileged_login_identity(self):
         self.configs["dsn-writer"]["user"] = "postgres"
         self.assertFalse(self.run_guard())
