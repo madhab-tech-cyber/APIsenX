@@ -100,8 +100,11 @@ class Day20PreparationContractTests(unittest.TestCase):
         required_role_guard = (
             "TLS_MODES",
             'for option in ("service", "servicefile")',
-            'not (config.get("host") or config.get("hostaddr"))',
-            'not config.get("port")',
+            'not any(config.get(field) for field in ("host", "hostaddr"))',
+            'not _is_single_endpoint_value(config.get("port"))',
+            'def _is_single_endpoint_value(value):',
+            'for field in ("host", "hostaddr")',
+            'not _is_single_endpoint_value(config.get(field))',
             'str(config.get("sslmode", "")).lower() not in TLS_MODES',
             '_is_plain_database_name(config.get("dbname"))',
             'getattr(conn.info, "ssl_in_use", False)',
@@ -115,6 +118,8 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("sslmode", readme)
         self.assertIn("`service` or `servicefile`", readme)
         self.assertIn("negotiated tls", readme)
+        self.assertIn("comma-separated multi-host", readme.lower())
+        self.assertIn("one unambiguous endpoint", readme.lower())
         self.assertIn(
             "uri or conninfo strings embedded in `dbname` are rejected",
             readme,
@@ -124,6 +129,7 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("uri/conninfo strings embedded in `dbname`", day20)
 
         day21 = " ".join(self.day21_plan.lower().split())
+        self.assertIn("comma-separated host/hostaddr/port values", day20)
         self.assertIn("ssl_in_use=true", day21)
         self.assertIn(
             "skipped role test or non-tls connection is blocked, not pass",

@@ -162,29 +162,62 @@ class Day21RouteFailureMatrixTests(unittest.TestCase):
         self.assertEqual(main.ORDERS, before)
 
 
-    def test_optional_observer_timeout_preserves_api_authority(self):
+    def test_optional_observer_timeout_preserves_rf01_to_rf04_api_authority(self):
         class TimedOutObserver:
             async def publish(self, *_args, **_kwargs):
                 raise httpx.TimeoutException(
                     "SYNTHETIC_OBSERVER_TIMEOUT_MARKER"
                 )
 
-        before = deepcopy(main.ORDERS)
-        with patch.object(main, "SENTINEL_ADAPTER", TimedOutObserver()):
-            with self.assertLogs("apisenx.audit", level="INFO") as captured:
-                response = self.client.get("/orders", headers=USER_A)
-
-        diagnostics = "\\n".join(captured.output)
-        correlation_id = response.headers.get("X-Correlation-ID")
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(correlation_id)
-        self.assertIn(correlation_id, diagnostics)
-        self.assertIn("sentinel_observation outcome=unavailable", diagnostics)
-        self.assertNotIn(
-            "SYNTHETIC_OBSERVER_TIMEOUT_MARKER",
-            response.text + diagnostics,
+        cases = (
+            ("RF-01", "GET", "/orders", USER_A, None, 200),
+            ("RF-02", "GET", "/orders/order-1002", USER_A, None, 404),
+            (
+                "RF-03",
+                "PATCH",
+                "/orders/order-1001",
+                {**ADMIN, "X-Request-Nonce": "day21-observer-timeout-patch-0001"},
+                {"status": "shipped"},
+                200,
+            ),
+            ("RF-04-denied", "GET", "/admin/orders", USER_A, None, 403),
+            ("RF-04-authorized", "GET", "/admin/orders", ADMIN, None, 200),
         )
-        self.assertEqual(main.ORDERS, before)
+
+        for route_id, method, path, headers, payload, expected_status in cases:
+            with self.subTest(route=route_id):
+                before = deepcopy(main.ORDERS)
+                request_args = {"headers": headers}
+                if payload is not None:
+                    request_args["json"] = payload
+
+                with patch.object(main, "SENTINEL_ADAPTER", TimedOutObserver()):
+                    with self.assertLogs("apisenx.audit", level="INFO") as captured:
+                        response = self.client.request(method, path, **request_args)
+
+                diagnostics = "\n".join(captured.output)
+                correlation_id = response.headers.get("X-Correlation-ID")
+                self.assertEqual(response.status_code, expected_status)
+                self.assertIsNotNone(correlation_id)
+                self.assertIn(correlation_id, diagnostics)
+                self.assertIn("sentinel_observation outcome=unavailable", diagnostics)
+                self.assertNotIn(
+                    "SYNTHETIC_OBSERVER_TIMEOUT_MARKER",
+                    response.text + diagnostics,
+                )
+
+                if route_id == "RF-02":
+                    self.assertNotIn("order-1002", response.text)
+                if route_id == "RF-03":
+                    expected_orders = deepcopy(before)
+                    expected_orders["order-1001"]["status"] = "shipped"
+                    self.assertEqual(main.ORDERS, expected_orders)
+                else:
+                    self.assertEqual(main.ORDERS, before)
+
+                main.ORDERS.clear()
+                main.ORDERS.update(before)
+                main.USED_NONCES.clear()
 
     def test_optional_observer_outage_preserves_rf01_to_rf04_api_authority(self):
         class FailingObserver:
