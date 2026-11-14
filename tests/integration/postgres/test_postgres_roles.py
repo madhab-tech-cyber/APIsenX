@@ -44,6 +44,12 @@ def _is_plain_database_name(value):
     )
 
 
+def _is_single_endpoint_value(value):
+    """Reject libpq comma-separated host/hostaddr/port failover lists."""
+    component = str(value or "").strip()
+    return bool(component) and "," not in component
+
+
 def role_dsns_are_isolated():
     """Fail closed unless each DSN names its intended role on one DB target."""
     if (
@@ -83,8 +89,13 @@ def role_dsns_are_isolated():
     # particular, "prefer"/"allow" can silently fall back to cleartext.
     if any(
         not _is_plain_database_name(config.get("dbname"))
-        or not (config.get("host") or config.get("hostaddr"))
-        or not config.get("port")
+        or not any(config.get(field) for field in ("host", "hostaddr"))
+        or not _is_single_endpoint_value(config.get("port"))
+        or any(
+            not _is_single_endpoint_value(config.get(field))
+            for field in ("host", "hostaddr")
+            if config.get(field)
+        )
         or str(config.get("sslmode", "")).lower() not in TLS_MODES
         for config in configs.values()
     ):
@@ -150,6 +161,24 @@ class PostgreSQLDsnConfigurationTests(unittest.TestCase):
             config["host"] = None
             config["hostaddr"] = "192.0.2.10"
         self.assertTrue(self.run_guard())
+
+    def test_rejects_multi_host_hostaddr_and_port_lists(self):
+        cases = (
+            ("host", "db-a.example.test,db-b.example.test"),
+            ("hostaddr", "192.0.2.10,192.0.2.11"),
+            ("port", "5432,5433"),
+        )
+        for field, value in cases:
+            with self.subTest(field=field):
+                original = {
+                    key: config.get(field)
+                    for key, config in self.configs.items()
+                }
+                for config in self.configs.values():
+                    config[field] = value
+                self.assertFalse(self.run_guard())
+                for key, config in self.configs.items():
+                    config[field] = original[key]
 
     def test_rejects_reused_or_privileged_login_identity(self):
         self.configs["dsn-writer"]["user"] = "postgres"
