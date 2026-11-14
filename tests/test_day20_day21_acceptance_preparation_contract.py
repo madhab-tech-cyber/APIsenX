@@ -119,7 +119,7 @@ class Day20PreparationContractTests(unittest.TestCase):
         self.assertIn("`service` or `servicefile`", readme)
         self.assertIn("negotiated tls", readme)
         self.assertIn("comma-separated multi-host", readme.lower())
-        self.assertIn("single unambiguous endpoint", readme.lower())
+        self.assertIn("one unambiguous endpoint", readme.lower())
         self.assertIn(
             "uri or conninfo strings embedded in `dbname` are rejected",
             readme,
